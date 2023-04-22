@@ -1,17 +1,18 @@
 CXX=c++
 NAME = webserv
-SRCS = minimal_webser.cpp
-HEADER = *.hpp
+SRCS = Server.cpp \
+main.cpp
+HEADER = Server.hpp 
 OBJS = $(SRCS:.cpp=.o)
 CXXFLAGS = -Wall -Wextra -Werror --std=c++98 -g
 
-all:$(NAME)
+.cpp.o	:
+			${CXX} ${CXXFLAGS} -c $< -o ${<:.cpp=.o}
 
-$(NAME): $(OBJS)
-	$(CXX) $(OBJS) -o $(NAME)
+all		:	${NAME}
 
-%.o : %.cpp $(HEADER)
-	$(CXX) $(CXXFLAGS) $< -c -o 
+${NAME}	:	${OBJS} ${HEADER}
+			${CXX} ${CXXFLAGS} -o ${NAME} ${OBJS}
 
 fclean: clean
 	rm -f $(NAME)

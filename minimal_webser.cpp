@@ -1,4 +1,5 @@
 #include <cstdio>
+#include <fcntl.h>
 #include <sys/socket.h>
 #include <sys/types.h>
 #include <netinet/in.h>
@@ -8,6 +9,8 @@
 #include <iostream>
 #include "fcntl.h"
 #include <sys/sendfile.h>
+#include <sys/stat.h>
+#include <stdlib.h>
 
 int main (void)
 {
@@ -45,6 +48,12 @@ int main (void)
 	int fdimg;
 	char recvline[25600];
 	std::string buff;
+	struct stat filestat;
+	FILE *fp;
+	int fdt;
+	char filesize[7];
+	char data[100000]/* , datafile[100000] */;
+	std::memset(data, 0, 100000);
 	while (1)
 	{
 		printf("Waiting for a connection on port %d\n", port);
@@ -61,40 +70,68 @@ int main (void)
 			perror("read error\n");
 			return (1);
 		}
-		buff = "HTTP/1.1 200 OK\r\nContent-Type: text/html\r\nContent-Length:100\r\n<!DOCTYPE html>\
-\r\n<html>\
-\r\n<body>\
-\r\n\
-\r\n<h1>My First Heading</h1>\
-\r\n\
-\r\n<p>My first paragraph.</p>\
-\r\n\
-<img src=\"img.jpg\">\r\n\
-<a href=\"https://www.youtube.com/watch?v=dQw4w9WgXcQ&pp=ygUJcmljayByb2xs/\">Baguette</a>\r\n\
-\r\n</body>\
-\r\n</html>\r\n";
-		send (client_fd, buff.c_str(), buff.length(), 0);
-		printf("CEST LA LIGNE: %s", recvline);
+// 		buff = "HTTP/1.1 200 OK\r\nContent-Type: text/html\r\nContent-Length:100\r\n<!DOCTYPE html>\
+// \r\n<html>\
+// \r\n<body>\
+// \r\n\
+// \r\n<h1>My First Heading</h1>\
+// \r\n\
+// \r\n<p>My first paragraph.</p>\
+// \r\n\
+// <img src=\"img.jpg\">\r\n\
+// <a href=\"https://www.youtube.com/watch?v=dQw4w9WgXcQ&pp=ygUJcmljayByb2xs/\">Baguette</a>\r\n\
+// \r\n</body>\
+// \r\n</html>\r\n";
+// 		send (client_fd, buff.c_str(), buff.length(), 0);
+// 		printf("CEST LA LIGNE: %s", recvline);
 		if (!strncmp(recvline, "GET /img.jpg", 12))
 		{
-			printf("\nENVOIE PACKET DU IMAGE\n");
-			buff = "HTTP/1.1 200 OK\r\n";
-			buff += "Content-Type: image/jpg\r\n\r\n";
-			buff += "Content-Length:"
-			write(client_fd, buff.c_str(), sizeof(buff) - 1);
-			fdimg = open("img.jpg", O_RDONLY);
-			if (fdimg < 0)
-			{
-				perror("open error\n");
-				return (1);
-			}
-			int sent = sendfile(client_fd, fdimg, NULL, 1000000);
-			if (sent < 0)
-			{
-				perror("sendfile error\n");
-				return (1);
-			}
-			printf("\nPACKET REMPLI\n");
+			std::cout << "Sending img\n";
+			fdt = open("img.jpg", O_RDONLY);
+			fstat(fdt, &filestat);
+			sprintf(filesize, "%zd", filestat.st_size);
+			fp = fopen("img.jpg", "r");
+			strcpy(data, "HTTP/1.1 200 OK\r\nContent-Length: ");
+			strcat(data, filesize);
+			strcat(data, "\r\n");
+			strcat(data, "Content-Type: image/jpeg\r\n");
+			strcat(data, "Connection: keep-alive\r\n\r\n");
+			std::cout << data;
+			write(client_fd, data, strlen(data));
+			char *datafile = (char *)malloc(100000);
+			fread(datafile, sizeof(char), filestat.st_size, fp);
+			// fclose(fp);
+			write(client_fd, datafile, filestat.st_size);
+			free(datafile);
+			// char *readbuff;
+			// FILE *file = fopen("img.jpg", "rb");
+			// fseek(file, 0L, SEEK_END);
+			// size_t size = ftell(file);
+			// std::cout << size << std::endl;
+			// // fclose(file);
+			// // file = fopen("img.jpg", "rb");
+			// fread(readbuff, sizeof(unsigned char), size, file);
+			// std::cout << readbuff << std::endl;
+			// // fclose(file);
+			// printf("\nENVOIE PACKET DU IMAGE\n");
+			// buff = "HTTP/1.1 200 OK\r\n";
+			// buff += "Content-Type: image/jpg\r\n";
+			// buff += "Content-Length: 109517\r\n\r\n";
+			// buff += readbuff;
+			// send(client_fd, buff.c_str(), buff.length(), 0);
+			// fdimg = open("img.jpg", O_RDONLY);
+			// if (fdimg < 0)
+			// {
+			// 	perror("open error\n");
+			// 	return (1);
+			// }
+			// int sent = sendfile(client_fd, fdimg, NULL, 1000000);
+			// if (sent < 0)
+			// {
+			// 	perror("sendfile error\n");
+			// 	return (1);
+			// }
+			// printf("\nPACKET REMPLI\n");
 		}
 		else {
 			buff = "HTTP/1.1 200 OK\r\n\r\n<!DOCTYPE html>\
@@ -111,8 +148,8 @@ int main (void)
 \r\n</html>\r\n";
 		}
 		send (client_fd, buff.c_str(), buff.length(), 0);
-		close (fdimg);
-		close (client_fd);
+		// close (fdimg);
+		// close (client_fd);
 	}
 	return (0);
 }
