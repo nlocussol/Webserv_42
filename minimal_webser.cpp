@@ -5,8 +5,11 @@
 #include <cstring>
 #include <unistd.h>
 #include <stdio.h>
+#include <iostream>
+#include "fcntl.h"
+#include <sys/sendfile.h>
 
-int main (int ac, char **av)
+int main (void)
 {
 	int	sock_listen, client_fd;
 	int	port = 16161;
@@ -39,20 +42,15 @@ int main (int ac, char **av)
 		return (1);
 	}
 	int n;
-	if (ac <= 1)
-	{
-		perror("wrong number of args\n");
-		return (1);
-	}
-
-	char recvline[256];
-	char buff[256];
+	int fdimg;
+	char recvline[25600];
+	std::string buff;
 	while (1)
 	{
 		printf("Waiting for a connection on port %d\n", port);
 		client_fd = accept(sock_listen, (struct sockaddr *)NULL, NULL);
-		memset(recvline, 0, 256);
-		while ((n = read(client_fd, recvline, 255)) > 0 )
+		memset(recvline, 0, 25600);
+		while ((n = read(client_fd, recvline, 25599)) > 0 )
 		{
 			if (recvline[n - 1] == '\n')
 				break ;
@@ -63,7 +61,7 @@ int main (int ac, char **av)
 			perror("read error\n");
 			return (1);
 		}
-		snprintf((char *)buff, sizeof(buff), "HTTP/1.1 200 OK\r\n\r\n<!DOCTYPE html>\
+		buff = "HTTP/1.1 200 OK\r\n\r\n<!DOCTYPE html>\
 \r\n<html>\
 \r\n<body>\
 \r\n\
@@ -71,12 +69,50 @@ int main (int ac, char **av)
 \r\n\
 \r\n<p>My first paragraph.</p>\
 \r\n\
-<img src=\"pic_trulli.jpg\">\r\n\
+<img src=\"img.jpg\">\r\n\
+<a href=\"https://www.youtube.com/watch?v=dQw4w9WgXcQ&pp=ygUJcmljayByb2xs/\">Baguette</a>\r\n\
 \r\n</body>\
-\r\n</html>");
-		send (client_fd, buff, strlen(buff), 0);
-		snprintf((char *)buff, sizeof(buff), "GET .pic_trulli.png HTTP 1.1\r\n");
-		send (client_fd, buff, strlen(buff), 0);
+\r\n</html>\r\n";
+		send (client_fd, buff.c_str(), buff.length(), 0);
+		printf("CEST LA LIGNE: %s", recvline);
+		if (!strncmp(recvline, "GET /img.jpg", 12))
+		{
+			printf("\nENVOIE PACKET DU IMAGE\n");
+			buff = "HTTP/1.1 200 OK\r\n";
+			buff += "Content-Type: image/*\r\n\r\n";
+			fstat
+			buff += "Content-Length: "
+			write(client_fd, buff.c_str(), sizeof(buff) - 1);
+			fdimg = open("img.jpg", O_RDONLY);
+			if (fdimg < 0)
+			{
+				perror("open error\n");
+				return (1);
+			}
+			int sent = sendfile(client_fd, fdimg, NULL, 1000000);
+			if (sent < 0)
+			{
+				perror("sendfile error\n");
+				return (1);
+			}
+			printf("\nPACKET REMPLI\n");
+		}
+		else {
+			buff = "HTTP/1.1 200 OK\r\n\r\n<!DOCTYPE html>\
+\r\n<html>\
+\r\n<body>\
+\r\n\
+\r\n<h1>My First Heading</h1>\
+\r\n\
+\r\n<p>My first paragraph.</p>\
+\r\n\
+<img src=\"img.jpg\">\r\n\
+<a href=\"https://www.youtube.com/watch?v=dQw4w9WgXcQ&pp=ygUJcmljayByb2xs/\">Baguette</a>\r\n\
+\r\n</body>\
+\r\n</html>\r\n";
+		}
+		send (client_fd, buff.c_str(), buff.length(), 0);
+		close (fdimg);
 		close (client_fd);
 	}
 	return (0);
