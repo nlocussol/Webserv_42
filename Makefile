@@ -1,18 +1,17 @@
-CC=c++
+CXX=c++
 NAME = webserv
 SRCS = minimal_webser.cpp
 HEADER = *.hpp
 OBJS = $(SRCS:.cpp=.o)
-CFLAGS = -Wall -Wextra -Werror --std=c++98
-LDFLAGS = 
+CXXFLAGS = -Wall -Wextra -Werror --std=c++98 -g
 
 all:$(NAME)
 
 $(NAME): $(OBJS)
-	$(CC) $(OBJS) $(LDFLAGS) -o $(NAME)
+	$(CXX) $(OBJS) -o $(NAME)
 
 %.o : %.cpp $(HEADER)
-	$(CC) $(CFLAGS) $< -c -o $@
+	$(CXX) $(CXXFLAGS) $< -c -o 
 
 fclean: clean
 	rm -f $(NAME)

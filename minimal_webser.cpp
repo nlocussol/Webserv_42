@@ -61,7 +61,7 @@ int main (void)
 			perror("read error\n");
 			return (1);
 		}
-		buff = "HTTP/1.1 200 OK\r\n\r\n<!DOCTYPE html>\
+		buff = "HTTP/1.1 200 OK\r\nContent-Type: text/html\r\nContent-Length:100\r\n<!DOCTYPE html>\
 \r\n<html>\
 \r\n<body>\
 \r\n\
@@ -79,7 +79,8 @@ int main (void)
 		{
 			printf("\nENVOIE PACKET DU IMAGE\n");
 			buff = "HTTP/1.1 200 OK\r\n";
-			buff += "Content-Type: image/*\r\n\r\n";
+			buff += "Content-Type: image/jpg\r\n\r\n";
+			buff += "Content-Length:"
 			write(client_fd, buff.c_str(), sizeof(buff) - 1);
 			fdimg = open("img.jpg", O_RDONLY);
 			if (fdimg < 0)
