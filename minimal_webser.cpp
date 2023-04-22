@@ -80,8 +80,6 @@ int main (void)
 			printf("\nENVOIE PACKET DU IMAGE\n");
 			buff = "HTTP/1.1 200 OK\r\n";
 			buff += "Content-Type: image/*\r\n\r\n";
-			fstat
-			buff += "Content-Length: "
 			write(client_fd, buff.c_str(), sizeof(buff) - 1);
 			fdimg = open("img.jpg", O_RDONLY);
 			if (fdimg < 0)
