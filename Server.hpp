@@ -4,6 +4,7 @@
 #include <map>
 #include <netinet/in.h>
 #include <string>
+#include "Request.hpp"
 
 class Server { 
 	public:
@@ -14,6 +15,8 @@ class Server {
 	 Server& operator=(const Server& other);
 	 void setSocket(void);
 	 void runServer(void);
+	 std::string readFd(int* client_fd);
+	 void sendRequest(Request& request, int client_fd);
 	 void sendToClient(std::string header, std::string buffer, int client_fd);
 	 void launchServer(void);
 

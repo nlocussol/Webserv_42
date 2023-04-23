@@ -1,10 +1,11 @@
 CXX=c++
 NAME = webserv
-SRCS = Server.cpp \
+SRCS = Request.cpp \
+Server.cpp \
 main.cpp
 HEADER = Server.hpp 
 OBJS = $(SRCS:.cpp=.o)
-CXXFLAGS = -Wall -Wextra -Werror --std=c++98 -g
+CXXFLAGS = -Wall -Wextra --std=c++98 -g
 
 .cpp.o	:
 			${CXX} ${CXXFLAGS} -c $< -o ${<:.cpp=.o}
