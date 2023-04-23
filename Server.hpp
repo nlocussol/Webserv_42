@@ -2,6 +2,7 @@
 #define SERVER_HPP_
 
 #include <map>
+#include <netinet/in.h>
 #include <string>
 
 class Server { 
@@ -21,7 +22,7 @@ class Server {
 	 int _socket;
 	 int _port;
 	 bool _running;
-
+	 struct sockaddr_in _serv_addr;
  } ;
 
 #endif // SERVER_HPP_

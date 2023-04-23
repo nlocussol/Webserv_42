@@ -22,7 +22,11 @@ int main (int argc, char *argv[])
   // int nbServ = parseConfigFile(config);
   // Add some tests to see if server(s) are usable, else quit
   Server server;
+  std::multimap<std::string, std::string> tg;
+  Server server2(tg);
   server.setSocket();
   server.runServer();
+  server2.setSocket();
+  server2.runServer();
   return 0;
 }
