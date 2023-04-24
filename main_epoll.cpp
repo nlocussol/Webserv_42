@@ -51,7 +51,6 @@ void	handle_connection(int client_fd)
 	}
 	buff = setRequest();
 	send (client_fd, buff.c_str(), buff.length(), 0);
-	close (client_fd);
 }
 
 int	initSocket()
@@ -103,25 +102,25 @@ int main (void)
 	}
 	event.events = EPOLLIN;
 	event.data.fd = epfd;
-//récupère le fd du server et l'ajoute a la pool de fd d'epoll
 	epoll_ctl(epfd, EPOLL_CTL_ADD, sock_listen, &event);
+//récupère le fd du server et l'ajoute a la pool de fd d'epoll
 	while (1){
 		struct epoll_event event;
 		int	event_count;
-		event_count = epoll_wait(epfd, &event, 5, -1);
+		event_count = epoll_wait(epfd, &event, 10, 300000);
 		if (event_count){
 			if (event.data.fd == epfd){
-				std::cout << "Ajoute d'un client dans la pool de fd" << std::endl;
+				std::cout << "Ajoute d'un client dans la pool de fd: ";
 				client_fd = accept(sock_listen, (struct sockaddr *)NULL, NULL);
 				event.events = EPOLLIN;
 				event.data.fd = client_fd;
+				std::cout << client_fd << std::endl;
 				epoll_ctl(epfd, EPOLL_CTL_ADD, client_fd, &event);
 			}
 			else if (event.events & EPOLLIN) {
-				std::cout << "Ajoute d'un client dans la pool de fd" << std::endl;
-				handle_connection(event.data.fd);
+				std::cout << "Envoie d'un packet au fd: " << event.data.fd <<  std::endl;
+				handle_connection((int)(long)event.data.ptr);
 			}
-			event_count = 0;
 		}
 	}
 	close (epfd);
