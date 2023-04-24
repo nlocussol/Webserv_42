@@ -14,24 +14,6 @@
 #include <sys/epoll.h>
 #include <stdlib.h>
 
-void	make_socket_non_blocking(int fd_client)
-{
-	int flags;
-
-	flags = fcntl(fd_client, F_GETFL, 0);
-	if (flags == -1)
-	{
-		std::cerr << "flag recuperation for fd: " << fd_client << " error";
-		exit (EXIT_FAILURE);
-	}
-	flags |= O_NONBLOCK;
-	if (fcntl(fd_client, F_SETFL, flags) == -1)
-	{
-		std::cerr << "Set flag for fd: " << fd_client << " error";
-		exit (EXIT_FAILURE);
-	}
-}
-
 std::string setRequest()
 {
 	std::string ret = "HTTP/1.1 200 OK\r\n\r\n<!DOCTYPE html>\

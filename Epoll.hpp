@@ -14,7 +14,7 @@ class Epoll
 	 private:
 		void	create_epoll();
 
-		int _fd_epoll;
-		struct epoll_event _event;
+		int			_fd_epoll;
+		struct epoll_event	_event;
 		
 };

@@ -1,7 +1,6 @@
 CXX=c++
 NAME = webserv
-SRCS = Request.cpp \
-Server.cpp \
+SRCS = Request.cpp Server.cpp Socket.cpp Epoll.cpp\
 main.cpp
 HEADER = Server.hpp 
 OBJS = $(SRCS:.cpp=.o)

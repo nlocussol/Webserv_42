@@ -5,6 +5,8 @@
 #include <netinet/in.h>
 #include <string>
 #include "Request.hpp"
+#include "Epoll.hpp"
+#include "Socket.hpp"
 
 class Server { 
 	public:
@@ -22,10 +24,11 @@ class Server {
 
 	private:
 	 std::multimap<std::string, std::string> _config;
-	 int _socket;
 	 int _port;
 	 bool _running;
 	 struct sockaddr_in _serv_addr;
+	 Socket _socket;
+	 Epoll _epoll;
  } ;
 
 #endif // SERVER_HPP_

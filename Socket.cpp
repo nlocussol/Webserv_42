@@ -29,6 +29,11 @@ int	Socket::get_fdServer()
 	return(_fd_server);
 }
 
+int	Socket::get_port()
+{
+	return(_port);
+}
+
 void	Socket::allow_socket_server()
 {
 	init_socket();
@@ -36,15 +41,6 @@ void	Socket::allow_socket_server()
 	socket_setoptions();
 	bind_socket();
 	listen_socket();
-}
-
-void	Socket::init_struct_server()
-{
-	bzero(&_server_addr, sizeof(struct sockaddr_in));
-	_server_addr.sin_family = AF_INET;
-	_server_addr.sin_addr.s_addr = htonl(INADDR_ANY);
-	_server_addr.sin_port = htons(_port);
-
 }
 
 void	Socket::init_socket()
@@ -55,6 +51,15 @@ void	Socket::init_socket()
 		perror("creating socket error\n");
 		exit (1);
 	}
+}
+
+void	Socket::init_struct_server()
+{
+	bzero(&_server_addr, sizeof(struct sockaddr_in));
+	_server_addr.sin_family = AF_INET;
+	_server_addr.sin_addr.s_addr = htonl(INADDR_ANY);
+	_server_addr.sin_port = htons(_port);
+
 }
 
 void	Socket::socket_setoptions()

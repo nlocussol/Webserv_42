@@ -14,6 +14,7 @@ class Socket
 
 		void	allow_socket_server();
 		int		get_fdServer();
+		int		get_port();
  	 private:
 		void	init_socket();
 		void	init_struct_server();
