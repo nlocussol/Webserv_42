@@ -14,6 +14,24 @@
 #include <sys/epoll.h>
 #include <stdlib.h>
 
+void	make_socket_non_blocking(int fd_client)
+{
+	int flags;
+
+	flags = fcntl(fd_client, F_GETFL, 0);
+	if (flags == -1)
+	{
+		std::cerr << "flag recuperation for fd: " << fd_client << " error";
+		exit (EXIT_FAILURE);
+	}
+	flags |= O_NONBLOCK;
+	if (fcntl(fd_client, F_SETFL, flags) == -1)
+	{
+		std::cerr << "Set flag for fd: " << fd_client << " error";
+		exit (EXIT_FAILURE);
+	}
+}
+
 std::string setRequest()
 {
 	std::string ret = "HTTP/1.1 200 OK\r\n\r\n<!DOCTYPE html>\
@@ -104,15 +122,15 @@ int main (void)
 		std::cerr << "Failed to create epoll fd" << std::endl;
 		exit(EXIT_FAILURE);
 	}
-	event.events = EPOLLIN;
-	event.data.fd = epfd;
+	event.events = EPOLLIN | EPOLLET;
+	event.data.fd = sock_listen;
 	epoll_ctl(epfd, EPOLL_CTL_ADD, sock_listen, &event);
 //récupère le fd du server et l'ajoute a la pool de fd d'epoll
 	while (1){
 		struct epoll_event event;
 		int	event_count;
 		//attend un event dans la pool de fd
-		event_count = epoll_wait(epfd, &event, 10, 300000);
+		event_count = epoll_wait(epfd, &event, 10, -1);
 		if (event_count == -1)
 		{
 			perror("epoll wait error\n");
@@ -120,7 +138,12 @@ int main (void)
 		}
 		if (event_count){
 		//si event correspond au fd du server alors ajouter un fd client a la pool
-			if (event.data.fd == epfd){
+			if (((event.events & EPOLLERR) || (event.events & EPOLLHUP) || (!(event.events & EPOLLIN)))){
+				perror("fd wrong signal\n");
+				exit (EXIT_FAILURE);
+			}
+			else if (event.data.fd == sock_listen){
+				struct epoll_event new_client;
 				std::cout << "Ajoute d'un client dans la pool de fd: ";
 				client_fd = accept(sock_listen, (struct sockaddr *)NULL, NULL);
 				if (client_fd == -1)
@@ -128,23 +151,20 @@ int main (void)
 					perror("accept error\n");
 					exit (EXIT_FAILURE);
 				}
-				event.events = EPOLLIN;
-				event.data.fd = client_fd;
+				new_client.events = EPOLLIN | EPOLLET;
+				new_client.data.fd = client_fd;
 				std::cout << client_fd << std::endl;
-				if (epoll_ctl(epfd, EPOLL_CTL_ADD, client_fd, &event) == -1)
+				if (epoll_ctl(epfd, EPOLL_CTL_ADD, client_fd, &new_client) == -1)
 				{
 					perror("epoll ctl error\n");
 					exit (EXIT_FAILURE);
 				}
 			}
-		//si event correspond a un client, envoyer un paquet à ce dernier
-			else if (event.events & EPOLLIN) {
+			else {
 				std::cout << "Envoie d'un packet au fd: " << event.data.fd <<  std::endl;
 				handle_connection(event.data.fd);
 			}
-			else{
-				std::cout << "error" << std::endl;
-			}
+		//si event correspond a un client, envoyer un paquet à ce dernier
 		}
 	}
 	close (epfd);
