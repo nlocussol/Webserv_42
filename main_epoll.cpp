@@ -50,7 +50,11 @@ void	handle_connection(int client_fd)
 		exit (EXIT_FAILURE);
 	}
 	buff = setRequest();
-	send (client_fd, buff.c_str(), buff.length(), 0);
+	if (send (client_fd, buff.c_str(), buff.length(), 0) == -1 )
+	{
+		perror("send error\n");
+		exit (EXIT_FAILURE);
+	}
 }
 
 int	initSocket()
@@ -107,19 +111,39 @@ int main (void)
 	while (1){
 		struct epoll_event event;
 		int	event_count;
+		//attend un event dans la pool de fd
 		event_count = epoll_wait(epfd, &event, 10, 300000);
+		if (event_count == -1)
+		{
+			perror("epoll wait error\n");
+			exit (EXIT_FAILURE);
+		}
 		if (event_count){
+		//si event correspond au fd du server alors ajouter un fd client a la pool
 			if (event.data.fd == epfd){
 				std::cout << "Ajoute d'un client dans la pool de fd: ";
 				client_fd = accept(sock_listen, (struct sockaddr *)NULL, NULL);
+				if (client_fd == -1)
+				{
+					perror("accept error\n");
+					exit (EXIT_FAILURE);
+				}
 				event.events = EPOLLIN;
 				event.data.fd = client_fd;
 				std::cout << client_fd << std::endl;
-				epoll_ctl(epfd, EPOLL_CTL_ADD, client_fd, &event);
+				if (epoll_ctl(epfd, EPOLL_CTL_ADD, client_fd, &event) == -1)
+				{
+					perror("epoll ctl error\n");
+					exit (EXIT_FAILURE);
+				}
 			}
+		//si event correspond a un client, envoyer un paquet à ce dernier
 			else if (event.events & EPOLLIN) {
 				std::cout << "Envoie d'un packet au fd: " << event.data.fd <<  std::endl;
-				handle_connection((int)(long)event.data.ptr);
+				handle_connection(event.data.fd);
+			}
+			else{
+				std::cout << "error" << std::endl;
 			}
 		}
 	}
