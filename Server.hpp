@@ -11,6 +11,7 @@
 #include "FdManager.hpp"
 
 #define MAX_EVENT 10
+#define BUFFER_SIZE 4096
 
 class Server { 
 	public:
@@ -21,20 +22,19 @@ class Server {
 	 Server& operator=(const Server& other);
 	 void	setSocket(void);
 	 void	runServer(void);
-	 std::string readFd(int* client_fd);
+	 void readRequest(int epoll_fd);
 	 void	sendRequest(Request& request, int client_fd);
-	 void	sendToClient(std::string header, std::string buffer, int client_fd);
-	 void	launchServer(void);
 	 void	manage_epoll_wait(struct epoll_event &event);
 
 	private:
 	 std::multimap<std::string, std::string> _config;
-	 int 		_port;
-	 bool		_running;
-	 Socket		_socket;
-	 Epoll		_epoll;
-	 FdManager	_fd;
-	int			_nb_server;
+	 int _port;
+	 bool _running;
+	 Socket _socket;
+	 Epoll _epoll;
+	 FdManager _fd;
+	 int _nb_server;
+	 std::string _buffer;
  } ;
 
 #endif // SERVER_HPP_

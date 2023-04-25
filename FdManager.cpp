@@ -2,11 +2,9 @@
 #include <utility>
 
 FdManager::FdManager(){
-	_nb_server = 1;
 }
 
 FdManager::FdManager(int nb_server){
-	_nb_server = nb_server;
 }
 
 FdManager::~FdManager(){

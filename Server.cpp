@@ -11,10 +11,10 @@
 #include <fcntl.h>
 #include <sys/stat.h>
 
-Server::Server()
+Server::Server() : _socket(16161)
 {
 	_running = true;
-	_port = 16162;
+	_port = 16161;
 	_nb_server = 1;
 }
 
@@ -80,63 +80,52 @@ void Server::runServer(void)
 		}
 	}
 */
-	std::string buffer;
+	// std::string buffer;
 	while (1)
 	{
 		struct epoll_event event;
 		epoll_wait(_epoll.get_fd_epoll(), &event, MAX_EVENT, -1);
-		buffer = readFd(&client_fd);
-		std::cout << buffer << '\n';
-		if (buffer.find("GET") != std::string::npos && buffer.find("Accept: image/") != std::string::npos) {
-			Request request(2);
-			sendRequest(request, client_fd);
+		manage_epoll_wait(event);
+		// buffer = readFd(&client_fd);
+		// std::cout << buffer << '\n';
+		// if (buffer.find("GET") != std::string::npos && buffer.find("Accept: image/") != std::string::npos) {
+		// 	Request request(2);
+		// 	sendRequest(request, client_fd);
+		// }
+		// else if (buffer.find("GET / HTTP/1.1") != std::string::npos) {
+		// 	Request request(Request::TEXT_HTML);
+		// 	sendRequest(request, client_fd);
 		}
-		else if (buffer.find("GET / HTTP/1.1") != std::string::npos) {
-			Request request(Request::TEXT_HTML);
-			sendRequest(request, client_fd);
-		}
-	}
 }
+// }
 
-std::string Server::readFd(int* client_fd)
-{
-	std::string buffer;
-	char buffer_read[256];
-	memset(buffer_read, 0, 256);
-	printf("Waiting for a connection on port %d\n", _port);
-	*client_fd = accept(_socket, (struct sockaddr *)NULL, NULL);
-	int byte_r;
-	while ((byte_r = read(*client_fd, buffer_read, 255)) > 0 ) {
-		if (buffer_read[byte_r - 1] == '\n')
-			break ;
-		buffer += buffer_read;
-		memset(buffer_read, 0, 256);
-	}
-	if (byte_r < 0) {
-		perror("read error\n");
-		return NULL;
-	}
-	return buffer;
-}
+// std::string Server::readFd(int* client_fd)
+// {
+// 	std::string buffer;
+// 	char buffer_read[256];
+// 	memset(buffer_read, 0, 256);
+// 	printf("Waiting for a connection on port %d\n", _port);
+// 	*client_fd = accept(_socket, (struct sockaddr *)NULL, NULL);
+// 	int byte_r;
+// 	while ((byte_r = read(*client_fd, buffer_read, 255)) > 0 ) {
+// 		if (buffer_read[byte_r - 1] == '\n')
+// 			break ;
+// 		buffer += buffer_read;
+// 		memset(buffer_read, 0, 256);
+// 	}
+// 	if (byte_r < 0) {
+// 		perror("read error\n");
+// 		return NULL;
+// 	}
+// 	return buffer;
+// }
 
 void Server::sendRequest(Request& request, int client_fd) 
 {
 	send(client_fd, request.getBuffer().c_str(), request.getBuffer().length(), 0);
 }
 
-void Server::sendToClient(std::string header, std::string buffer, int client_fd)
-{
-	(void)header;
-	(void)buffer;
-	(void)client_fd;
-}
-
-void Server::launchServer(void)
-{
-
-}
-
-void	Server::manage_epoll_wait(struct epoll_event &event)
+void Server::manage_epoll_wait(struct epoll_event &event)
 {
 	if (((event.events & EPOLLERR) || (event.events & EPOLLHUP) || (!(event.events & EPOLLIN))))
 	{
@@ -152,8 +141,16 @@ void	Server::manage_epoll_wait(struct epoll_event &event)
 	else
 	{
 		int	server;
-		server = _fd.find_matching_server(event.data.fd);
-		ReadReaquest(int fd_client, int server);
-		sendRequest(TEXT_HTML, event.data.fd, server);
+		server = _fd.find_matching_server(event.data.fd);	
+		readRequest(event.data.fd);/*, server*/
+		// sendRequest(TEXT_HTML, event.data.fd, server);
 	}
+}
+
+void Server::readRequest(int epoll_fd)
+{
+	char buff[BUFFER_SIZE];
+	std::memset(buff, 0, BUFFER_SIZE);
+	recv(epoll_fd, buff, BUFFER_SIZE - 1, 0);
+	std::cout << buff;
 }

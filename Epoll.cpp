@@ -1,5 +1,7 @@
 #include "Epoll.hpp"
 #include <strings.h>
+#include <cstdlib>
+#include <cstdio>
 
 Epoll::Epoll(){
 	_fd_epoll = -1;
