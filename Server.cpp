@@ -10,10 +10,14 @@
 #include <stdio.h>
 #include <fcntl.h>
 #include <sys/stat.h>
+#include <signal.h>
+
+
+bool Server::_running = true;
 
 Server::Server() : _socket(16161)
 {
-	_running = true;
+	signal(SIGINT, handle_sigint);
 	_port = 16161;
 	_nb_server = 1;
 }
@@ -81,7 +85,7 @@ void Server::runServer(void)
 	}
 */
 	// std::string buffer;
-	while (1)
+	while (_running)
 	{
 		struct epoll_event event;
 		epoll_wait(_epoll.get_fd_epoll(), &event, MAX_EVENT, -1);
@@ -96,7 +100,7 @@ void Server::runServer(void)
 		// 	Request request(Request::TEXT_HTML);
 		// 	sendRequest(request, client_fd);
 		}
-}
+	}
 // }
 
 // std::string Server::readFd(int* client_fd)

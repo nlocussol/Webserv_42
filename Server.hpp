@@ -25,16 +25,18 @@ class Server {
 	 void readRequest(int epoll_fd);
 	 void	sendRequest(Request& request, int client_fd);
 	 void	manage_epoll_wait(struct epoll_event &event);
+	 static bool _running;
 
 	private:
 	 std::multimap<std::string, std::string> _config;
 	 int _port;
-	 bool _running;
 	 Socket _socket;
 	 Epoll _epoll;
 	 FdManager _fd;
 	 int _nb_server;
 	 std::string _buffer;
  } ;
+
+void	handle_sigint(int signum);
 
 #endif // SERVER_HPP_

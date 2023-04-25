@@ -10,6 +10,13 @@
 //   return nbServ;
 // }
 
+void	handle_sigint(int signum)
+{
+	(void)signum;
+	if (Server::_running == true)
+		Server::_running = false;
+}
+
 int main (int argc, char *argv[])
 {
   (void)argv;
