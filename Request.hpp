@@ -3,12 +3,14 @@
 
 #include <string>
 
+#define BUFFER_SIZE 1024
+
 class Request { 
 	public:
-	 typedef enum request_type {TEXT_HTML = 1} t_request;
+	 typedef enum request_type {TEXT_HTML, IMAGE} t_request;
 	 void buildTextHTMLRequest(std::string);
 	 std::string& getBuffer(void);
-	 Request(int);
+	 Request(int, std::string);
 	 ~Request();
 
 	private:
