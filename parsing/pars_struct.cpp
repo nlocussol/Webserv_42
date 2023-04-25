@@ -1,6 +1,7 @@
 #include "parsing.hpp"
 
-void pars_manager(block_serv & servers) {
+template<typename T>
+void pars_manager(T & servers) {
 	MULTIMAP::iterator it = servers.conf.find("root");
 	MULTIMAP copy = servers.conf;
 
@@ -27,6 +28,7 @@ void pars_struct(data & servers) {
 				}
 				fill_location(servers.serv[i].serv[j].conf, servers.serv[i].serv[stage].conf);
 			}
+			pars_manager(servers.serv[i].serv[j]);
 		}
 	}
 }
