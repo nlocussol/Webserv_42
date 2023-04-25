@@ -1,74 +1,5 @@
 #include "parsing.hpp"
 
-void pars_dir(string path, MULTIMAP & copy) {
-	MULTIMAP::iterator it = copy.find(path);
-	if (it == copy.end() && path == "root")
-		throw (logic_error("Error: need a root in servers block!"));
-	while (it != copy.end()) {
-		if (!opendir(it->second.c_str()))
-			throw (logic_error("Error: " + it->first + " have a bad path: " + it->second));
-		copy.erase(it);
-		it = copy.find(path);
-	}
-}
-
-void pars_file(string path, MULTIMAP & copy, string & root) {
-	MULTIMAP::iterator it = copy.find(path);
-	while (it != copy.end()) {
-		fstream file;
-		file.open((root + "/" + it->second).c_str());
-		if (!file)
-			throw (logic_error("Error: " + it->first + " have a bad path: " + it->second));
-		copy.erase(it);
-		it = copy.find(path);
-	}
-}
-
-void pars_listen(MULTIMAP & copy) {
-	MULTIMAP::iterator it = copy.find("listen");
-	if (it == copy.end())
-		throw (logic_error("Error: need listen in servers block!"));
-	while (it != copy.end()) {
-		for (int i = 0; it->second[i]; i++) {
-			if (!isdigit(it->second[i]))
-				throw (logic_error("Error: listen has bad input: " + it->second));
-		}
-		int port = strtod(it->second.c_str(), NULL);
-		if (port < 0 || port > 65535)
-				throw (logic_error("Error: listen have bad port: " + it->second + " (between 0 and 65535)!"));
-		copy.erase(it);
-		it = copy.find("listen");
-	}
-}
-
-void pars_methods(MULTIMAP & copy) {
-	MULTIMAP::iterator it = copy.find("methods");
-	while (it != copy.end()) {
-		if (it->second != "GET" && it->second != "POST" && it->second != "DELETE")
-			throw (logic_error("Error: bad methods: " + it->second + " (only GET, POST and DELETE)!"));
-		copy.erase(it);
-		it = copy.find("methods");
-	}
-}
-
-void pars_errpage(MULTIMAP & copy, string & root) {
-	MULTIMAP::iterator it = copy.find("errpage");
-	fstream file; 
-	while (it != copy.end()) {
-		for (int i = 0; it->second[i]; i++) {
-			if (!isdigit(it->second[i]))
-				throw (logic_error("Error: errpage has bad input: " + it->second + " (between 0 and 599)!"));
-		}
-		copy.erase(it);
-		it = copy.find("errpage");
-		file.open((root + "/" + it->second).c_str());
-		if (!file)
-			throw (logic_error("Error: errpage redirection can't be open: " + it->second));
-		copy.erase(it);
-		it = copy.find("errpage");
-	}
-}
-
 void pars_manager(block_serv & servers) {
 	MULTIMAP::iterator it = servers.conf.find("root");
 	MULTIMAP copy = servers.conf;
@@ -83,5 +14,19 @@ void pars_manager(block_serv & servers) {
 void pars_struct(data & servers) {
 	for (unsigned long i = 0; i < servers.serv.size(); i++) {
 		pars_manager(servers.serv[i]);
+		for (unsigned long j = 0; j < servers.serv[i].serv.size(); j++) {
+			if (j == 0)
+				fill_location(servers.serv[i].serv[0], servers.serv[i].conf);
+			else {
+				int stage = servers.serv[i].serv[j].stage;
+				for (int k = j; k >= 0; k--) {
+					if (servers.serv[i].serv[k].stage < stage) {
+						stage = k;
+						break;
+					}
+				}
+				fill_child_location(servers.serv[i].serv[j], servers.serv[i].serv[stage]);
+			}
+		}
 	}
 }

@@ -26,9 +26,9 @@ vector<string> mysplit(string & line, string delimiter) {
 		tab.push_back(str);
 		str.clear();
 	}
-	for (unsigned long i = 0; i < tab.size(); i++)
-		cout << "'" << tab[i] << "'" << " ";
-	cout << endl;
+	// for (unsigned long i = 0; i < tab.size(); i++)
+		// cout << "'" << tab[i] << "'" << " ";
+	// cout << endl;
 	return (tab);
 }
 
