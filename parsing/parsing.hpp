@@ -5,6 +5,8 @@
 #include <fstream>
 #include <cstring>
 #include <algorithm>
+#include <dirent.h>
+#include <cstdlib>
 
 using namespace std;
 
@@ -25,3 +27,6 @@ struct block_serv {
 struct data {
 	vector<block_serv> serv;
 };
+
+void pars_conf(string & file, data & servers);
+void pars_struct(data & servers);
