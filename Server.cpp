@@ -1,9 +1,8 @@
 #include "Server.hpp"
 #include <cstdlib>
 #include <cstring>
-#include <map>
-#include <netinet/in.h>
 #include <string>
+#include <sys/epoll.h>
 #include <sys/socket.h>
 #include <sys/types.h>
 #include <iostream>
@@ -11,12 +10,12 @@
 #include <stdio.h>
 #include <fcntl.h>
 #include <sys/stat.h>
-#include "Request.hpp"
 
 Server::Server()
 {
 	_running = true;
 	_port = 16162;
+	_nb_server = 1;
 }
 
 Server::~Server()
@@ -45,19 +44,27 @@ Server::Server(std::multimap<std::string, std::string>& config)
 
 void Server::setSocket(void)
 {
-	_socket.allow_socket_server();
+	int	server;
+	_epoll.create_epoll();
+	for (int i = 0; i < _nb_server; i++)
+	{
+		_socket.allow_socket_server();
+		server = _socket.get_fdServer();
+		_fd.set_fd_server(server);
+		_epoll.add_fd_to_pool(server);
+	}
 }
 
 void Server::runServer(void)
 {
-	int client_fd;
+/*	int client_fd;
 	int n;
 	std::string buffer;
 	struct stat filestat;
 	FILE *fp;
 	int fdt;
 	char filesize[7];
-	char data[100000]/* , datafile[100000] */;
+	char data[100000]// , datafile[100000] ;
 	std::memset(data, 0, 100000);
 	while (1)
 	{
@@ -70,6 +77,24 @@ void Server::runServer(void)
 		else if (buffer.find("GET / HTTP/1.1") != std::string::npos) {
 			Request request(Request::TEXT_HTML);
 			sendRequest(request, client_fd);
+		}
+	}
+*/
+	std::string buffer;
+	while (1)
+	{
+		struct epoll_event event;
+		epoll_wait(_epoll.get_fd_epoll(), &event, MAX_EVENT, -1);
+		buffer = readFd(&client_fd);
+		std::cout << buffer << '\n';
+		if (buffer.find("GET") != std::string::npos && buffer.find("Accept: image/") != std::string::npos) {
+			Request request(2);
+			sendRequest(request, client_fd);
+		}
+		else if (buffer.find("GET / HTTP/1.1") != std::string::npos) {
+			Request request(Request::TEXT_HTML);
+			sendRequest(request, client_fd);
+		}
 	}
 }
 
@@ -109,4 +134,26 @@ void Server::sendToClient(std::string header, std::string buffer, int client_fd)
 void Server::launchServer(void)
 {
 
+}
+
+void	Server::manage_epoll_wait(struct epoll_event &event)
+{
+	if (((event.events & EPOLLERR) || (event.events & EPOLLHUP) || (!(event.events & EPOLLIN))))
+	{
+		perror("fd wrong signal\n");
+		exit (EXIT_FAILURE);
+	}
+	if (_fd.is_server(event.data.fd) == true)
+	{
+		int	new_client = _socket.accept_client(event.data.fd);
+		_epoll.add_fd_to_pool(new_client);
+		_fd.add_new_client(new_client, event.data.fd);
+	}
+	else
+	{
+		int	server;
+		server = _fd.find_matching_server(event.data.fd);
+		ReadReaquest(int fd_client, int server);
+		sendRequest(TEXT_HTML, event.data.fd, server);
+	}
 }

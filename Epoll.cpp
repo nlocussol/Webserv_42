@@ -21,12 +21,6 @@ Epoll & Epoll::operator=(const Epoll &copy){
 	return (*this);
 }
 
-void	Epoll::set_up_epoll(int socket_server)
-{
-	create_epoll();
-	add_fd_to_pool(socket_server);
-}
-
 void	Epoll::create_epoll()
 {
 	_fd_epoll = epoll_create1(0);
@@ -45,4 +39,9 @@ void	Epoll::add_fd_to_pool(int fd)
 		perror("Add a new fd into the fd poll error\n");
 		exit (EXIT_FAILURE);
 	}
+}
+
+int		Epoll::get_fd_epoll()
+{
+	return (_fd_epoll);
 }

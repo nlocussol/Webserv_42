@@ -8,6 +8,11 @@
 	 _fd_server = -1;
  }
 
+ Socket::Socket(){
+	 _port = 0;
+	 _fd_server = -1;
+ }
+
  Socket::~Socket(){
  }
 
@@ -89,4 +94,17 @@ void	Socket::listen_socket()
 		perror("listen error\n");
 		exit (1);
 	}
+}
+
+int	Socket::accept_client(int server_fd)
+{
+	int	new_client;
+	std::cout << "Ajoute d'un client dans la pool de fd: ";
+	new_client = accept(server_fd, (struct sockaddr *)NULL, NULL);
+	if (new_client == -1)
+	{
+		perror("accept error\n");
+		exit (EXIT_FAILURE);
+	}
+	return (new_client);
 }
