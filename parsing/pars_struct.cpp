@@ -1,11 +1,11 @@
-#include "parsing/parsing.hpp"
+#include "parsing.hpp"
 
 void pars_dir(string path, MULTIMAP & copy) {
 	MULTIMAP::iterator it = copy.find(path);
 	if (it == copy.end() && path == "root")
 		throw (logic_error("Error: need a root in servers block!"));
 	while (it != copy.end()) {
-		if (!opendir(it->first.c_str()))
+		if (!opendir(it->second.c_str()))
 			throw (logic_error("Error: " + it->first + " have a bad path: " + it->second));
 		copy.erase(it);
 		it = copy.find(path);
@@ -16,7 +16,7 @@ void pars_file(string path, MULTIMAP & copy, string & root) {
 	MULTIMAP::iterator it = copy.find(path);
 	while (it != copy.end()) {
 		fstream file;
-		file.open((root + "/" + path).c_str());
+		file.open((root + "/" + it->second).c_str());
 		if (!file)
 			throw (logic_error("Error: " + it->first + " have a bad path: " + it->second));
 		copy.erase(it);
@@ -44,7 +44,7 @@ void pars_listen(MULTIMAP & copy) {
 void pars_methods(MULTIMAP & copy) {
 	MULTIMAP::iterator it = copy.find("methods");
 	while (it != copy.end()) {
-		if (it->second != "GET" || it->second != "POST" || it->second != "DELETE")
+		if (it->second != "GET" && it->second != "POST" && it->second != "DELETE")
 			throw (logic_error("Error: bad methods: " + it->second + " (only GET, POST and DELETE)!"));
 		copy.erase(it);
 		it = copy.find("methods");
@@ -53,6 +53,7 @@ void pars_methods(MULTIMAP & copy) {
 
 void pars_errpage(MULTIMAP & copy, string & root) {
 	MULTIMAP::iterator it = copy.find("errpage");
+	fstream file; 
 	while (it != copy.end()) {
 		for (int i = 0; it->second[i]; i++) {
 			if (!isdigit(it->second[i]))
@@ -60,16 +61,17 @@ void pars_errpage(MULTIMAP & copy, string & root) {
 		}
 		copy.erase(it);
 		it = copy.find("errpage");
-		fstream file; 
-		file.open(root + "/" + it->second);
+		file.open((root + "/" + it->second).c_str());
 		if (!file)
 			throw (logic_error("Error: errpage redirection can't be open: " + it->second));
+		copy.erase(it);
+		it = copy.find("errpage");
 	}
 }
 
 void pars_manager(block_serv & servers) {
+	MULTIMAP::iterator it = servers.conf.find("root");
 	MULTIMAP copy = servers.conf;
-	MULTIMAP::iterator it = copy.find("root");
 
 	pars_dir("root", copy);
 	pars_file("index", copy, it->second);
