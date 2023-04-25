@@ -1,4 +1,5 @@
 #include "Server.hpp"
+#include <algorithm>
 #include <cstdlib>
 #include <cstring>
 #include <string>
@@ -10,9 +11,11 @@
 #include <stdio.h>
 #include <fcntl.h>
 #include <sys/stat.h>
+#include <unistd.h>
 
 Server::Server() : _socket(16161)
 {
+	_responseCode = 0;
 	_running = true;
 	_port = 16161;
 	_nb_server = 1;
@@ -120,11 +123,6 @@ void Server::runServer(void)
 // 	return buffer;
 // }
 
-void Server::sendRequest(Request& request, int client_fd) 
-{
-	send(client_fd, request.getBuffer().c_str(), request.getBuffer().length(), 0);
-}
-
 void Server::manage_epoll_wait(struct epoll_event &event)
 {
 	if (((event.events & EPOLLERR) || (event.events & EPOLLHUP) || (!(event.events & EPOLLIN))))
@@ -143,8 +141,23 @@ void Server::manage_epoll_wait(struct epoll_event &event)
 		int	server;
 		server = _fd.find_matching_server(event.data.fd);	
 		readRequest(event.data.fd);/*, server*/
-		Request request(1);
+		int requestType = parseRequestType();
+		switch (requestType) {
+			case GET_REQUEST :
+				_responseCode = handleGetRequest();
+				break;
+			case POST_REQUEST :
+				break;
+			case DELETE_REQUEST :
+				break;
+			default :
+				break;
+		}
+		// Add reponse code request constructor
+		Request request(requestType, _filePath);
+		std::cout << "Response------\n" << request.getBuffer();
 		sendRequest(request, event.data.fd);
+		_filePath.clear();
 	}
 }
 
@@ -153,5 +166,39 @@ void Server::readRequest(int epoll_fd)
 	char buff[BUFFER_SIZE];
 	std::memset(buff, 0, BUFFER_SIZE);
 	recv(epoll_fd, buff, BUFFER_SIZE - 1, 0);
-	std::cout << buff;
+	_buffer = buff;
+	std::memset(buff, 0, BUFFER_SIZE);
+	std::cout << "Request-----\n" << _buffer;
+}
+
+int Server::parseRequestType()
+{
+	if (_buffer.find("GET") != std::string::npos)
+		return GET_REQUEST;
+	if (_buffer.find("POST") != std::string::npos)
+		return POST_REQUEST;
+	if (_buffer.find("DELETE") != std::string::npos)
+		return DELETE_REQUEST;
+	return UNSUPPORTED_REQUEST;
+}
+
+int Server::handleGetRequest()
+{
+	_filePath = _buffer.substr(_buffer.find_first_of(" ") + 1);
+	_filePath = _filePath.substr(1, _filePath.find_first_of(" ") - 1);
+	if (_filePath == "")
+		_filePath = "index.html";
+	//not working ??
+	// if (access(_filePath.c_str(), F_OK | R_OK))
+	// {
+	// 	//build error response
+	// 	perror("File does not exist/can't be red\n");
+	// }
+	// 200 = OK status code
+	return (200);
+}
+
+void Server::sendRequest(Request& request, int client_fd) 
+{
+	send(client_fd, request.getBuffer().c_str(), request.getBuffer().length(), 0);
 }

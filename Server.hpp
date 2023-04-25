@@ -11,7 +11,6 @@
 #include "FdManager.hpp"
 
 #define MAX_EVENT 10
-#define BUFFER_SIZE 4096
 
 class Server { 
 	public:
@@ -23,6 +22,8 @@ class Server {
 	 void	setSocket(void);
 	 void	runServer(void);
 	 void readRequest(int epoll_fd);
+	 int parseRequestType();
+	 int handleGetRequest();
 	 void	sendRequest(Request& request, int client_fd);
 	 void	manage_epoll_wait(struct epoll_event &event);
 
@@ -35,6 +36,11 @@ class Server {
 	 FdManager _fd;
 	 int _nb_server;
 	 std::string _buffer;
+	 std::string _filePath;
+	 int _responseCode;
+
+	private:
+	 typedef enum request_type {UNSUPPORTED_REQUEST, GET_REQUEST, POST_REQUEST, DELETE_REQUEST} e_request;
  } ;
 
 #endif // SERVER_HPP_
