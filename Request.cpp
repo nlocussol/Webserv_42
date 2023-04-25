@@ -1,5 +1,7 @@
 #include "Request.hpp"
+#include "Server.hpp"
 #include <cstdio>
+#include <cstring>
 #include <iostream>
 #include <fstream>
 #include <ios>
@@ -30,42 +32,43 @@ std::string& Request::getBuffer(void)
 
 void Request::buildTextHTMLRequest(std::string filePath)
 {
-	// _buffer = "HTTP/1.1 200 OK\r\nContent-Type: text/html\r\nConnection: keep-alive\r\nContent-Length: ";
+	//Find file size
 	std::ifstream file;
-
 	file.open(filePath.c_str(), std::ios::in|std::ios::binary);
 	file.ignore( std::numeric_limits<std::streamsize>::max() );
 	std::streamsize length = file.gcount();
 	file.clear();
 	file.seekg(0, std::ios_base::beg);
 	file.close();
-
+	//Append file size to reponse's header
 	std::stringstream nb;
 	nb << length;
 	_buffer += nb.str();
 	_buffer += "\r\n\r\n";
-
-	char buff[256];
-	FILE *test = fopen("index.html", "rb");
-	while (!feof(test)) {
-		fread(buff, 255, 1, test);
+	//Append binary data to reponse body
+	char buff[BUFFER_SIZE];
+	std::memset(buff, 0, BUFFER_SIZE);
+	FILE *fileF = std::fopen(filePath.c_str(), "rb");
+	int byte_r = 1;
+	while (byte_r > 0) {
+		std::fread(buff, BUFFER_SIZE - 1, 1, fileF);
 		_buffer += buff;
 	}
-	// std::cout << _buffer << std::endl;
-	fclose(test);
+	fclose(fileF);
 }
 
-Request::Request(int type)
+Request::Request(int type, std::string filePath)
 {
-	switch (type) {
-		case TEXT_HTML:
+	// std::cout << filePath << "\n\n";
+	// switch (type) {
+	// 	case TEXT_HTML:
+			std::cout << "test";
 			_buffer = "HTTP/1.1 200 OK\r\nContent-Type: text/html\r\nConnection: keep-alive\r\nContent-Length: ";
-			buildTextHTMLRequest("index.html");
-			break;
-		case 2:
-			std::cout<< "test";
-			_buffer = "HTTP/1.1 200 OK\r\nContent-Type: image/*\r\nConnection: keep-alive\r\nContent-Length: ";
-			buildTextHTMLRequest("img.jpg");
-			break;
-	}
+			buildTextHTMLRequest(filePath);
+			// break;
+		// case IMAGE:
+		// 	_buffer = "HTTP/1.1 200 OK\r\nContent-Type: image/*\r\nConnection: keep-alive\r\nContent-Length: ";
+		// 	buildTextHTMLRequest("img.jpg");
+		// 	break;
+	// }
 }
