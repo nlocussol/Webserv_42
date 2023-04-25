@@ -63,68 +63,13 @@ void Server::setSocket(void)
 
 void Server::runServer(void)
 {
-/*	int client_fd;
-	int n;
-	std::string buffer;
-	struct stat filestat;
-	FILE *fp;
-	int fdt;
-	char filesize[7];
-	char data[100000]// , datafile[100000] ;
-	std::memset(data, 0, 100000);
-	while (1)
-	{
-		buffer = readFd(&client_fd);
-		std::cout << buffer << '\n';
-		if (buffer.find("GET") != std::string::npos && buffer.find("Accept: image/") != std::string::npos) {
-			Request request(2);
-			sendRequest(request, client_fd);
-		}
-		else if (buffer.find("GET / HTTP/1.1") != std::string::npos) {
-			Request request(Request::TEXT_HTML);
-			sendRequest(request, client_fd);
-		}
-	}
-*/
-	// std::string buffer;
 	while (_running)
 	{
 		struct epoll_event event;
 		epoll_wait(_epoll.get_fd_epoll(), &event, MAX_EVENT, -1);
 		manage_epoll_wait(event);
-		// buffer = readFd(&client_fd);
-		// std::cout << buffer << '\n';
-		// if (buffer.find("GET") != std::string::npos && buffer.find("Accept: image/") != std::string::npos) {
-		// 	Request request(2);
-		// 	sendRequest(request, client_fd);
-		// }
-		// else if (buffer.find("GET / HTTP/1.1") != std::string::npos) {
-		// 	Request request(Request::TEXT_HTML);
-		// 	sendRequest(request, client_fd);
-		}
 	}
-// }
-
-// std::string Server::readFd(int* client_fd)
-// {
-// 	std::string buffer;
-// 	char buffer_read[256];
-// 	memset(buffer_read, 0, 256);
-// 	printf("Waiting for a connection on port %d\n", _port);
-// 	*client_fd = accept(_socket, (struct sockaddr *)NULL, NULL);
-// 	int byte_r;
-// 	while ((byte_r = read(*client_fd, buffer_read, 255)) > 0 ) {
-// 		if (buffer_read[byte_r - 1] == '\n')
-// 			break ;
-// 		buffer += buffer_read;
-// 		memset(buffer_read, 0, 256);
-// 	}
-// 	if (byte_r < 0) {
-// 		perror("read error\n");
-// 		return NULL;
-// 	}
-// 	return buffer;
-// }
+}
 
 void Server::manage_epoll_wait(struct epoll_event &event)
 {
