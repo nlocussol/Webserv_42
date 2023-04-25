@@ -16,7 +16,7 @@ void pars_struct(data & servers) {
 		pars_manager(servers.serv[i]);
 		for (unsigned long j = 0; j < servers.serv[i].serv.size(); j++) {
 			if (j == 0)
-				fill_location(servers.serv[i].serv[0], servers.serv[i].conf);
+				fill_location(servers.serv[i].serv[0].conf, servers.serv[i].conf);
 			else {
 				int stage = servers.serv[i].serv[j].stage;
 				for (int k = j; k >= 0; k--) {
@@ -25,7 +25,7 @@ void pars_struct(data & servers) {
 						break;
 					}
 				}
-				fill_child_location(servers.serv[i].serv[j], servers.serv[i].serv[stage]);
+				fill_location(servers.serv[i].serv[j].conf, servers.serv[i].serv[stage].conf);
 			}
 		}
 	}

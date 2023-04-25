@@ -30,8 +30,7 @@ struct data {
 
 void pars_conf(string & file, data & servers);
 void pars_struct(data & servers);
-void fill_child_location(block_location & location, block_location & old);
-void fill_location(block_location & location, MULTIMAP & conf);
+void fill_location(MULTIMAP & current, MULTIMAP & conf);
 void pars_dir(string path, MULTIMAP & copy);
 void pars_file(string path, MULTIMAP & copy, string & root);
 void pars_listen(MULTIMAP & copy);
