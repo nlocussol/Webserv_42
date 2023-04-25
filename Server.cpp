@@ -39,7 +39,7 @@ Server::Server(std::multimap<std::string, std::string>& config)
 {
 	_config = config;
 	_running = true;
-	_port = 16161;
+	_port = 16162;
 }
 
 void Server::setSocket(void)
@@ -48,7 +48,7 @@ void Server::setSocket(void)
 	_epoll.create_epoll();
 	for (int i = 0; i < _nb_server; i++)
 	{
-		_socket.allow_socket_server();
+		_socket.allow_socket_server(_port);
 		server = _socket.get_fdServer();
 		_fd.set_fd_server(server);
 		_epoll.add_fd_to_pool(server);
@@ -143,7 +143,8 @@ void Server::manage_epoll_wait(struct epoll_event &event)
 		int	server;
 		server = _fd.find_matching_server(event.data.fd);	
 		readRequest(event.data.fd);/*, server*/
-		// sendRequest(TEXT_HTML, event.data.fd, server);
+		Request request(1);
+		sendRequest(request, event.data.fd);
 	}
 }
 

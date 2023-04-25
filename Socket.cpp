@@ -40,10 +40,11 @@ int	Socket::get_port()
 	return(_port);
 }
 
-void	Socket::allow_socket_server()
+void	Socket::allow_socket_server(int port)
 {
 	int	option = 1;
 
+	_port = port;
 	_fd_server = socket(AF_INET, SOCK_STREAM, 0);
 	if (_fd_server < 0)
 	{
@@ -54,7 +55,6 @@ void	Socket::allow_socket_server()
 	_server_addr.sin_family = AF_INET;
 	_server_addr.sin_addr.s_addr = htonl(INADDR_ANY);
 	_server_addr.sin_port = htons(_port);
-
 	if (setsockopt(_fd_server, SOL_SOCKET, SO_REUSEADDR, &option, sizeof(int)) < 0)
 	{
 		perror("setsockopt error\n");
