@@ -1,5 +1,6 @@
 #include "../inc/FdManager.hpp"
 #include <utility>
+#include <iostream>
 
 FdManager::FdManager(){
 }
@@ -34,11 +35,14 @@ void	FdManager::add_new_client(int new_client, int server)
 {
 	std::map<int, int>::iterator check;
 
-	check  = _fd_servers.find(server);
-	if (check != _fd_servers.end()){
+	check  = _fd_pool.find(server);
+	std::cout << "client : " << new_client << std::endl;
+	std::cout << "server : " << server << std::endl;
+	std::cout << "check : " << check->second << std::endl;
+	if (check != _fd_pool.end()){
 		throw std::logic_error("The server it's set");
 	} else {
-		_fd_pool.insert(std::make_pair(new_client, check->second));
+		_fd_pool.insert(std::make_pair(new_client, server));
 	}
 }
 

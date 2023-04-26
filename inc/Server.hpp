@@ -33,7 +33,6 @@ class Server {
 
 	private:
 	 std::multimap<std::string, std::string> _config;
-	 int _port;
 	 Socket _socket;
 	 Epoll _epoll;
 	 FdManager _fd;
@@ -41,6 +40,7 @@ class Server {
 	 std::string _buffer;
 	 std::string _filePath;
 	 int _statusCode;
+	 data _servers;
 
 	private:
 	 typedef enum request_type {UNSUPPORTED_REQUEST, GET_REQUEST, POST_REQUEST, DELETE_REQUEST} e_request;

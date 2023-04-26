@@ -1,14 +1,15 @@
 #include "../inc/Server.hpp"
+#include <cstdlib>
 
 bool Server::_running = true;
 
-Server::Server(data servers) : _socket(16161)
+Server::Server(data servers) : _socket(), _epoll(), _fd() 
 {
 	signal(SIGINT, handle_sigint);
 	_statusCode = 0;
-	_port = 16161;
-	_nb_server = 1;
+	_nb_server = servers.serv.size();
 	_running = true;
+	_servers = servers;
 }
 
 Server::~Server()
@@ -32,21 +33,31 @@ Server::Server(std::multimap<std::string, std::string>& config)
 {
 	_config = config;
 	_running = true;
-	_port = 16162;
 }
 
 void Server::setSocket(void)
 {
 	int	server;
+	int	port;
+	MULTIMAP::iterator it;
+
 	_epoll.create_epoll();
 	for (int i = 0; i < _nb_server; i++)
 	{
-		//while le server a des ports a aller faire une boucle dans la boucle
-		_socket.allow_socket_server(_port);
-		server = _socket.get_fdServer();
-		_fd.set_fd_servers(server, 0);
-		_epoll.add_fd_to_pool(server);
+		it  = _servers.serv[i].conf.find("listen");
+		while (it != _servers.serv[i].conf.end())
+		{
+			port = atoi(it->second.c_str());
+			_socket.allow_socket_server(port);
+			server = _socket.get_fdServer();
+			_fd.set_fd_servers(server, i);
+			_epoll.add_fd_to_pool(server);
+
+			_servers.serv[i].conf.erase(it);
+			it  = _servers.serv[i].conf.find("listen");
+		}
 	}
+	std::cout << "done" << std::endl;
 }
 
 void Server::runServer(void)
