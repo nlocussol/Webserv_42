@@ -1,21 +1,38 @@
 #include "../../inc/parsing.hpp"
+#include <sstream>
+#include <string>
 
 template<typename T>
-void pars_manager(T & servers) {
+void pars_manager(T & servers, vector<int> & ports) {
 	MULTIMAP::iterator it = servers.conf.find("root");
 	MULTIMAP copy = servers.conf;
 
 	pars_dir("root", copy);
 	pars_file("index", copy, it->second);
-	pars_listen(copy);
+	pars_listen(copy, ports);
 	pars_methods(copy);
-	pars_errpage(copy, it->second);
+	pars_errpage(copy, servers.conf, it->second);
+	pars_body_size(copy);
+	//redirect
+}
+
+template<typename T>
+void check_double(T & tab) {
+	for (size_t i = 0; i < tab.size(); i++) {
+		if (std::count(tab.begin(), tab.end(), tab[i]) > 1) {
+			stringstream ss;
+			ss << tab[i];
+			throw (logic_error("Error: two serveurs can't listen on the same tab: " + ss.str()));
+		}
+	}
 }
 
 void pars_struct(data & servers) {
+	vector<int> ports;
 	for (unsigned long i = 0; i < servers.serv.size(); i++) {
-		pars_manager(servers.serv[i]);
+		pars_manager(servers.serv[i], ports);
 		for (unsigned long j = 0; j < servers.serv[i].serv.size(); j++) {
+			vector<int> tmp;
 			int stage = servers.serv[i].serv[j].stage;
 			if (stage == 0)
 				fill_location(servers.serv[i].serv[j].conf, servers.serv[i].conf);
@@ -28,7 +45,8 @@ void pars_struct(data & servers) {
 				}
 				fill_location(servers.serv[i].serv[j].conf, servers.serv[i].serv[stage].conf);
 			}
-			pars_manager(servers.serv[i].serv[j]);
+			pars_manager(servers.serv[i].serv[j], tmp);
 		}
 	}
+	check_double(ports);
 }
