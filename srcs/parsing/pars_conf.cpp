@@ -59,8 +59,16 @@ void recursive_location(fstream & file, block_serv & servers, vector<string> opt
 		else if (it != options.end()) {
 			if (tab.size() < 2)
 				throw (logic_error("Error: " + tab[0] + " need an argument!"));
-			if (tab[0] == "errpage" && tab.size() != 3)
+			else if (tab[0] == "errpage" && tab.size() != 3)
 				throw (logic_error("Error: errpage need two arguments!"));
+			else if (tab[0] == "autoindex" && tab.size() != 2 && tab[1] != "on" && tab[1] != "off")
+				throw (logic_error("Error: directory_listing need arguments! (only on and off)"));
+			else if (tab[0] == "cgi" && tab.size() != 3)
+				throw (logic_error("Error: cgi need two arguments! (using: cgi [path_to_interpreter] [extension])"));
+			else if (tab[0] == "limit_client_body_size" && tab.size() != 2)
+				throw (logic_error("Error: body size take only one arguments!"));
+			else if (tab[0] == "redirect" && tab.size() != 2)
+				throw (logic_error("Error: redirect take only one arguments!"));
 			for (unsigned long i = 1; i < tab.size(); i++)
 				servers.serv[index].conf.insert(make_pair(tab[0], tab[i]));
 		} 
@@ -100,8 +108,16 @@ void pars_line(fstream & file, data & servers, vector<string> options) {
 		else if (it != options.end()) {
 			if (tab.size() < 2)
 				throw (logic_error("Error: " + tab[0] + " need an argument!"));
-			if (tab[0] == "errpage" && tab.size() != 3)
+			else if (tab[0] == "errpage" && tab.size() != 3)
 				throw (logic_error("Error: errpage need two arguments!"));
+			else if (tab[0] == "autoindex" && tab.size() != 2 && tab[1] != "on" && tab[1] != "off")
+				throw (logic_error("Error: directory_listing need arguments! (only on and off)"));
+			else if (tab[0] == "cgi" && tab.size() != 3)
+				throw (logic_error("Error: cgi need two arguments! (using: cgi [path_to_interpreter] [extension])"));
+			else if (tab[0] == "limit_client_body_size" && tab.size() != 2)
+				throw (logic_error("Error: body size take only one arguments!"));
+			else if (tab[0] == "redirect" && tab.size() != 2)
+				throw (logic_error("Error: redirect take only one arguments!"));
 			for (unsigned long i = 1; i < tab.size(); i++)
 				servers.serv[index].conf.insert(make_pair(tab[0], tab[i]));
 		} 
@@ -112,7 +128,7 @@ void pars_line(fstream & file, data & servers, vector<string> options) {
 }
 
 void pars_conf(string & file, data & servers) {
-	string opt[NB_OPT] = {"root", "index", "listen", "methods", "errpage", "server_names", "cgi"};
+	string opt[NB_OPT] = {"root", "index", "listen", "methods", "errpage", "server_names", "cgi", "autoindex", "redirect", "limit_client_body_size"};
 	vector<string> options;
 	for (int i = 0; i < NB_OPT; i++)
 		options.push_back(opt[i]);

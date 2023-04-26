@@ -11,7 +11,7 @@
 # include <dirent.h>
 # include <cstdlib>
 
-# define NB_OPT 7
+# define NB_OPT 10
 # define DELIMITER "\n\r\t "
 
 using namespace std;
@@ -39,8 +39,9 @@ void pars_struct(data & servers);
 void fill_location(MULTIMAP & current, MULTIMAP & conf);
 void pars_dir(string path, MULTIMAP & copy);
 void pars_file(string path, MULTIMAP & copy, string & root);
-void pars_listen(MULTIMAP & copy);
+void pars_listen(MULTIMAP & copy, vector<int> & ports);
 void pars_methods(MULTIMAP & copy);
-void pars_errpage(MULTIMAP & copy, string & root);
+void pars_errpage(MULTIMAP & copy, MULTIMAP & current, string & root);
+void pars_body_size(MULTIMAP & copy);
 
 #endif

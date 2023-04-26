@@ -1,4 +1,20 @@
 #include "../../inc/parsing.hpp"
+#include <sstream>
+
+void pars_body_size(MULTIMAP & copy) {
+	MULTIMAP::iterator it = copy.find("limit_client_body_size");
+	while (it != copy.end()) {
+		for (int i = 0; it->second[i]; i++) {
+			if (!isdigit(it->second[i]))
+				throw (logic_error("Error: body size take a number as parameter: " + it->second));
+		}
+		int limit = strtod(it->second.c_str(), NULL);
+		if (limit < 0)
+			throw (logic_error("Error: body size can't be negative: " + it->second ));
+		copy.erase(it);
+		it = copy.find("limit_client_body_size");
+	}
+}
 
 void pars_dir(string path, MULTIMAP & copy) {
 	MULTIMAP::iterator it = copy.find(path);
@@ -26,7 +42,7 @@ void pars_file(string path, MULTIMAP & copy, string & root) {
 	}
 }
 
-void pars_listen(MULTIMAP & copy) {
+void pars_listen(MULTIMAP & copy, vector<int> & ports) {
 	MULTIMAP::iterator it = copy.find("listen");
 	if (it == copy.end())
 		throw (logic_error("Error: need listen in servers block!"));
@@ -36,6 +52,7 @@ void pars_listen(MULTIMAP & copy) {
 				throw (logic_error("Error: listen has bad input: " + it->second));
 		}
 		int port = strtod(it->second.c_str(), NULL);
+		ports.push_back(port);
 		if (port < 0 || port > 65535)
 				throw (logic_error("Error: listen have bad port: " + it->second + " (between 0 and 65535)!"));
 		copy.erase(it);
@@ -53,20 +70,32 @@ void pars_methods(MULTIMAP & copy) {
 	}
 }
 
-void pars_errpage(MULTIMAP & copy, string & root) {
+void pars_errpage(MULTIMAP & copy, MULTIMAP & current, string & root) {
 	MULTIMAP::iterator it = copy.find("errpage");
+	MULTIMAP::iterator it_current = copy.find("errpage");
 	fstream file; 
 	while (it != copy.end()) {
 		for (int i = 0; it->second[i]; i++) {
 			if (!isdigit(it->second[i]))
-				throw (logic_error("Error: errpage has bad input: " + it->second + " (between 0 and 599)!"));
+				throw (logic_error("Error: errpage has bad input: " + it->second + " (between 100 and 599)!"));
 		}
+		int nb = strtod(it->second.c_str(), NULL);
+		if (nb < 100 || nb > 599)
+			throw (logic_error("Error: errpage has bad input: " + it->second + " (between 100 and 599)!"));
 		copy.erase(it);
+		current.erase(it_current);
 		it = copy.find("errpage");
+		it_current = current.find("errpage");
 		file.open((root + "/" + it->second).c_str());
 		if (!file)
 			throw (logic_error("Error: errpage redirection can't be open: " + it->second));
+		string file = it->second;
+		stringstream str;
+		str << nb;
 		copy.erase(it);
+		current.erase(it_current);
+		current.insert(make_pair("errpage_" + str.str(), file));
 		it = copy.find("errpage");
+		it_current = current.find("errpage");
 	}
 }
