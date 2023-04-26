@@ -55,9 +55,10 @@ void Server::setSocket(void)
 	_epoll.create_epoll();
 	for (int i = 0; i < _nb_server; i++)
 	{
+		//while le server a des ports a aller faire une boucle dans la boucle
 		_socket.allow_socket_server(_port);
 		server = _socket.get_fdServer();
-		_fd.set_fd_server(server);
+		_fd.set_fd_servers(server, 0);
 		_epoll.add_fd_to_pool(server);
 	}
 }
