@@ -1,7 +1,4 @@
-#include "parsing.hpp"
-
-#define NB_OPT 7
-#define DELIMITER "\n\r\t "
+#include "../../inc/parsing.hpp"
 
 bool find_bracket(vector<string> & tab) {
 	for (unsigned long i = 0; i < tab.size(); i++) {

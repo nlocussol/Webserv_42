@@ -1,5 +1,8 @@
-#include <sys/epoll.h>
-#include "iostream"
+#ifndef EPOLL_HPP
+# define EPOLL_HPP
+
+# include <sys/epoll.h>
+# include "iostream"
 
 class Epoll
 {
@@ -18,3 +21,5 @@ class Epoll
 		struct epoll_event	_event;
 		
 };
+
+#endif

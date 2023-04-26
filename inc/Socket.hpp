@@ -1,9 +1,12 @@
-#include "fcntl.h"
-#include <netinet/in.h>
-#include <unistd.h>
-#include <cstdlib>
-#include <iostream>
-#include <vector>
+#ifndef SOCKET_HPP
+# define SOCKET_HPP
+
+# include "fcntl.h"
+# include <netinet/in.h>
+# include <unistd.h>
+# include <cstdlib>
+# include <iostream>
+# include <vector>
 
 class Socket
  {
@@ -33,3 +36,4 @@ class Socket
 		std::vector<std::string> msg;
  		
  };
+#endif

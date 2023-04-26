@@ -5,16 +5,19 @@
 #include <netinet/in.h>
 #include <string>
 #include <sys/epoll.h>
+#include <cstring>
+#include <signal.h>
 #include "Request.hpp"
 #include "Epoll.hpp"
 #include "Socket.hpp"
 #include "FdManager.hpp"
+#include "parsing.hpp"
 
 #define MAX_EVENT 10
 
 class Server { 
 	public:
-	 Server();
+	 Server(data servers);
 	 Server(std::multimap<std::string, std::string>& config);
 	 ~Server();
 	 Server(const Server& other);

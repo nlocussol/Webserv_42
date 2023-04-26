@@ -1,10 +1,15 @@
-CXX=c++
-NAME = webserv
-SRCS = Request.cpp Server.cpp Socket.cpp Epoll.cpp FdManager.cpp \
-main.cpp
-HEADER = Server.hpp 
-OBJS = $(SRCS:.cpp=.o)
-CXXFLAGS = -Wall -Wextra --std=c++98 -g
+CXX		=	c++
+NAME 	= 	webserv
+SRCS 	=	srcs/Request.cpp srcs/Server.cpp \
+			srcs/Socket.cpp srcs/Epoll.cpp srcs/FdManager.cpp \
+			srcs/parsing/fill_location.cpp  srcs/parsing/pars_conf.cpp \
+			srcs/parsing/pars_multimap.cpp  srcs/parsing/pars_struct.cpp\
+	  		srcs/main.cpp 
+HEADER	=	inc/Server.hpp inc/Request.hpp \
+			inc/Socket.hpp inc/Epoll.hpp \
+			inc/FdManager.hpp inc/parsing.hpp 
+OBJS	=	$(SRCS:.cpp=.o)
+CXXFLAGS=	-Wall -Wextra --std=c++98 -g
 
 .cpp.o	:
 			${CXX} ${CXXFLAGS} -c $< -o ${<:.cpp=.o}

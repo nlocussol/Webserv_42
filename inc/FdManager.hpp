@@ -1,7 +1,9 @@
-#include <vector>
-#include <map>
-#include <algorithm>
-#include <stdexcept>
+#ifndef FDMANAGER_HPP
+# define FDMANAGER_HPP
+# include <vector>
+# include <map>
+# include <algorithm>
+# include <stdexcept>
 
 class FdManager
 {
@@ -20,3 +22,4 @@ class FdManager
 		std::map<int, int>	_fd_pool;
 		
 };
+#endif

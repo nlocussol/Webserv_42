@@ -1,22 +1,8 @@
-#include "Server.hpp"
-#include <algorithm>
-#include <cstdlib>
-#include <cstring>
-#include <string>
-#include <sys/epoll.h>
-#include <sys/socket.h>
-#include <sys/types.h>
-#include <iostream>
-#include <unistd.h>
-#include <stdio.h>
-#include <fcntl.h>
-#include <sys/stat.h>
-#include <signal.h>
-
+#include "../inc/Server.hpp"
 
 bool Server::_running = true;
 
-Server::Server() : _socket(16161)
+Server::Server(data servers) : _socket(16161)
 {
 	signal(SIGINT, handle_sigint);
 	_statusCode = 0;

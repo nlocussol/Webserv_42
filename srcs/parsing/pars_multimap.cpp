@@ -1,5 +1,4 @@
-#include "parsing.hpp"
-#include <dirent.h>
+#include "../../inc/parsing.hpp"
 
 void pars_dir(string path, MULTIMAP & copy) {
 	MULTIMAP::iterator it = copy.find(path);

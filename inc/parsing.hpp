@@ -1,12 +1,18 @@
-#include <iostream>
-#include <string>
-#include <vector>
-#include <map>
-#include <fstream>
-#include <cstring>
-#include <algorithm>
-#include <dirent.h>
-#include <cstdlib>
+#ifndef PARSING_HPP
+# define PARSING_HPP
+ 
+# include <iostream>
+# include <string>
+# include <vector>
+# include <map>
+# include <fstream>
+# include <cstring>
+# include <algorithm>
+# include <dirent.h>
+# include <cstdlib>
+
+# define NB_OPT 7
+# define DELIMITER "\n\r\t "
 
 using namespace std;
 
@@ -36,3 +42,5 @@ void pars_file(string path, MULTIMAP & copy, string & root);
 void pars_listen(MULTIMAP & copy);
 void pars_methods(MULTIMAP & copy);
 void pars_errpage(MULTIMAP & copy, string & root);
+
+#endif

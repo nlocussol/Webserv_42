@@ -1,5 +1,5 @@
-#include "Request.hpp"
-#include "Server.hpp"
+#include "../inc/Request.hpp"
+#include "../inc/Server.hpp"
 #include <cstdio>
 #include <cstring>
 #include <iostream>
