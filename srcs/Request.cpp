@@ -40,25 +40,36 @@ std::string& Request::getBuffer(void)
 	return _buffer;
 }
 
-Request::Request(int requestType, int statusCode, std::string filePath)
+Request::Request(int requestType, int requestSubType, int statusCode, std::string filePath)
 {
 	std::cout << statusCode << '\n';
 	if (statusCode == 200) {
 		switch (requestType) {
-			case TEXT_HTML:
-				_buffer = "HTTP/1.1 200 OK\r\nContent-Type: text/html\r\nConnection: keep-alive\r\nContent-Length: ";
-				buildTextHTMLRequest(filePath);
+			case GET_REQUEST:
+				//Add SubFunctions
+				switch (requestSubType) {
+					case TEXT:
+						_buffer = "HTTP/1.1 200 OK\r\nContent-Type: text/html\r\nConnection: keep-alive\r\nContent-Length: ";
+						buildGetResponse(filePath);
+						break;
+					case IMAGE:
+						_buffer = "HTTP/1.1 200 OK\r\nContent-Type: image/*\r\nConnection: keep-alive\r\nContent-Length: ";
+						buildGetResponse(filePath);
+						break;
+					default :
+						break;
+				}
 				break;
-			case IMAGE:
-				_buffer = "HTTP/1.1 200 OK\r\nContent-Type: image/*\r\nConnection: keep-alive\r\nContent-Length: ";
-				buildTextHTMLRequest(filePath);
+			case POST_REQUEST:
+				break;
+			case DELETE_REQUEST:
 				break;
 		}
 	}
 	handleError(statusCode);
 }
 
-void Request::buildTextHTMLRequest(std::string filePath)
+void Request::buildGetResponse(std::string filePath)
 {
 	std::ifstream file(filePath.c_str(), std::ios::in | std::ios::binary);
 

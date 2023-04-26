@@ -57,7 +57,6 @@ void Server::setSocket(void)
 			it  = _servers.serv[i].conf.find("listen");
 		}
 	}
-	std::cout << "done" << std::endl;
 }
 
 void Server::runServer(void)
@@ -75,7 +74,6 @@ void Server::manage_epoll_wait(struct epoll_event &event)
 	if (((event.events & EPOLLERR) || (event.events & EPOLLHUP) || (!(event.events & EPOLLIN))))
 	{
 		perror("fd wrong signal\n");
-		exit (EXIT_FAILURE);
 	}
 	if (_fd.is_server(event.data.fd) == true)
 	{
@@ -88,7 +86,10 @@ void Server::manage_epoll_wait(struct epoll_event &event)
 		int	server;
 		server = _fd.find_matching_server(event.data.fd);	
 		readRequest(event.data.fd);/*, server*/
-		int requestType = parseRequestType();
+		std::cout << "Request-----\n" << _buffer;
+		int requestType = findRequestType();
+		int requestSubType = findRequestSubType();
+		std::cout << requestType << '\n';
 		switch (requestType) {
 			case GET_REQUEST :
 				_statusCode = handleGetRequest(server);
@@ -100,7 +101,7 @@ void Server::manage_epoll_wait(struct epoll_event &event)
 			default :
 				break;
 		}
-		Request request(requestType, _statusCode, _filePath);
+		Request request(requestType, requestSubType, _statusCode, _filePath);
 		// std::cout << "Response------\n" << request.getBuffer();
 		sendRequest(request, event.data.fd);
 		_filePath.clear();
@@ -114,10 +115,9 @@ void Server::readRequest(int epoll_fd)
 	recv(epoll_fd, buff, BUFFER_SIZE - 1, 0);
 	_buffer = buff;
 	std::memset(buff, 0, BUFFER_SIZE);
-	// std::cout << "Request-----\n" << _buffer;
 }
 
-int Server::parseRequestType()
+int Server::findRequestType()
 {
 	if (_buffer.find("GET") != std::string::npos)
 		return GET_REQUEST;
@@ -128,6 +128,15 @@ int Server::parseRequestType()
 	return UNSUPPORTED_REQUEST;
 }
 
+int Server::findRequestSubType()
+{
+	if (_buffer.find("Accept: text") != std::string::npos) 
+		return TEXT;
+	if (_buffer.find("Accept: image") != std::string::npos) 
+		return IMAGE;
+	return 1;
+}
+
 int Server::handleGetRequest(int server)
 {
 	_filePath = _buffer.substr(_buffer.find_first_of(" ") + 1);
@@ -136,7 +145,7 @@ int Server::handleGetRequest(int server)
 	itPathRoot = _servers.serv[server].conf.find("root");
 	itPathIndex = _servers.serv[server].conf.find("index");
 	if (_filePath == "") {
-		_filePath = itPathRoot->second + "/" + itPathIndex->second;
+		_filePath = itPathRoot->second + itPathIndex->second;
 		return 200;
 	}
 	_filePath.insert(0, itPathRoot->second + "/");
