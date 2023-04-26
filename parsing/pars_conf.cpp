@@ -65,7 +65,7 @@ void recursive_location(fstream & file, block_serv & servers, vector<string> opt
 			if (tab[0] == "errpage" && tab.size() != 3)
 				throw (logic_error("Error: errpage need two arguments!"));
 			for (unsigned long i = 1; i < tab.size(); i++)
-				servers.serv[index].conf.insert(make_pair(tab[0], tab[1]));
+				servers.serv[index].conf.insert(make_pair(tab[0], tab[i]));
 		} 
 		else
 			throw (logic_error("Error: bad input!"));
@@ -95,8 +95,11 @@ void pars_line(fstream & file, data & servers, vector<string> options) {
 			return ;
 		else if (find_bracket(tab))
 			throw (logic_error("Error: a bracket are a bad position in file!"));
-		else if (tab.size() == 2 && tab[0] == "location")
+		else if (tab[0] == "location") {
+			if (tab.size() != 2)
+				throw (logic_error("Error: location block need a path!"));
 			recursive_location(file, servers.serv[index], options, 0);
+		}
 		else if (it != options.end()) {
 			if (tab.size() < 2)
 				throw (logic_error("Error: " + tab[0] + " need an argument!"));

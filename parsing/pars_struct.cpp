@@ -16,10 +16,10 @@ void pars_struct(data & servers) {
 	for (unsigned long i = 0; i < servers.serv.size(); i++) {
 		pars_manager(servers.serv[i]);
 		for (unsigned long j = 0; j < servers.serv[i].serv.size(); j++) {
-			if (j == 0)
-				fill_location(servers.serv[i].serv[0].conf, servers.serv[i].conf);
+			int stage = servers.serv[i].serv[j].stage;
+			if (stage == 0)
+				fill_location(servers.serv[i].serv[j].conf, servers.serv[i].conf);
 			else {
-				int stage = servers.serv[i].serv[j].stage;
 				for (int k = j; k >= 0; k--) {
 					if (servers.serv[i].serv[k].stage < stage) {
 						stage = k;

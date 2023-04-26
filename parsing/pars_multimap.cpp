@@ -1,12 +1,15 @@
 #include "parsing.hpp"
+#include <dirent.h>
 
 void pars_dir(string path, MULTIMAP & copy) {
 	MULTIMAP::iterator it = copy.find(path);
 	if (it == copy.end() && path == "root")
 		throw (logic_error("Error: need a root in servers block!"));
 	while (it != copy.end()) {
-		if (!opendir(it->second.c_str()))
+		DIR *file = opendir(it->second.c_str());
+		if (!file)
 			throw (logic_error("Error: " + it->first + " have a bad path: " + it->second));
+		closedir(file);
 		copy.erase(it);
 		it = copy.find(path);
 	}
