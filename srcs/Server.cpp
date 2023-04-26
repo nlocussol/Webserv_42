@@ -57,7 +57,6 @@ void Server::setSocket(void)
 			it  = _servers.serv[i].conf.find("listen");
 		}
 	}
-	std::cout << "done" << std::endl;
 }
 
 void Server::runServer(void)

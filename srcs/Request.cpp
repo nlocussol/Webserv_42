@@ -45,13 +45,15 @@ Request::Request(int requestType, int statusCode, std::string filePath)
 	std::cout << statusCode << '\n';
 	if (statusCode == 200) {
 		switch (requestType) {
-			case TEXT_HTML:
+			case GET_REQUEST:
 				_buffer = "HTTP/1.1 200 OK\r\nContent-Type: text/html\r\nConnection: keep-alive\r\nContent-Length: ";
 				buildTextHTMLRequest(filePath);
 				break;
-			case IMAGE:
+			case POST_REQUEST:
 				_buffer = "HTTP/1.1 200 OK\r\nContent-Type: image/*\r\nConnection: keep-alive\r\nContent-Length: ";
 				buildTextHTMLRequest(filePath);
+				break;
+			case DELETE_REQUEST:
 				break;
 		}
 	}
