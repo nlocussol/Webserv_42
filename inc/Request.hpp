@@ -7,9 +7,9 @@
 
 class Request { 
 	public:
-	 void buildTextHTMLRequest(std::string);
+	 void buildGetResponse(std::string);
 	 std::string& getBuffer(void);
-	 Request(int,int, std::string);
+	 Request(int, int, int, std::string);
 	 ~Request();
 
 	private:
@@ -18,7 +18,7 @@ class Request {
 	 Request& operator=(const Request& other);
 	 void handleError(int);
 	 typedef enum request_type {UNSUPPORTED_REQUEST, GET_REQUEST, POST_REQUEST, DELETE_REQUEST} e_request;
-	 typedef enum get_request_type {TEXT_HTML, IMAGE} t_request;
+	 typedef enum request_sub_type {TEXT, IMAGE} t_request;
 
 	private:
 	 std::string _buffer;

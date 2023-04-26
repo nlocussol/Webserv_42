@@ -1,0 +1,41 @@
+m%                                                                                                                      
+*[master][~/tronc/webserv]$ make run                                                                            [14:20]
+c++ -Wall -Wextra --std=c++98 -g -c srcs/Request.cpp -o srcs/Request.o
+srcs/Request.cpp: In copy constructor ‘Request::Request(const Request&)’:
+srcs/Request.cpp:29:33: warning: unused parameter ‘other’ [-Wunused-parameter]
+   29 | Request::Request(const Request& other)
+      |                  ~~~~~~~~~~~~~~~^~~~~
+srcs/Request.cpp: In member function ‘Request& Request::operator=(const Request&)’:
+srcs/Request.cpp:33:44: warning: unused parameter ‘other’ [-Wunused-parameter]
+   33 | Request& Request::operator=(const Request& other)
+      |                             ~~~~~~~~~~~~~~~^~~~~
+srcs/Request.cpp: In constructor ‘Request::Request(int, int, std::string)’:
+srcs/Request.cpp:49:13: error: expected primary-expression before ‘)’ token
+   49 |     switch () {
+      |             ^
+make: *** [Makefile:15: srcs/Request.o] Error 1
+*[master][~/tronc/webserv][2]$                                                                                  [14:20]
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

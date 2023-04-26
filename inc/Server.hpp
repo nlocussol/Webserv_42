@@ -25,7 +25,8 @@ class Server {
 	 void	setSocket(void);
 	 void	runServer(void);
 	 void readRequest(int epoll_fd);
-	 int parseRequestType();
+	 int findRequestType();
+	 int findRequestSubType();
 	 int handleGetRequest(int);
 	 void	sendRequest(Request& request, int client_fd);
 	 void	manage_epoll_wait(struct epoll_event &event);
@@ -42,6 +43,7 @@ class Server {
 	 int _statusCode;
 	 data _servers;
 	 typedef enum request_type {UNSUPPORTED_REQUEST, GET_REQUEST, POST_REQUEST, DELETE_REQUEST} e_request;
+	 typedef enum request_sub_type {TEXT, IMAGE} t_request;
  } ;
 
 void	handle_sigint(int signum);
