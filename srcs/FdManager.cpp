@@ -35,14 +35,11 @@ void	FdManager::add_new_client(int new_client, int server)
 {
 	std::map<int, int>::iterator check;
 
-	check  = _fd_pool.find(server);
-	std::cout << "client : " << new_client << std::endl;
-	std::cout << "server : " << server << std::endl;
-	std::cout << "check : " << check->second << std::endl;
-	if (check != _fd_pool.end()){
-		throw std::logic_error("The server it's set");
+	check  = _fd_servers.find(server);
+	if (check == _fd_servers.end()){
+		throw std::logic_error("The server is not set");
 	} else {
-		_fd_pool.insert(std::make_pair(new_client, server));
+		_fd_pool.insert(std::make_pair(new_client, check->second));
 	}
 }
 
@@ -65,7 +62,6 @@ int		FdManager::find_matching_server(int client)
 	if (check == _fd_pool.end()){
 		throw std::logic_error("Can't find the client inside the pool");
 	} else {
-		std::cout << "client : " << client << " server : " << check->second << std::endl;
 		return (check->second);
 	}
 }
