@@ -8,6 +8,16 @@
 #include <limits>
 #include <sstream>
 
+std::string Request::_404 = "HTTP/1.1 404 Not Found\r\n"
+      "Content-type: text/html\r\n"
+      "\r\n"
+      "<html>\r\n"
+      "<body>\r\n"
+      "<h1>Not Found</h1>\r\n"
+      "<p>The requested URL was not found on this server.</p>\r\n"
+      "</body>\r\n"
+      "</html>\r\n";
+
 Request::Request()
 {
 }
@@ -30,45 +40,54 @@ std::string& Request::getBuffer(void)
 	return _buffer;
 }
 
-void Request::buildTextHTMLRequest(std::string filePath)
+Request::Request(int requestType, int statusCode, std::string filePath)
 {
-	//Find file size
-	std::ifstream file;
-	file.open(filePath.c_str(), std::ios::in|std::ios::binary);
-	file.ignore( std::numeric_limits<std::streamsize>::max() );
-	std::streamsize length = file.gcount();
-	file.clear();
-	file.seekg(0, std::ios_base::beg);
-	file.close();
-	//Append file size to reponse's header
-	std::stringstream nb;
-	nb << length;
-	_buffer += nb.str();
-	_buffer += "\r\n\r\n";
-	//Append binary data to reponse body
-	char buff[BUFFER_SIZE];
-	std::memset(buff, 0, BUFFER_SIZE);
-	FILE *fileF = std::fopen(filePath.c_str(), "rb");
-	int byte_r = 1;
-	while (byte_r > 0) {
-		std::fread(buff, BUFFER_SIZE - 1, 1, fileF);
-		_buffer += buff;
+	std::cout << statusCode << '\n';
+	if (statusCode == 200) {
+		switch (requestType) {
+			case TEXT_HTML:
+				_buffer = "HTTP/1.1 200 OK\r\nContent-Type: text/html\r\nConnection: keep-alive\r\nContent-Length: ";
+				buildTextHTMLRequest(filePath);
+				break;
+			case IMAGE:
+				_buffer = "HTTP/1.1 200 OK\r\nContent-Type: image/*\r\nConnection: keep-alive\r\nContent-Length: ";
+				buildTextHTMLRequest(filePath);
+				break;
+		}
 	}
-	fclose(fileF);
+	handleError(statusCode);
 }
 
-Request::Request(int type, std::string filePath)
+void Request::buildTextHTMLRequest(std::string filePath)
 {
-	// std::cout << filePath << "\n\n";
-	// switch (type) {
-	// 	case TEXT_HTML:
-			std::cout << "test";
-			_buffer = "HTTP/1.1 200 OK\r\nContent-Type: text/html\r\nConnection: keep-alive\r\nContent-Length: ";
-			buildTextHTMLRequest(filePath);
-			// break;
-		// case IMAGE:
-		// 	_buffer = "HTTP/1.1 200 OK\r\nContent-Type: image/*\r\nConnection: keep-alive\r\nContent-Length: ";
-		// 	buildTextHTMLRequest("img.jpg");
-		// 	break;
-	// }
+	std::ifstream file(filePath.c_str(), std::ios::in | std::ios::binary);
+
+	if (file) {
+		//Find file size and append it to buffer
+		file.seekg(0, std::ios::end);
+		int fileSize = file.tellg();
+		file.seekg(0, std::ios::beg);
+		std::cout << fileSize;
+
+		const char* fileData = new char [fileSize];
+		file.read((char *)fileData, fileSize);
+		file.close();
+
+		//Append file data to buffer
+		std::ostringstream fileSs;
+		fileSs << fileSize;
+		fileSs << "\r\n\r\n";
+		fileSs.write(fileData, fileSize);
+		_buffer += fileSs.str();
+		delete [] fileData;
+	}
+}
+
+void Request::handleError(int statusCode)
+{
+	switch (statusCode) {
+		case 404:
+			_buffer = _404;
+			break;
+	}
 }

@@ -19,9 +19,10 @@ bool Server::_running = true;
 Server::Server() : _socket(16161)
 {
 	signal(SIGINT, handle_sigint);
-	_responseCode = 0;
+	_statusCode = 0;
 	_port = 16161;
 	_nb_server = 1;
+	_running = true;
 }
 
 Server::~Server()
@@ -92,7 +93,7 @@ void Server::manage_epoll_wait(struct epoll_event &event)
 		int requestType = parseRequestType();
 		switch (requestType) {
 			case GET_REQUEST :
-				_responseCode = handleGetRequest();
+				_statusCode = handleGetRequest();
 				break;
 			case POST_REQUEST :
 				break;
@@ -101,9 +102,8 @@ void Server::manage_epoll_wait(struct epoll_event &event)
 			default :
 				break;
 		}
-		// Add reponse code request constructor
-		Request request(requestType, _filePath);
-		std::cout << "Response------\n" << request.getBuffer();
+		Request request(requestType, _statusCode, _filePath);
+		// std::cout << "Response------\n" << request.getBuffer();
 		sendRequest(request, event.data.fd);
 		_filePath.clear();
 	}
@@ -116,7 +116,7 @@ void Server::readRequest(int epoll_fd)
 	recv(epoll_fd, buff, BUFFER_SIZE - 1, 0);
 	_buffer = buff;
 	std::memset(buff, 0, BUFFER_SIZE);
-	std::cout << "Request-----\n" << _buffer;
+	// std::cout << "Request-----\n" << _buffer;
 }
 
 int Server::parseRequestType()
@@ -137,12 +137,16 @@ int Server::handleGetRequest()
 	if (_filePath == "")
 		_filePath = "index.html";
 	//not working ??
-	// if (access(_filePath.c_str(), F_OK | R_OK))
-	// {
-	// 	//build error response
-	// 	perror("File does not exist/can't be red\n");
-	// }
-	// 200 = OK status code
+	if (access(_filePath.c_str(), F_OK))
+	{
+		perror("File does not exist\n");
+		return 404;
+	}
+	if (access(_filePath.c_str(), R_OK))
+	{
+		perror("File can't be red\n");
+		return 403;
+	}
 	return (200);
 }
 

@@ -37,7 +37,7 @@ class Server {
 	 int _nb_server;
 	 std::string _buffer;
 	 std::string _filePath;
-	 int _responseCode;
+	 int _statusCode;
 
 	private:
 	 typedef enum request_type {UNSUPPORTED_REQUEST, GET_REQUEST, POST_REQUEST, DELETE_REQUEST} e_request;
