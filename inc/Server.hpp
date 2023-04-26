@@ -17,19 +17,21 @@
 
 class Server { 
 	public:
-	 Server(data servers);
-	 Server(std::multimap<std::string, std::string>& config);
+	 Server(data);
+	 Server(std::multimap<std::string, std::string>&);
 	 ~Server();
-	 Server(const Server& other);
-	 Server& operator=(const Server& other);
+	 Server(const Server&);
+	 Server& operator=(const Server&);
 	 void	setSocket(void);
 	 void	runServer(void);
 	 void readRequest(int epoll_fd);
 	 int findRequestType();
 	 int findRequestSubType();
 	 int handleGetRequest(int);
-	 void	sendRequest(Request& request, int client_fd);
-	 void	manage_epoll_wait(struct epoll_event &event);
+	 void handlePostRequest(int);
+	 void handleDeleteRequest(int);
+	 void	sendRequest(Request&, int);
+	 void	manage_epoll_wait(struct epoll_event&);
 	 static bool _running;
 
 	private:

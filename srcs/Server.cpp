@@ -71,10 +71,10 @@ void Server::runServer(void)
 
 void Server::manage_epoll_wait(struct epoll_event &event)
 {
-	if (((event.events & EPOLLERR) || (event.events & EPOLLHUP) || (!(event.events & EPOLLIN))))
-	{
-		perror("fd wrong signal\n");
-	}
+	// if (((event.events & EPOLLERR) || (event.events & EPOLLHUP) || (!(event.events & EPOLLIN))))
+	// {
+	// 	perror("fd wrong signal\n");
+	// }
 	if (_fd.is_server(event.data.fd) == true)
 	{
 		int	new_client = _socket.accept_client(event.data.fd);
@@ -89,14 +89,16 @@ void Server::manage_epoll_wait(struct epoll_event &event)
 		std::cout << "Request-----\n" << _buffer;
 		int requestType = findRequestType();
 		int requestSubType = findRequestSubType();
-		std::cout << requestType << '\n';
+		// std::cout << requestType << '\n';
 		switch (requestType) {
-			case GET_REQUEST :
+			case GET_REQUEST:
 				_statusCode = handleGetRequest(server);
 				break;
-			case POST_REQUEST :
+			case POST_REQUEST:
+				handlePostRequest(server);
 				break;
-			case DELETE_REQUEST :
+			case DELETE_REQUEST:
+				handleDeleteRequest(server);
 				break;
 			default :
 				break;
@@ -134,6 +136,7 @@ int Server::findRequestSubType()
 		return TEXT;
 	if (_buffer.find("Accept: image") != std::string::npos) 
 		return IMAGE;
+	//1 below is equal to IMAGE, browser accepts everything idk but need to implement better
 	return 1;
 }
 
@@ -160,6 +163,16 @@ int Server::handleGetRequest(int server)
 		return 403;
 	}
 	return 200;
+}
+
+void Server::handlePostRequest(int server)
+{
+
+}
+
+void Server::handleDeleteRequest(int server)
+{
+
 }
 
 void Server::sendRequest(Request& request, int client_fd) 

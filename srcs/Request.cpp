@@ -42,7 +42,7 @@ std::string& Request::getBuffer(void)
 
 Request::Request(int requestType, int requestSubType, int statusCode, std::string filePath)
 {
-	std::cout << statusCode << '\n';
+	// std::cout << statusCode << '\n';
 	if (statusCode == 200) {
 		switch (requestType) {
 			case GET_REQUEST:
@@ -78,7 +78,6 @@ void Request::buildGetResponse(std::string filePath)
 		file.seekg(0, std::ios::end);
 		int fileSize = file.tellg();
 		file.seekg(0, std::ios::beg);
-		std::cout << fileSize;
 
 		const char* fileData = new char [fileSize];
 		file.read((char *)fileData, fileSize);
@@ -98,6 +97,7 @@ void Request::handleError(int statusCode)
 {
 	switch (statusCode) {
 		case 404:
+			std::cerr << "404 Not Found sent\n";
 			_buffer = _404;
 			break;
 	}
