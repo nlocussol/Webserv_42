@@ -91,7 +91,7 @@ void Server::manage_epoll_wait(struct epoll_event &event)
 		int requestType = parseRequestType();
 		switch (requestType) {
 			case GET_REQUEST :
-				_statusCode = handleGetRequest();
+				_statusCode = handleGetRequest(server);
 				break;
 			case POST_REQUEST :
 				break;
@@ -128,24 +128,29 @@ int Server::parseRequestType()
 	return UNSUPPORTED_REQUEST;
 }
 
-int Server::handleGetRequest()
+int Server::handleGetRequest(int server)
 {
 	_filePath = _buffer.substr(_buffer.find_first_of(" ") + 1);
 	_filePath = _filePath.substr(1, _filePath.find_first_of(" ") - 1);
-	if (_filePath == "")
-		_filePath = "index.html";
-	//not working ??
+	MULTIMAP::iterator itPathRoot, itPathIndex;
+	itPathRoot = _servers.serv[server].conf.find("root");
+	itPathIndex = _servers.serv[server].conf.find("index");
+	if (_filePath == "") {
+		_filePath = itPathRoot->second + "/" + itPathIndex->second;
+		return 200;
+	}
+	_filePath.insert(0, itPathRoot->second + "/");
 	if (access(_filePath.c_str(), F_OK))
 	{
-		perror("File does not exist\n");
+		// perror("File does not exist\n");
 		return 404;
 	}
 	if (access(_filePath.c_str(), R_OK))
 	{
-		perror("File can't be red\n");
+		// perror("File can't be red\n");
 		return 403;
 	}
-	return (200);
+	return 200;
 }
 
 void Server::sendRequest(Request& request, int client_fd) 

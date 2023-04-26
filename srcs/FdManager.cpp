@@ -65,6 +65,7 @@ int		FdManager::find_matching_server(int client)
 	if (check == _fd_pool.end()){
 		throw std::logic_error("Can't find the client inside the pool");
 	} else {
+		std::cout << "client : " << client << " server : " << check->second << std::endl;
 		return (check->second);
 	}
 }

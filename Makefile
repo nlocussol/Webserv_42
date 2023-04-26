@@ -26,10 +26,10 @@ clean:
 	rm -f $(OBJS)
 
 run: all
-	./$(NAME)
+	./$(NAME) conf/default.conf
 
 run2: all
-	valgrind --show-leak-kinds=all --leak-check=full ./$(NAME)
+	valgrind --show-leak-kinds=all --leak-check=full ./$(NAME) conf/default.conf
 
 re: fclean all
 

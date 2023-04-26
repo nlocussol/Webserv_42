@@ -26,7 +26,7 @@ class Server {
 	 void	runServer(void);
 	 void readRequest(int epoll_fd);
 	 int parseRequestType();
-	 int handleGetRequest();
+	 int handleGetRequest(int);
 	 void	sendRequest(Request& request, int client_fd);
 	 void	manage_epoll_wait(struct epoll_event &event);
 	 static bool _running;
