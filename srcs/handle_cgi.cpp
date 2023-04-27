@@ -1,7 +1,21 @@
-#include <iostream>
-#include <unistd.h>
-#include <sys/wait.h>
-#include <fcntl.h>
+#include "../inc/webserv.hpp"
+
+bool	is_cgi(MULTIMAP map, std::string file)
+{
+	MULTIMAP copy = map;	
+	std::string	extend;	
+	std::size_t		check;
+
+	extend = copy.find("cgi")->second; 
+	check = file.rfind(extend);
+	if (check != std::string::npos && check + extend.length() == file.size() && extend.length() != file.length())
+	{
+		std::cout << "ok file read for CGIIII" << std::endl;
+		return (true);
+	}
+	std::cout << "pas de CGIIII" << std::endl;
+	return (false);
+}
 
 int	check_cgi_args(std::string inter, std::string exec)
 {

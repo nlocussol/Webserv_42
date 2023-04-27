@@ -1,4 +1,5 @@
 #include "../inc/Server.hpp"
+#include "../inc/webserv.hpp"
 #include <cstdlib>
 
 bool Server::_running = true;
@@ -145,10 +146,17 @@ int Server::findRequestSubType()
 
 int Server::handleGetRequest(int server)
 {
-	//faire un check si la requete est un cgi ou pas 
-	//si oui, appeler handle_cgi
 	_filePath = _buffer.substr(_buffer.find_first_of(" ") + 1);
 	_filePath = _filePath.substr(1, _filePath.find_first_of(" ") - 1);
+	/*
+	 * regrade si c'est un cgi et le lance au besoin.
+	 * décommenter ces fonctions quand parsing sur cgi sera fait
+	 * pour l'instant, renvoie un fd mais peu renvoyer une string au besoin
+	*/
+	/*
+	 if (is_cgi(_servers.serv[server].conf, _filePath) == true)
+		handle_cgi(_servers.serv[server].conf.find("cgi")->second, _filePath);
+	*/
 	MULTIMAP::iterator itPathRoot, itPathIndex;
 	itPathRoot = _servers.serv[server].conf.find("root");
 	itPathIndex = _servers.serv[server].conf.find("index");

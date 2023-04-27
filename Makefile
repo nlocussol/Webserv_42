@@ -4,7 +4,7 @@ SRC 	=	Request.cpp Server.cpp \
 			Socket.cpp Epoll.cpp FdManager.cpp \
 			parsing/fill_location.cpp  parsing/pars_conf.cpp \
 			parsing/pars_multimap.cpp  parsing/pars_struct.cpp\
-	  		main.cpp 
+	  		main.cpp handle_cgi.cpp
 HEADER	=	inc/Server.hpp inc/Request.hpp \
 			inc/Socket.hpp inc/Epoll.hpp \
 			inc/FdManager.hpp inc/parsing.hpp 
