@@ -1,30 +1,7 @@
 #include <iostream>
-#include <sstream>
 #include <unistd.h>
-#include <sys/types.h>
 #include <sys/wait.h>
-#include <sys/stat.h>
 #include <fcntl.h>
-
-int	handle_cgi(std::string inter, std::string exec);
-
-int main ()
-{
-	std::string path("/usr/bin/python3");
-	std::string file("test.py");
-	int			fd;
-
-	fd = handle_cgi(path, file);
-	if (fd == -1)
-		return (1);
-	char buf[2600] = {0};
-	if(read(fd, buf, 2600))
-		std::cout << buf;
-	else
-		std::cout << "error";
-	close(fd);
-	return (0);
-}
 
 int	check_cgi_args(std::string inter, std::string exec)
 {

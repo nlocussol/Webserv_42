@@ -23,13 +23,7 @@ class Socket
 		int		accept_client(int server_fd);
 
  	 private:
-		void	init_socket();
-		void	init_struct_server();
-		void	socket_setoptions();
-		void	bind_socket();
-		void	listen_socket();
-
- 	 private:
+		void	make_socket_non_blocking(int socket);
 		int		_fd_server;
 		int		_port;
 		struct sockaddr_in _server_addr;

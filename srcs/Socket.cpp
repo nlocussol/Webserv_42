@@ -70,6 +70,7 @@ void	Socket::allow_socket_server(int port)
 		perror("listen error\n");
 		exit (1);
 	}
+	make_socket_non_blocking(_fd_server);
 }
 
 int	Socket::accept_client(int server_fd)
@@ -82,4 +83,22 @@ int	Socket::accept_client(int server_fd)
 		exit (EXIT_FAILURE);
 	}
 	return (new_client);
+}
+
+void	Socket::make_socket_non_blocking(int socket)
+{
+	int flags;
+
+	flags = fcntl(socket, F_GETFL, 0);
+	if (flags == -1)
+	{
+		std::cerr << "flag recuperation for fd: " << socket << " error";
+		exit (EXIT_FAILURE);
+	}
+	flags |= O_NONBLOCK;
+	if (fcntl(socket, F_SETFL, flags) == -1)
+	{
+		std::cerr << "Set flag for fd: " << socket << " error";
+		exit (EXIT_FAILURE);
+	}
 }
