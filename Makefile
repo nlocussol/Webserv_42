@@ -1,29 +1,32 @@
 CXX		=	c++
 NAME 	= 	webserv
-SRCS 	=	srcs/Request.cpp srcs/Server.cpp \
-			srcs/Socket.cpp srcs/Epoll.cpp srcs/FdManager.cpp \
-			srcs/parsing/fill_location.cpp  srcs/parsing/pars_conf.cpp \
-			srcs/parsing/pars_multimap.cpp  srcs/parsing/pars_struct.cpp\
-	  		srcs/main.cpp 
+SRC 	=	Request.cpp Server.cpp \
+			Socket.cpp Epoll.cpp FdManager.cpp \
+			parsing/fill_location.cpp  parsing/pars_conf.cpp \
+			parsing/pars_multimap.cpp  parsing/pars_struct.cpp\
+	  		main.cpp 
 HEADER	=	inc/Server.hpp inc/Request.hpp \
 			inc/Socket.hpp inc/Epoll.hpp \
 			inc/FdManager.hpp inc/parsing.hpp 
-OBJS	=	$(SRCS:.cpp=.o)
+OBJS	=	$(addprefix obj/, $(SRC:.cpp=.o))
 CXXFLAGS=	-Wall -Wextra --std=c++98 -g
 
-.cpp.o	:
-			${CXX} ${CXXFLAGS} -c $< -o ${<:.cpp=.o}
+
 
 all		:	${NAME}
 
 ${NAME}	:	${OBJS} ${HEADER}
 			${CXX} ${CXXFLAGS} -o ${NAME} ${OBJS}
 
+obj/%.o: srcs/%.cpp $(HEADER)
+	@mkdir -p $(@D)
+	${CXX} ${CXXFLAGS} -c $< -o $@
+
 fclean: clean
 	rm -f $(NAME)
 
 clean:
-	rm -f $(OBJS)
+	rm -rf obj/
 
 run: all
 	./$(NAME) conf/default.conf

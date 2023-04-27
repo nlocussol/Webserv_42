@@ -145,6 +145,8 @@ int Server::findRequestSubType()
 
 int Server::handleGetRequest(int server)
 {
+	//faire un check si la requete est un cgi ou pas 
+	//si oui, appeler handle_cgi
 	_filePath = _buffer.substr(_buffer.find_first_of(" ") + 1);
 	_filePath = _filePath.substr(1, _filePath.find_first_of(" ") - 1);
 	MULTIMAP::iterator itPathRoot, itPathIndex;
