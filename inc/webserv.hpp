@@ -9,7 +9,7 @@
 #include <sys/wait.h>
 #include <fcntl.h>
 
-int	handle_cgi(std::string inter, std::string exec);
+int		handle_cgi(MULTIMAP map, std::string exec);
 bool	is_cgi(MULTIMAP map, std::string file);
 
 #endif

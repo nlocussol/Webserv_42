@@ -155,7 +155,7 @@ int Server::handleGetRequest(int server)
 	*/
 	/*
 	 if (is_cgi(_servers.serv[server].conf, _filePath) == true)
-		handle_cgi(_servers.serv[server].conf.find("cgi")->second, _filePath);
+		handle_cgi(_servers.serv[server].conf, _filePath);
 	*/
 	MULTIMAP::iterator itPathRoot, itPathIndex;
 	itPathRoot = _servers.serv[server].conf.find("root");

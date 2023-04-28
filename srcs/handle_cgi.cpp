@@ -6,14 +6,13 @@ bool	is_cgi(MULTIMAP map, std::string file)
 	std::string	extend;	
 	std::size_t		check;
 
+	copy.erase(copy.find("cgi")); 
 	extend = copy.find("cgi")->second; 
 	check = file.rfind(extend);
 	if (check != std::string::npos && check + extend.length() == file.size() && extend.length() != file.length())
 	{
-		std::cout << "ok file read for CGIIII" << std::endl;
 		return (true);
 	}
-	std::cout << "pas de CGIIII" << std::endl;
 	return (false);
 }
 
@@ -38,11 +37,12 @@ int	check_cgi_args(std::string inter, std::string exec)
 	return (0);
 }
 
-int	handle_cgi(std::string inter, std::string exec)
+int	handle_cgi(MULTIMAP map, std::string exec)
 {
 	int	pip[2];
 	int	pid;
 	int	wstatus;
+	std::string inter = map.find("cgi")->second;
 	char	*param[3] = {(char *)inter.c_str(), (char *)exec.c_str(), NULL};
 
 	if (check_cgi_args(inter, exec) == -1)
