@@ -10,33 +10,24 @@ Request::~Request()
 {
 }
 
-Request::Request(const Request& other)
-{
-}
-
-Request& Request::operator=(const Request& other)
-{
-	return *this;
-}
-
-void Request::findRequestType(const std::string& buffer)
+void Request::findRequestType(void)
 {
 	//Need to parse only on first line, else METHOD could be in body
-	if (buffer.find("GET") != std::string::npos)
+	if (_buffer.find("GET") != std::string::npos)
 		_requestType = GET_REQUEST;
-	else if (buffer.find("POST") != std::string::npos)
+	else if (_buffer.find("POST") != std::string::npos)
 		_requestType = POST_REQUEST;
-	else if (buffer.find("DELETE") != std::string::npos)
+	else if (_buffer.find("DELETE") != std::string::npos)
 		_requestType = DELETE_REQUEST;
 	else 
 		_requestType = UNSUPPORTED_REQUEST;
 }
 
-void Request::findRequestSubType(const std::string& buffer)
+void Request::findRequestSubType(void)
 {
-	if (buffer.find("Accept: text") != std::string::npos) 
+	if (_buffer.find("Accept: text") != std::string::npos) 
 		_requestSubType = TEXT;
-	else if (buffer.find("Accept: image") != std::string::npos) 
+	else if (_buffer.find("Accept: image") != std::string::npos) 
 		_requestSubType = IMAGE;
 	else
 		_requestSubType = 1;
@@ -51,4 +42,9 @@ int Request::getRequestType(void) const
 int Request::getRequestSubType(void) const
 {
 	return _requestSubType;
+}
+
+void Request::setBuffer(const std::string& buffer)
+{
+	_buffer = buffer;
 }

@@ -15,10 +15,9 @@ class Response {
 	 ~Response();
 
 	private:
-	 Response(const Response&);
-	 Response& operator=(const Response&);
 	 void buildGetHeader(int);
-	 void buildGetBody(const Request&, const std::string&);
+	 void buildGetBody(const std::string&);
+	 void buildPostHeader(int);
 	 void buildErrorResponse();
 	 std::string itostr(int);
 
@@ -31,6 +30,7 @@ class Response {
 	 std::string _completeResponse;
 	 static std::string _CRLF;
 	 static std::string _404Page;
+	 static std::string _403Page;
  } ;
 
 #endif // RESPONSE_HPP_

@@ -7,16 +7,16 @@ class Request {
 	public:
 	 Request();
 	 ~Request();
-	 void findRequestType(const std::string&);
- 	 void findRequestSubType(const std::string& buffer);
+	 void findRequestType();
+ 	 void findRequestSubType();
 	 int getRequestType(void) const; 
 	 int getRequestSubType(void) const; 
+	 void setBuffer(const std::string& buffer);
 
 	private:
 	 int _requestType;
 	 int _requestSubType;
-	 Request(const Request& other);
-	 Request& operator=(const Request& other);
+	 std::string _buffer;
  } ;
 
 #endif // REQUEST_HPP_

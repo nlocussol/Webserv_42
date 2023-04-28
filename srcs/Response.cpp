@@ -21,7 +21,17 @@ std::string Response::_404Page = "HTTP/1.1 404 Not Found\r\n"
 "<h1>Not Found</h1>\r\n"
 "<p>The requested URL was not found on this server.</p>\r\n"
 "</body>\r\n"
-"</html>\r\n";
+"</html>\r\n\r\n";
+
+std::string Response::_403Page = "HTTP/1.1 403 Forbidden\r\n"
+"Content-type: text/html\r\n"
+"\r\n"
+"<html>\r\n"
+"<body>\r\n"
+"<h1>Forbidden</h1>\r\n"
+"<p>You don't have permission to access this URL on this server.</p>\r\n"
+"</body>\r\n"
+"</html>\r\n\r\n";
 
 Response::Response()
 {
@@ -29,20 +39,11 @@ Response::Response()
 	_contentType.first = "Content-Type: ";
 	_contentLength.first = "Content-Length: ";
 	_connection.first = "Connection: ";
-	_connection.second = "keep_alive" + _CRLF;
+	_connection.second = "keep_alive";
 }
 
 Response::~Response()
 {
-}
-
-Response::Response(const Response& other)
-{
-}
-
-Response& Response::operator=(const Response& other)
-{
-	return *this;
 }
 
 void Response::buildResponse(const Request& request, const std::string& filePath)
@@ -51,9 +52,10 @@ void Response::buildResponse(const Request& request, const std::string& filePath
 		switch (request.getRequestType()) {
 			case GET_REQUEST:
 				buildGetHeader(request.getRequestSubType());
-				buildGetBody(request, filePath);
+				buildGetBody(filePath);
 				break;
 			case POST_REQUEST:
+				buildPostHeader(request.getRequestSubType());
 				break;
 			case DELETE_REQUEST:
 				break;
@@ -83,7 +85,7 @@ void Response::buildGetHeader(int requestSubType)
 	}
 }
 
-void Response::buildGetBody(const Request& request, const std::string& filePath)
+void Response::buildGetBody(const std::string& filePath)
 {
 	std::ifstream file(filePath.c_str(), std::ios::in | std::ios::binary);
 	if (file) {
@@ -103,6 +105,11 @@ void Response::buildGetBody(const Request& request, const std::string& filePath)
 	}
 }
 
+void Response::buildPostHeader(int requestSubType)
+{
+	//Idk ??
+}
+
 void Response::buildCompleteResponse()
 {
 	_completeResponse =
@@ -110,6 +117,7 @@ void Response::buildCompleteResponse()
 		+ _contentType.first + _contentType.second + _CRLF 
 		+ _contentLength.first + itostr(_contentLength.second) + _CRLF
 		+ _connection.first + _connection.second + _CRLF
+		+ _CRLF
 		+ _binaryData;
 }
 
@@ -119,6 +127,10 @@ void Response::buildErrorResponse()
 		case 404:
 			std::cerr << "Error 404: Client asked for non existing ressource\n";
 			_completeResponse = _404Page;
+			break;
+		case 403:
+			std::cerr << "Error 403: Client asked for forbidden ressource\n";
+			_completeResponse = _403Page;
 			break;
 	}
 }
@@ -138,6 +150,8 @@ std::string& Response::getCompleteResponse(void)
 	return _completeResponse;
 }
 
+
+//Probably move this function somewhere else
 std::string Response::itostr(int i)
 {
 	std::stringstream ss;

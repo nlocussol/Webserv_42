@@ -92,8 +92,9 @@ void Server::manage_epoll_wait(struct epoll_event &event)
 		int	server;
 		server = _fd.find_matching_server(event.data.fd);	
 		readRequest(event.data.fd);/*, server*/
-		std::cout << "Request-----\n" << _buffer;
-		_request.findRequestType(_buffer);
+		// std::cout << "Request-----\n" << _buffer;
+		_request.setBuffer(_buffer);
+		_request.findRequestType();
 		Response response;
 		switch (_request.getRequestType()) {
 			case GET_REQUEST:
@@ -103,15 +104,15 @@ void Server::manage_epoll_wait(struct epoll_event &event)
 				response.setStatusCode(handlePostRequest(server));
 				break;
 			case DELETE_REQUEST:
-				// response.setStatusCode(handleDeleteRequest(server));
+				response.setStatusCode(handleDeleteRequest(server));
 				break;
 			default :
 				break;
 		}
 		if (response.getStatusCode() != UNSUPPORTED_REQUEST)
-			_request.findRequestSubType(_buffer);
+			_request.findRequestSubType();
 		response.buildResponse(_request, _filePath);
-		std::cout << "Response------\n" << response.getCompleteResponse();
+		// std::cout << "Response------\n" << response.getCompleteResponse();
 		sendResponse(response, event.data.fd);
 		_filePath.clear();
 	}
@@ -193,6 +194,7 @@ int Server::handlePostRequest(int server)
 
 int Server::handleDeleteRequest(int server)
 {
+
 	return 200;
 }
 
