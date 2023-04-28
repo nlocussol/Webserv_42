@@ -2,12 +2,21 @@
 #include "../inc/webserv.hpp"
 #include <string>
 
+vector<string> mysplit(string & line, string delimiter);
+
 Request::Request()
 {
 }
 
 Request::~Request()
 {
+}
+
+void Request::parseRequest()
+{
+	// std::vector<std::string> lines = mysplit(_buffer, "\n");
+	// std::vector<std::string> first_line = mysplit(lines[0], " ");
+	// std::cout << first_line[0] << "\n\n";
 }
 
 void Request::findRequestType(void)

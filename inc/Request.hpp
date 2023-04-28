@@ -7,11 +7,12 @@ class Request {
 	public:
 	 Request();
 	 ~Request();
+	 void parseRequest();
 	 void findRequestType();
  	 void findRequestSubType();
 	 int getRequestType(void) const; 
 	 int getRequestSubType(void) const; 
-	 void setBuffer(const std::string& buffer);
+	 void setBuffer(const std::string&);
 
 	private:
 	 int _requestType;

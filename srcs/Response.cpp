@@ -87,6 +87,7 @@ void Response::buildGetHeader(int requestSubType)
 
 void Response::buildGetBody(const std::string& filePath)
 {
+	//probably need to test if every syscall worked
 	std::ifstream file(filePath.c_str(), std::ios::in | std::ios::binary);
 	if (file) {
 		//Find file size and append it to buffer
@@ -98,11 +99,14 @@ void Response::buildGetBody(const std::string& filePath)
 		file.read((char *)fileData, _contentLength.second);
 		file.close();
 
+		//Write binary data of file in _binaryData
 		std::ostringstream fileSs;
 		fileSs.write(fileData, _contentLength.second);
 		_binaryData = fileSs.str();
 		delete [] fileData;
 	}
+	else 
+		std::cerr << "Error: Failed opening file to get binary data\n";
 }
 
 void Response::buildPostHeader(int requestSubType)

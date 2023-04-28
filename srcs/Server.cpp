@@ -94,6 +94,7 @@ void Server::manage_epoll_wait(struct epoll_event &event)
 		readRequest(event.data.fd);/*, server*/
 		// std::cout << "Request-----\n" << _buffer;
 		_request.setBuffer(_buffer);
+		_request.parseRequest();
 		_request.findRequestType();
 		Response response;
 		switch (_request.getRequestType()) {
