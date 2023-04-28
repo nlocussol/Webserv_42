@@ -65,12 +65,26 @@ int	handle_cgi(MULTIMAP map, std::string exec)
 		close(pip[1]);
 		exit(EXIT_FAILURE);
 	}
-	if (waitpid(pid, &wstatus, 0) == -1)
+	clock_t begin = clock();
+	clock_t end = clock();
+	double time = 0;
+	int	check = 0;
+	while (check == 0)
 	{
-		perror("wait pid error");
-		close(pip[0]);
-		close(pip[1]);
-		exit(EXIT_FAILURE);
+		if ((check = waitpid(pid, &wstatus, WNOHANG)) == -1)
+		{
+			perror("wait pid error");
+			close(pip[0]);
+			close(pip[1]);
+		}
+		end = clock();
+		time = static_cast<double>(end - begin) / CLOCKS_PER_SEC;
+		if (time > 3)
+		{
+			close(pip[1]);
+			close(pip[0]);
+			return (-1);
+		}
 	}
 	close(pip[1]);
 	return (pip[0]);
