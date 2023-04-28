@@ -63,9 +63,9 @@ void Server::setSocket(void)
 void Server::runServer(void)
 {
 	int	nb_event;
+	struct epoll_event event[MAX_EVENT];
 	while (_running)
 	{
-		struct epoll_event event[MAX_EVENT];
 		nb_event = epoll_wait(_epoll.get_fd_epoll(), event, MAX_EVENT, -1);
 		for(int i = 0; i < nb_event; i++){
 			manage_epoll_wait(event[i]);
