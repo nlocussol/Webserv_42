@@ -1,4 +1,5 @@
 #include "../../inc/parsing.hpp"
+#include <dirent.h>
 
 bool find_bracket(vector<string> & tab) {
 	for (unsigned long i = 0; i < tab.size(); i++) {
@@ -130,12 +131,20 @@ void pars_line(fstream & file, data & servers, vector<string> options) {
 void pars_conf(string & file, data & servers) {
 	string opt[NB_OPT] = {"root", "index", "listen", "methods", "errpage", "server_names", "cgi", "autoindex", "redirect", "limit_client_body_size"};
 	vector<string> options;
+	DIR	*dir;
+
 	for (int i = 0; i < NB_OPT; i++)
 		options.push_back(opt[i]);
 	fstream input;
 	input.open(file.c_str(), ios::in);
 	if (!input)
 		throw (logic_error("Error: config file can't be open!"));
+	dir = opendir(file.c_str());
+	if (dir != NULL)
+	{
+		closedir(dir);
+		throw (logic_error("Error: config file can't use a directory!"));
+	}
 	string line;
 	while (getline(input, line)) {
 		vector<string> tab = mysplit(line, DELIMITER);

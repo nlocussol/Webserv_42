@@ -77,7 +77,6 @@ void Response::buildGetHeader(int requestSubType)
 			_contentType.second = "image/*";
 			break;
 		case VIDEO:
-			//maybe delete
 			break;
 		default:
 			break;
@@ -107,7 +106,7 @@ void Response::buildGetBody(const Request& request, const std::string& filePath)
 void Response::buildCompleteResponse()
 {
 	_completeResponse =
-		"HTTP/1.1" + itostr(_statusCode) + _CRLF 
+		"HTTP/1.1 " + itostr(_statusCode) + _CRLF 
 		+ _contentType.first + _contentType.second + _CRLF 
 		+ _contentLength.first + itostr(_contentLength.second) + _CRLF
 		+ _connection.first + _connection.second + _CRLF

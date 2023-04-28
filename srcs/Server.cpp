@@ -65,9 +65,9 @@ void Server::setSocket(void)
 void Server::runServer(void)
 {
 	int	nb_event;
+	struct epoll_event event[MAX_EVENT];
 	while (_running)
 	{
-		struct epoll_event event[MAX_EVENT];
 		nb_event = epoll_wait(_epoll.get_fd_epoll(), event, MAX_EVENT, -1);
 		for(int i = 0; i < nb_event; i++){
 			manage_epoll_wait(event[i]);
@@ -92,7 +92,7 @@ void Server::manage_epoll_wait(struct epoll_event &event)
 		int	server;
 		server = _fd.find_matching_server(event.data.fd);	
 		readRequest(event.data.fd);/*, server*/
-		// std::cout << "Request-----\n" << _buffer;
+		std::cout << "Request-----\n" << _buffer;
 		_request.findRequestType(_buffer);
 		Response response;
 		switch (_request.getRequestType()) {
@@ -111,7 +111,7 @@ void Server::manage_epoll_wait(struct epoll_event &event)
 		if (response.getStatusCode() != UNSUPPORTED_REQUEST)
 			_request.findRequestSubType(_buffer);
 		response.buildResponse(_request, _filePath);
-		// std::cout << "Response------\n" << response.getBuffer();
+		std::cout << "Response------\n" << response.getCompleteResponse();
 		sendResponse(response, event.data.fd);
 		_filePath.clear();
 	}
@@ -138,7 +138,7 @@ int Server::handleGetRequest(int server)
 	*/
 	/*
 	 if (is_cgi(_servers.serv[server].conf, _filePath) == true)
-		handle_cgi(_servers.serv[server].conf.find("cgi")->second, _filePath);
+		handle_cgi(_servers.serv[server].conf, _filePath);
 	*/
 	MULTIMAP::iterator itPathRoot, itPathIndex;
 	itPathRoot = _servers.serv[server].conf.find("root");
