@@ -1,22 +1,6 @@
 #include "../inc/Request.hpp"
-#include "../inc/Server.hpp"
-#include <cstdio>
-#include <cstring>
-#include <iostream>
-#include <fstream>
-#include <ios>
-#include <limits>
-#include <sstream>
-
-std::string Request::_404 = "HTTP/1.1 404 Not Found\r\n"
-      "Content-type: text/html\r\n"
-      "\r\n"
-      "<html>\r\n"
-      "<body>\r\n"
-      "<h1>Not Found</h1>\r\n"
-      "<p>The requested URL was not found on this server.</p>\r\n"
-      "</body>\r\n"
-      "</html>\r\n";
+#include "../inc/webserv.hpp"
+#include <string>
 
 Request::Request()
 {
@@ -35,70 +19,36 @@ Request& Request::operator=(const Request& other)
 	return *this;
 }
 
-std::string& Request::getBuffer(void)
+void Request::findRequestType(const std::string& buffer)
 {
-	return _buffer;
+	//Need to parse only on first line, else METHOD could be in body
+	if (buffer.find("GET") != std::string::npos)
+		_requestType = GET_REQUEST;
+	else if (buffer.find("POST") != std::string::npos)
+		_requestType = POST_REQUEST;
+	else if (buffer.find("DELETE") != std::string::npos)
+		_requestType = DELETE_REQUEST;
+	else 
+		_requestType = UNSUPPORTED_REQUEST;
 }
 
-Request::Request(int requestType, int requestSubType, int statusCode, std::string filePath)
+void Request::findRequestSubType(const std::string& buffer)
 {
-	// std::cout << statusCode << '\n';
-	if (statusCode == 200) {
-		switch (requestType) {
-			case GET_REQUEST:
-				//Add SubFunctions
-				switch (requestSubType) {
-					case TEXT:
-						_buffer = "HTTP/1.1 200 OK\r\nContent-Type: text/html\r\nConnection: keep-alive\r\nContent-Length: ";
-						buildGetResponse(filePath);
-						break;
-					case IMAGE:
-						_buffer = "HTTP/1.1 200 OK\r\nContent-Type: image/*\r\nConnection: keep-alive\r\nContent-Length: ";
-						buildGetResponse(filePath);
-						break;
-					default :
-						break;
-				}
-				break;
-			case POST_REQUEST:
-				break;
-			case DELETE_REQUEST:
-				break;
-		}
-	}
-	handleError(statusCode);
+	if (buffer.find("Accept: text") != std::string::npos) 
+		_requestSubType = TEXT;
+	else if (buffer.find("Accept: image") != std::string::npos) 
+		_requestSubType = IMAGE;
+	else
+		_requestSubType = 1;
+	//1 is equal to IMAGE, browser accepts everything idk but need to implement better
 }
 
-void Request::buildGetResponse(std::string filePath)
+int Request::getRequestType(void) const 
 {
-	std::ifstream file(filePath.c_str(), std::ios::in | std::ios::binary);
-
-	if (file) {
-		//Find file size and append it to buffer
-		file.seekg(0, std::ios::end);
-		int fileSize = file.tellg();
-		file.seekg(0, std::ios::beg);
-
-		const char* fileData = new char [fileSize];
-		file.read((char *)fileData, fileSize);
-		file.close();
-
-		//Append file data to buffer
-		std::ostringstream fileSs;
-		fileSs << fileSize;
-		fileSs << "\r\n\r\n";
-		fileSs.write(fileData, fileSize);
-		_buffer += fileSs.str();
-		delete [] fileData;
-	}
+	return _requestType;
 }
 
-void Request::handleError(int statusCode)
+int Request::getRequestSubType(void) const
 {
-	switch (statusCode) {
-		case 404:
-			std::cerr << "404 Not Found sent\n";
-			_buffer = _404;
-			break;
-	}
+	return _requestSubType;
 }

@@ -8,6 +8,7 @@
 #include <cstring>
 #include <signal.h>
 #include "Request.hpp"
+#include "Response.hpp"
 #include "Epoll.hpp"
 #include "Socket.hpp"
 #include "FdManager.hpp"
@@ -25,12 +26,12 @@ class Server {
 	 void	setSocket(void);
 	 void	runServer(void);
 	 void readRequest(int epoll_fd);
-	 int findRequestType();
-	 int findRequestSubType();
+	 std::string getBuffer(void) const;
 	 int handleGetRequest(int);
-	 void handlePostRequest(int);
-	 void handleDeleteRequest(int);
-	 void	sendRequest(Request&, int);
+	 int handlePostRequest(int);
+	 bool isFileProtected() const;
+	 int handleDeleteRequest(int);
+	 void	sendResponse(Response&, int);
 	 void	manage_epoll_wait(struct epoll_event&);
 	 static bool _running;
 
@@ -39,13 +40,12 @@ class Server {
 	 Socket _socket;
 	 Epoll _epoll;
 	 FdManager _fd;
+	 Request _request;
 	 int _nb_server;
 	 std::string _buffer;
 	 std::string _filePath;
 	 int _statusCode;
 	 data _servers;
-	 typedef enum request_type {UNSUPPORTED_REQUEST, GET_REQUEST, POST_REQUEST, DELETE_REQUEST} e_request;
-	 typedef enum request_sub_type {TEXT, IMAGE} t_request;
  } ;
 
 void	handle_sigint(int signum);

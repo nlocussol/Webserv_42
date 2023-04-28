@@ -1,11 +1,11 @@
 CXX		=	c++
-NAME 	= 	webserv
-SRC 	=	Request.cpp Server.cpp \
+NAME 	= webserv
+SRC 	=	Response.cpp Server.cpp \
 			Socket.cpp Epoll.cpp FdManager.cpp \
 			parsing/fill_location.cpp  parsing/pars_conf.cpp \
 			parsing/pars_multimap.cpp  parsing/pars_struct.cpp\
-	  		main.cpp handle_cgi.cpp
-HEADER	=	inc/Server.hpp inc/Request.hpp \
+	  		main.cpp handle_cgi.cpp Request.cpp
+HEADER	=	inc/Server.hpp inc/Response.hpp \
 			inc/Socket.hpp inc/Epoll.hpp \
 			inc/FdManager.hpp inc/parsing.hpp 
 OBJS	=	$(addprefix obj/, $(SRC:.cpp=.o))

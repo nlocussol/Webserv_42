@@ -1,6 +1,8 @@
 #include "../inc/Server.hpp"
+#include "../inc/Response.hpp"
 #include "../inc/webserv.hpp"
 #include <cstdlib>
+#include <unistd.h>
 
 bool Server::_running = true;
 
@@ -90,26 +92,27 @@ void Server::manage_epoll_wait(struct epoll_event &event)
 		int	server;
 		server = _fd.find_matching_server(event.data.fd);	
 		readRequest(event.data.fd);/*, server*/
-		std::cout << "Request-----\n" << _buffer;
-		int requestType = findRequestType();
-		int requestSubType = findRequestSubType();
-		// std::cout << requestType << '\n';
-		switch (requestType) {
+		// std::cout << "Request-----\n" << _buffer;
+		_request.findRequestType(_buffer);
+		Response response;
+		switch (_request.getRequestType()) {
 			case GET_REQUEST:
-				_statusCode = handleGetRequest(server);
+				response.setStatusCode(handleGetRequest(server));
 				break;
 			case POST_REQUEST:
-				handlePostRequest(server);
+				response.setStatusCode(handlePostRequest(server));
 				break;
 			case DELETE_REQUEST:
-				handleDeleteRequest(server);
+				// response.setStatusCode(handleDeleteRequest(server));
 				break;
 			default :
 				break;
 		}
-		Request request(requestType, requestSubType, _statusCode, _filePath);
-		// std::cout << "Response------\n" << request.getBuffer();
-		sendRequest(request, event.data.fd);
+		if (response.getStatusCode() != UNSUPPORTED_REQUEST)
+			_request.findRequestSubType(_buffer);
+		response.buildResponse(_request, _filePath);
+		// std::cout << "Response------\n" << response.getBuffer();
+		sendResponse(response, event.data.fd);
 		_filePath.clear();
 	}
 }
@@ -123,29 +126,9 @@ void Server::readRequest(int epoll_fd)
 	std::memset(buff, 0, BUFFER_SIZE);
 }
 
-int Server::findRequestType()
-{
-	if (_buffer.find("GET") != std::string::npos)
-		return GET_REQUEST;
-	if (_buffer.find("POST") != std::string::npos)
-		return POST_REQUEST;
-	if (_buffer.find("DELETE") != std::string::npos)
-		return DELETE_REQUEST;
-	return UNSUPPORTED_REQUEST;
-}
-
-int Server::findRequestSubType()
-{
-	if (_buffer.find("Accept: text") != std::string::npos) 
-		return TEXT;
-	if (_buffer.find("Accept: image") != std::string::npos) 
-		return IMAGE;
-	//1 below is equal to IMAGE, browser accepts everything idk but need to implement better
-	return 1;
-}
-
 int Server::handleGetRequest(int server)
 {
+	//Parse buffer to find file path such as : GET /file.extension HTTP1.1
 	_filePath = _buffer.substr(_buffer.find_first_of(" ") + 1);
 	_filePath = _filePath.substr(1, _filePath.find_first_of(" ") - 1);
 	/*
@@ -165,30 +148,73 @@ int Server::handleGetRequest(int server)
 		return 200;
 	}
 	_filePath.insert(0, itPathRoot->second + "/");
+	// Return 404 Not Found if the file does not exist
 	if (access(_filePath.c_str(), F_OK))
-	{
-		// perror("File does not exist\n");
 		return 404;
-	}
+	// Return 403 Forbidden if the file is not readable
 	if (access(_filePath.c_str(), R_OK))
-	{
-		// perror("File can't be red\n");
 		return 403;
-	}
 	return 200;
 }
 
-void Server::handlePostRequest(int server)
+int Server::handlePostRequest(int server)
 {
+	// Parse buffer to find file path such as : POST /file.extension HTTP1.1
+	_filePath = _buffer.substr(_buffer.find_first_of(" ") + 1);
+	_filePath = _filePath.substr(1, _filePath.find_first_of(" ") - 1);
+	MULTIMAP::iterator itPathRoot;
+	itPathRoot = _servers.serv[server].conf.find("root");
+	_filePath.insert(0, itPathRoot->second);
+	// Return 403 Forbidden is the file is core of our project
+	if (isFileProtected())
+		return 403;
 
+	// Check if the file already exists, if it does try to delete it
+	std::ifstream infile;
+	// Also need to test if directory is writable, but j'ai la flemme là
+	infile.open(_filePath.c_str());
+	if (infile) {
+		if (access(_filePath.c_str(), F_OK | R_OK))
+			return 403;
+		else {
+	// Need to add proper error code return, but file should be deletable since we access it upward
+			if (std::remove(_filePath.c_str()))
+				return 0;
+		}
+	}
+	// Create file with the same name and fill it with body of POST request
+	size_t bodyBegin = _buffer.find("\r\n\r\n");
+	std::string bodyContent = _buffer.substr(bodyBegin + 4);
+	std::ofstream outfile(_filePath.c_str());
+	outfile << bodyContent;
+	outfile.close();
+	return 200;
 }
 
-void Server::handleDeleteRequest(int server)
+int Server::handleDeleteRequest(int server)
 {
-
+	return 200;
 }
 
-void Server::sendRequest(Request& request, int client_fd) 
+bool Server::isFileProtected() const
 {
-	send(client_fd, request.getBuffer().c_str(), request.getBuffer().length(), 0);
+	if (_filePath.find("utils/BIDEN_BLAST.mp4") != std::string::npos)
+		return true;
+	if (_filePath.find("utils/index.html") != std::string::npos)
+		return true;
+	if (_filePath.find("utils/favicon.ico") != std::string::npos)
+		return true;
+	if (_filePath.find("utils/img.jpg") != std::string::npos)
+		return true;
+	return false;
+}
+
+void Server::sendResponse(Response& response, int client_fd) 
+{
+	send(client_fd, response.getCompleteResponse().c_str(), response.getCompleteResponse().length(), 0);
+}
+
+std::string Server::getBuffer(void) const
+{
+	return _buffer;
 }
