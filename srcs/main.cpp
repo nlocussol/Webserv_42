@@ -13,11 +13,15 @@ void	handle_sigint(int signum)
 
 int main (int ac, char *av[])
 {
-	if (ac != 2) {
+	string file;
+	if (ac > 2) {
 		std::cerr << "Error: Correct format is ./webserv [configuration file](optionnal)\n";
 		return EXIT_FAILURE;
 	}
-	string file = av[1];
+	if (ac == 2)
+		file = av[1];
+	else
+		file = "conf/default.conf";
 	data servers;
 	try {
 		pars_conf(file, servers);	

@@ -51,6 +51,7 @@ void Server::setSocket(void)
 		while (it != _servers.serv[i].conf.end())
 		{
 			port = atoi(it->second.c_str());
+			std::cout << "Server " << i << " listen on port " << port << std::endl;
 			_socket.allow_socket_server(port);
 			server = _socket.get_fdServer();
 			_fd.set_fd_servers(server, i);
