@@ -1,5 +1,17 @@
 #include "../inc/webserv.hpp"
 
+/**
+ *
+ * parameters:
+ *  - map -> std::multimap of the current server configuration
+ *  - file -> the file path from the GET request sended by the client
+ *
+ * func:
+ * 	check if the file has the cgi extension given in the parsing
+ * 	return true or false in each case
+ *
+**/ 
+
 bool	is_cgi(MULTIMAP map, std::string file)
 {
 	MULTIMAP copy = map;	
@@ -36,6 +48,23 @@ int	check_cgi_args(std::string inter, std::string exec)
 	close (fd);
 	return (0);
 }
+
+/**
+ *
+ * parameters:
+ *  - map -> std::multimap of the current server configuration
+ *  - exec -> the file path from the GET request sent by the client
+ *
+ * func:
+ * 	
+ * 	get the cgi executable path and join with the file path given as parametre
+ * 	create a pipe which get the output of the program
+ *  execve the program 
+ *  but if the execution exceed 3seconds this will be stopped
+ *
+ * 	return a fd which contains the cgi output
+ *
+**/ 
 
 int	handle_cgi(MULTIMAP map, std::string exec)
 {

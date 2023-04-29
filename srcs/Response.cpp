@@ -9,6 +9,7 @@
 #include <ios>
 #include <limits>
 #include <sstream>
+#include <streambuf>
 #include <utility>
 
 std::string Response::_CRLF = "\r\n";
@@ -106,7 +107,7 @@ void Response::buildGetBody(const std::string& filePath)
 		delete [] fileData;
 	}
 	else 
-		std::cerr << "Error: Failed opening file to get binary data\n";
+		std::cerr << "Error: Failed opening file to get binary data\n ";
 }
 
 void Response::buildPostHeader(int requestSubType)

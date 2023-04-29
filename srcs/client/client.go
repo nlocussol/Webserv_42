@@ -11,7 +11,7 @@ func main() {
 	sum := 1
 	for sum < 5000{
 		c := http.Client{Timeout: time.Duration(1) * time.Second * 100}
-		resp, err := c.Get("http://127.0.0.1:16161")
+		resp, err := c.Get("http://127.0.0.1:6969")
 		if err != nil {
 			fmt.Printf("Error %s", err)
 			return
@@ -24,7 +24,7 @@ func main() {
 	file := bytes.NewBuffer([]byte(`{"name":"SubwaySurfer"}`))
 	for sum < 5000{
 		c := http.Client{Timeout: time.Duration(1) * time.Second * 100}
-		resp, err := c.Post("http://127.0.0.1:16161", "okok", file)
+		resp, err := c.Post("http://127.0.0.1:6969", "okok", file)
 		if err != nil {
 			fmt.Printf("Error %s", err)
 			return
