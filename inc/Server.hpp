@@ -19,7 +19,6 @@
 class Server { 
 	public:
 	 Server(data);
-	 Server(std::multimap<std::string, std::string>&);
 	 ~Server();
 	 Server(const Server&);
 	 Server& operator=(const Server&);
@@ -36,7 +35,6 @@ class Server {
 	 static bool _running;
 
 	private:
-	 std::multimap<std::string, std::string> _config;
 	 Socket _socket;
 	 Epoll _epoll;
 	 FdManager _fd;

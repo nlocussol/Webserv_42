@@ -7,7 +7,6 @@
 class Response { 
 	public:
 	 void buildResponse(const Request&, const std::string&);
-	 void buildCompleteResponse();
 	 std::string& getCompleteResponse(void);
 	 void setStatusCode(int);
 	 int getStatusCode(void);
@@ -15,10 +14,11 @@ class Response {
 	 ~Response();
 
 	private:
+	 void buildCompleteResponse(int);
 	 void buildGetHeader(int);
 	 void buildGetBody(const std::string&);
 	 void buildPostHeader(int);
-	 void buildErrorResponse();
+	 void buildErrorResponse(int);
 	 std::string itostr(int);
 
 	private:
@@ -31,6 +31,7 @@ class Response {
 	 static std::string _CRLF;
 	 static std::string _404Page;
 	 static std::string _403Page;
+	 static std::string _405Page;
  } ;
 
 #endif // RESPONSE_HPP_
