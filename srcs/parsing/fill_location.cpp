@@ -27,7 +27,7 @@ void fill_not_in(string path, MULTIMAP & current, MULTIMAP & copy) {
 
 void fill_location(MULTIMAP & current, MULTIMAP & conf) {
 	MULTIMAP copy = conf;
-	check_bad_opt(current);
+	//check_bad_opt(current);
 	fill_not_in("root", current, copy);
 	fill_not_in("index" , current, copy);
 	fill_not_in("methods", current, copy);
