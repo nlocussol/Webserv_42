@@ -16,5 +16,6 @@ typedef enum request_sub_type {TEXT, IMAGE, VIDEO} e_requestsubtype;
 
 int		handle_cgi(block_serv server, std::string exec);
 bool	is_cgi(block_serv server, std::string file);
+MULTIMAP find_location_path(string &path, block_serv & servers);
 
 #endif

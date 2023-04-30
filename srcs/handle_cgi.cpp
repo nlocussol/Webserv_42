@@ -20,16 +20,11 @@ bool	is_cgi(block_serv server, std::string file)
 	string path;
 	MULTIMAP copy;
 
-	copy = server.conf;
-	cout << file << endl;
 	if (file.find('/') != string::npos)
 		path = file.erase(file.find_last_of('/'), file.size());
 	else
 		path = "/";
-	for (unsigned long i = 0; i < server.serv.size(); i++) {
-		if (server.serv[i].path == path)
-			copy = server.serv[i].conf;
-	}
+	copy = find_location_path(path, server);
 	copy.erase(copy.find("cgi")); 
 	extend = copy.find("cgi")->second; 
 	check = file.rfind(extend);
@@ -79,11 +74,7 @@ int	handle_cgi(block_serv server, std::string exec)
 	int	pid;
 	int	wstatus;
 	MULTIMAP map;
-	map = server.conf;
-	for (unsigned long i = 0; i < server.serv.size(); i++) {
-		if (server.serv[i].path == exec)
-			map = server.serv[i].conf;
-	}
+	map = find_location_path(exec, server);
 	std::string inter = map.find("cgi")->second;
 	string str = map.find("root")->second + "/" + exec;
 	char	*param[3] = {(char *)inter.c_str(), (char *)str.c_str(), NULL};

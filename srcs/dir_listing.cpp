@@ -4,6 +4,26 @@
 #include <dirent.h>
 #include <libgen.h>
 #include <iostream>
+#include "../inc/parsing.hpp"
+
+MULTIMAP find_location_path(string &path, block_serv servers) {
+	for (unsigned long i = 0; i < servers.serv.size(); i++) {
+		if (servers.serv[i].path == path)
+			return (servers.serv[i].conf);
+	}
+	return (servers.conf);
+}
+
+bool	is_dir_listing(std::string path, block_serv & servers)
+{
+	MULTIMAP copy = find_location_path(path, servers);
+	MULTIMAP::iterator it = copy.find("autoindex");
+	if (it == copy.end()
+		|| it->second == "off"
+		|| (it->second == "on" && copy.find("index") == copy.end()))
+		return (false);
+	return true;
+}
 
 /**
  *
