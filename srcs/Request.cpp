@@ -133,9 +133,9 @@ void Request::handleGetRequest()
 
 void Request::handleQuery()
 {
-	while (_queryString.length() != 0) {
-		_queryArg.push_back(_queryString.substr(0, _queryString.find_first_of("&")));
-	}
+	// while (_queryString.length() != 0) {
+		// _queryArg.push_back(_queryString.substr(0, _queryString.find_first_of("&")));
+	// }
 }
 
 void Request::handlePostRequest(void)
