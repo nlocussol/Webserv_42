@@ -1,4 +1,5 @@
 #include "../inc/webserv.hpp"
+#include <unistd.h>
 
 /**
  *
@@ -12,12 +13,23 @@
  *
 **/ 
 
-bool	is_cgi(MULTIMAP map, std::string file)
+bool	is_cgi(block_serv server, std::string file)
 {
-	MULTIMAP copy = map;	
 	std::string	extend;	
 	std::size_t		check;
+	string path;
+	MULTIMAP copy;
 
+	copy = server.conf;
+	cout << file << endl;
+	if (file.find('/') != string::npos)
+		path = file.erase(file.find_last_of('/'), file.size());
+	else
+		path = "/";
+	for (unsigned long i = 0; i < server.serv.size(); i++) {
+		if (server.serv[i].path == path)
+			copy = server.serv[i].conf;
+	}
 	copy.erase(copy.find("cgi")); 
 	extend = copy.find("cgi")->second; 
 	check = file.rfind(extend);
@@ -30,22 +42,17 @@ bool	is_cgi(MULTIMAP map, std::string file)
 
 int	check_cgi_args(std::string inter, std::string exec)
 {
-	int			fd;
 
-	fd = open(exec.c_str(), O_RDWR);
-	if (fd == -1)
+	if (access(exec.c_str(), X_OK) < 0)
 	{
 		std::cout << "Can't use " << exec << " as an exectuable." << std::endl;
-		return (fd);
+		return (-1);
 	}
-	close (fd);
-	fd = access(inter.c_str(), X_OK);
-	if (fd == -1)
+	if (access(inter.c_str(), X_OK) < 0)
 	{
 		std::cout << "Can't use " << inter << " as an interpreter." << std::endl;
-		return (fd);
+		return (-1);
 	}
-	close (fd);
 	return (0);
 }
 
@@ -66,15 +73,22 @@ int	check_cgi_args(std::string inter, std::string exec)
  *
 **/ 
 
-int	handle_cgi(MULTIMAP map, std::string exec)
+int	handle_cgi(block_serv server, std::string exec)
 {
 	int	pip[2];
 	int	pid;
 	int	wstatus;
+	MULTIMAP map;
+	map = server.conf;
+	for (unsigned long i = 0; i < server.serv.size(); i++) {
+		if (server.serv[i].path == exec)
+			map = server.serv[i].conf;
+	}
 	std::string inter = map.find("cgi")->second;
-	char	*param[3] = {(char *)inter.c_str(), (char *)exec.c_str(), NULL};
+	string str = map.find("root")->second + "/" + exec;
+	char	*param[3] = {(char *)inter.c_str(), (char *)str.c_str(), NULL};
 
-	if (check_cgi_args(inter, exec) == -1)
+	if (check_cgi_args(inter, str) == -1)
 		return (-1);
 	pipe(pip);
 	pid = fork();
@@ -110,8 +124,10 @@ int	handle_cgi(MULTIMAP map, std::string exec)
 		time = static_cast<double>(end - begin) / CLOCKS_PER_SEC;
 		if (time > 3)
 		{
+			kill (pid, SIGKILL);
 			close(pip[1]);
 			close(pip[0]);
+			std::cout << "y a pas le droit aux while 1 connard" << std::endl;
 			return (-1);
 		}
 	}

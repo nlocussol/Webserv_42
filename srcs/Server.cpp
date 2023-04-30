@@ -94,7 +94,7 @@ void Server::manage_epoll_wait(struct epoll_event &event)
 		int	server;
 		server = _fd.find_matching_server(event.data.fd);	
 		readRequest(event.data.fd);/*, server*/
-		// std::cout << "Request-----\n" << _buffer;
+		std::cout << "Request-----\n" << _buffer;
 		_request.setBuffer(_buffer);
 		_request.parseRequest();
 		_request.findRequestType();
@@ -142,10 +142,8 @@ int Server::handleGetRequest(int server)
 	 * décommenter ces fonctions quand parsing sur cgi sera fait
 	 * pour l'instant, renvoie un fd mais peu renvoyer une string au besoin
 	*/
-	/*
-	 if (is_cgi(_servers.serv[server].conf, _filePath) == true)
-		handle_cgi(_servers.serv[server].conf, _filePath);
-	*/
+	if (!_filePath.empty() && is_cgi(_servers.serv[server], _filePath) == true)
+		handle_cgi(_servers.serv[server], _filePath);
 	MULTIMAP::iterator itPathRoot, itPathIndex;
 	itPathRoot = _servers.serv[server].conf.find("root");
 	itPathIndex = _servers.serv[server].conf.find("index");
