@@ -3,14 +3,14 @@
 
 void check_bad_opt(MULTIMAP current) {
 	MULTIMAP::iterator it = current.find("listen");
-	if (it == current.end())
-		throw (logic_error("Error: " + it->first + " can't be defined in location block!"));
+	if (it != current.end())
+		throw (logic_error("Error: listen can't be defined in location block!"));
 	it = current.find("server_names");
-	if (it == current.end())
-		throw (logic_error("Error: " + it->first + " can't be defined in location block!"));
+	if (it != current.end())
+		throw (logic_error("Error: server_names can't be defined in location block!"));
 	it = current.find("limit_client_body_size");
-	if (it == current.end())
-		throw (logic_error("Error: " + it->first + " can't be defined in location block!"));
+	if (it != current.end())
+		throw (logic_error("Error: limit_client_body_size can't be defined in location block!"));
 }
 
 void fill_not_in(string path, MULTIMAP & current, MULTIMAP & copy) {
@@ -27,7 +27,7 @@ void fill_not_in(string path, MULTIMAP & current, MULTIMAP & copy) {
 
 void fill_location(MULTIMAP & current, MULTIMAP & conf) {
 	MULTIMAP copy = conf;
-	//check_bad_opt(current);
+	check_bad_opt(current);
 	fill_not_in("root", current, copy);
 	fill_not_in("index" , current, copy);
 	fill_not_in("methods", current, copy);
