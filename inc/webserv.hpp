@@ -10,6 +10,7 @@
 #include <fcntl.h>
 
 #define BUFFER_SIZE 2048
+#define MAX_CGI_WAITING 3
 
 typedef enum request_type {UNSUPPORTED_REQUEST = 1, GET_REQUEST, POST_REQUEST, DELETE_REQUEST, DIR_LISTING} e_request;
 typedef enum request_sub_type {TEXT = 1, IMAGE, VIDEO, QUERY} e_requestsubtype;

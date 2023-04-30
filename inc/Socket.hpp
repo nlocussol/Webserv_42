@@ -8,6 +8,8 @@
 # include <iostream>
 # include <vector>
 
+#define MAX_LISTEN 10
+
 class Socket
  {
  	 public:

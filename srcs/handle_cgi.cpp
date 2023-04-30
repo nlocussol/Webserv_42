@@ -1,4 +1,5 @@
 #include "../inc/webserv.hpp"
+#include <cstdlib>
 #include <unistd.h>
 
 /**
@@ -85,8 +86,8 @@ int	handle_cgi(block_serv server, std::string exec)
 	pid = fork();
 	if (pid == -1)
 	{
-		perror("fork error");
-		exit(EXIT_FAILURE);
+		std::cerr << "fork creation error" << std::endl;
+		exit (EXIT_FAILURE);
 	}
 	else if (pid == 0)
 	{
@@ -94,7 +95,7 @@ int	handle_cgi(block_serv server, std::string exec)
 		close(pip[0]);
 		close(pip[1]);
 		execve(inter.c_str(), param, NULL);
-		perror("execve error");
+		std::cerr << "execve error" << std::endl;
 		close(pip[0]);
 		close(pip[1]);
 		exit(EXIT_FAILURE);
@@ -107,13 +108,13 @@ int	handle_cgi(block_serv server, std::string exec)
 	{
 		if ((check = waitpid(pid, &wstatus, WNOHANG)) == -1)
 		{
-			perror("wait pid error");
+			std::cerr << "waitpid error" << std::endl;
 			close(pip[0]);
 			close(pip[1]);
 		}
 		end = clock();
 		time = static_cast<double>(end - begin) / CLOCKS_PER_SEC;
-		if (time > 3)
+		if (time > MAX_CGI_WAITING)
 		{
 			kill (pid, SIGKILL);
 			close(pip[1]);
