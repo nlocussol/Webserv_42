@@ -16,13 +16,18 @@ MULTIMAP find_location_path(string &path, block_serv servers) {
 
 bool	is_dir_listing(std::string path, block_serv & servers)
 {
+	DIR *dir;
+	std::cout << path << "\n";
+  if ((dir = opendir (path.c_str())) == NULL)
+  	return false;
+  closedir(dir);
+
 	MULTIMAP copy = find_location_path(path, servers);
 	MULTIMAP::iterator it = copy.find("autoindex");
-	if (it == copy.end()
-		|| it->second == "off"
+	if (it != copy.end()
 		|| (it->second == "on" && copy.find("index") == copy.end()))
-		return (false);
-	return true;
+		return true;
+	return false;
 }
 
 /**
@@ -43,7 +48,7 @@ std::string directory_listing(std::string path)
 {
     DIR *dir;
     struct dirent *dp;
-	std::string body;
+    std::string body;
 
 	body += "<!DOCTYPE html>\r\n\
 <html>\r\n\
@@ -54,13 +59,11 @@ std::string directory_listing(std::string path)
 	<body>\r\n\
 		<ul>\r\n";
 
-    if ((dir = opendir (path.c_str())) == NULL) {
-		throw std::logic_error("Cannot open " + path);
-    }
+    dir = opendir (path.c_str()); 
     while ((dp = readdir (dir)) != NULL) {
-		body += "\t\t\t<li><a href=\"" + path + dp->d_name +  "\">" + dp->d_name + "</a></li>\r\n";
-		
-	}
+			std::string test = dp->d_name;
+			body += "\t\t\t<li><a href=\"" + path + "/" + test +  "\">" + dp->d_name + "</a></li>\r\n";
+		}
 	body += "\t\t</ul>\r\n\
 	</body>\r\n\
 </html>\r\n";
