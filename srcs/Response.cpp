@@ -78,7 +78,10 @@ void Response::buildResponse(const Request& request, const std::string& filePath
 	}
 	else if (request._statusCode == 7)
 	{
-		_completeResponse = directory_listing(filePath);
+		_statusCode = 200;
+		_contentType.second = "text/html";
+		_contentLength.second = directory_listing(filePath).length();
+		_binaryData = directory_listing(filePath);
 	}
 	else
 		buildErrorResponse(request._statusCode);
