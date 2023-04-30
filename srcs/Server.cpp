@@ -73,7 +73,7 @@ void Server::manage_epoll_wait(struct epoll_event &event)
 {
 	if (((event.events & EPOLLERR) || (event.events & EPOLLHUP) || (!(event.events & EPOLLIN))))
 	{
-		perror("fd wrong signal\n");
+		std::cerr << "fd wrong signal" << std::endl;
 		close (event.data.fd);
 	}
 	if (_fd.is_server(event.data.fd) == true)

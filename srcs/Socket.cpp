@@ -48,7 +48,7 @@ void	Socket::allow_socket_server(int port)
 	_fd_server = socket(AF_INET, SOCK_STREAM, 0);
 	if (_fd_server < 0)
 	{
-		perror("creating socket error\n");
+		std::cerr << "creating socket error" << std::endl;
 		exit (1);
 	}
 	bzero(&_server_addr, sizeof(struct sockaddr_in));
@@ -57,17 +57,17 @@ void	Socket::allow_socket_server(int port)
 	_server_addr.sin_port = htons(_port);
 	if (setsockopt(_fd_server, SOL_SOCKET, SO_REUSEADDR, &option, sizeof(int)) < 0)
 	{
-		perror("setsockopt error\n");
+		std::cerr << "setsockopt error" << std::endl;
 		exit (1);
 	}
 	if (bind(_fd_server, (struct sockaddr *)&_server_addr, sizeof(_server_addr)) < 0)
 	{
-		perror("bind socket to the right port error\n");
+		std::cerr << "bind socket to the right port error" << std::endl;
 		exit (1);
 	}
-	if (listen(_fd_server, 10) < 0)
+	if (listen(_fd_server, MAX_LISTEN) < 0)
 	{
-		perror("listen error\n");
+		std::cerr << "listen error on " << _fd_server << " error" << std::endl;
 		exit (1);
 	}
 	make_socket_non_blocking(_fd_server);
