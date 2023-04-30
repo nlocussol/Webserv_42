@@ -23,15 +23,17 @@ Request::Request(std::string& buffer, data& servers, int serverFd)
 
 void Request::parseRequest(data& servers, int serv)
 {
+	// Client requests an empty string ??? Idk what to respond back
 	if (_buffer.length() == 0) {
 		_statusCode = 200;
 		return ;
 	}
 	std::vector<std::string> lines = mysplit(_buffer, "\n");
 	std::vector<std::string> first_line = mysplit(lines[0], " ");
-	if (first_line[1].find("?"))
+	parseURL(first_line[1]);
+	if (first_line[1].find("?")) {
 		_query = true;
-	//not working fdp nathan
+	}
 	if (!isAllowedMethod(first_line[0], servers, serv)) {
 		_statusCode = 405;
 		return ;
@@ -53,6 +55,15 @@ void Request::parseRequest(data& servers, int serv)
 	}
 }
 
+void Request::parseURL(const std::string& url)
+{
+	std::cout << "url = "<< url << "\n";
+	_filePath = url.substr(0, url.find_first_of("?"));
+	_queryString = url.substr(url.find_first_of("?") + 1);
+	std::cout << "path = " << _filePath << "\n";
+	std::cout << "query = " << _queryString << "\n";
+}
+
 void Request::findRequestType(void)
 {
 	//Need to parse only on first line, else METHOD could be in body
@@ -68,7 +79,9 @@ void Request::findRequestType(void)
 
 void Request::findRequestSubType(void)
 {
-	if (_buffer.find("Accept: text") != std::string::npos) 
+	if (_query == true)
+		_requestSubType = QUERY;
+	else if (_buffer.find("Accept: text") != std::string::npos) 
 		_requestSubType = TEXT;
 	else if (_buffer.find("Accept: image") != std::string::npos) 
 		_requestSubType = IMAGE;
@@ -77,9 +90,10 @@ void Request::findRequestSubType(void)
 	//1 is equal to IMAGE, browser accepts everything idk but need to implement better
 }
 
-
 void Request::handleGetRequest()
 {
+	if (_requestSubType == QUERY)
+		handleQuery();
 	//Parse buffer to find file path such as : GET /file.extension HTTP1.1
 	_filePath = _buffer.substr(_buffer.find_first_of(" ") + 1);
 	_filePath = _filePath.substr(1, _filePath.find_first_of(" ") - 1);
@@ -89,7 +103,8 @@ void Request::handleGetRequest()
 	 * pour l'instant, renvoie un fd mais peu renvoyer une string au besoin
 	*/
 	if (!_filePath.empty() && is_dir_listing(_filePath, _servers.serv[_serverFd]) == true) {
-		_statusCode = DIR_LISTING;
+		_statusCode = 200;
+		_requestSubType = DIR_LISTING;
 		return ;
 	}
 	if (!_filePath.empty() && is_cgi(_servers.serv[_serverFd], _filePath) == true)
@@ -114,6 +129,13 @@ void Request::handleGetRequest()
 		return ;
 	}
 	_statusCode = 200;
+}
+
+void Request::handleQuery()
+{
+	while (_queryString.length() != 0) {
+		_queryArg.push_back(_queryString.substr(0, _queryString.find_first_of("&")));
+	}
 }
 
 void Request::handlePostRequest(void)

@@ -70,6 +70,11 @@ void Response::buildResponse(const Request& request, const std::string& filePath
 				break;
 			case DELETE_REQUEST:
 				break;
+			case DIR_LISTING:
+				_contentType.second = "text/html";
+				_contentLength.second = directory_listing(filePath).length();
+				_binaryData = directory_listing(filePath);
+				break;
 			default:
 				break;
 		}
@@ -78,16 +83,8 @@ void Response::buildResponse(const Request& request, const std::string& filePath
 	}
 	else if (request._statusCode == 7)
 	{
-		try {
-		_statusCode = 200;
-		_contentType.second = "text/html";
-		_contentLength.second = directory_listing(filePath).length();
-		_binaryData = directory_listing(filePath);
+	
 		buildCompleteResponse(request._statusCode);
-		}
-		catch (std::exception&) {
-			std::cout <<"here\n\n\n\n";
-		}
 	}
 	else
 		buildErrorResponse(request._statusCode);

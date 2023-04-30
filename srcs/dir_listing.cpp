@@ -17,7 +17,6 @@ MULTIMAP find_location_path(string &path, block_serv servers) {
 bool	is_dir_listing(std::string path, block_serv & servers)
 {
 	DIR *dir;
-	std::cout << path << "\n";
   if ((dir = opendir (path.c_str())) == NULL)
   	return false;
   closedir(dir);
