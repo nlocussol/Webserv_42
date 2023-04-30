@@ -25,8 +25,6 @@ class Server {
 	 void	setSocket(void);
 	 void	runServer(void);
 	 void readRequest(int epoll_fd);
-	 std::string getBuffer(void) const;
-	 int handleGetRequest(int);
 	 int handlePostRequest(int);
 	 bool isFileProtected() const;
 	 int handleDeleteRequest(int);
@@ -38,11 +36,8 @@ class Server {
 	 Socket _socket;
 	 Epoll _epoll;
 	 FdManager _fd;
-	 Request _request;
 	 int _nb_server;
 	 std::string _buffer;
-	 std::string _filePath;
-	 int _statusCode;
 	 data _servers;
  } ;
 
