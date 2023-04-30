@@ -16,7 +16,7 @@ class Request {
 	 void parseURL(const std::string&);
 	 void findRequestType();
  	 void findRequestSubType();
-	 bool isAllowedMethod(std::string&, data&, int);
+	 bool isMethodAllowed(std::string&, data&, int);
 	 bool isFileProtected() const;
  	 void handleGetRequest();
  	 void handleQuery();

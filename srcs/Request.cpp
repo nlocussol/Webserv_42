@@ -29,12 +29,17 @@ void Request::parseRequest(data& servers, int serv)
 		return ;
 	}
 	std::vector<std::string> lines = mysplit(_buffer, "\n");
-	std::vector<std::string> first_line = mysplit(lines[0], " ");
-	parseURL(first_line[1]);
-	if (first_line[1].find("?")) {
-		_query = true;
+	if (lines.size() == 0) {
+		_statusCode = 400;
+		return ;
 	}
-	if (!isAllowedMethod(first_line[0], servers, serv)) {
+	std::vector<std::string> first_line = mysplit(lines[0], " ");
+	if (first_line.size() != 3 || first_line[2].find("HTTP") == std::string::npos){
+		_statusCode = 400;
+		return ;
+	}
+	parseURL(first_line[1]);
+	if (!isMethodAllowed(first_line[0], servers, serv)) {
 		_statusCode = 405;
 		return ;
 	}
@@ -57,11 +62,19 @@ void Request::parseRequest(data& servers, int serv)
 
 void Request::parseURL(const std::string& url)
 {
-	std::cout << "url = "<< url << "\n";
+	MULTIMAP::iterator root = _servers.serv[_serverFd].conf.find("root");
 	_filePath = url.substr(0, url.find_first_of("?"));
-	_queryString = url.substr(url.find_first_of("?") + 1);
+	if (_filePath == "/")	{
+		MULTIMAP::iterator index = _servers.serv[_serverFd].conf.find("index");
+		_filePath = root->second + index->second;
+		return ;
+	}
+	_filePath.insert(0, root->second.erase(root->second.length() - 1,1));
 	std::cout << "path = " << _filePath << "\n";
-	std::cout << "query = " << _queryString << "\n";
+	if (url.find("?") != std::string::npos) {
+		_query = true;
+		_queryString = url.substr(url.find_first_of("?") + 1);
+	}
 }
 
 void Request::findRequestType(void)
@@ -94,9 +107,6 @@ void Request::handleGetRequest()
 {
 	if (_requestSubType == QUERY)
 		handleQuery();
-	//Parse buffer to find file path such as : GET /file.extension HTTP1.1
-	_filePath = _buffer.substr(_buffer.find_first_of(" ") + 1);
-	_filePath = _filePath.substr(1, _filePath.find_first_of(" ") - 1);
 	/*
 	 * regrade si c'est un cgi et le lance au besoin.
 	 * décommenter ces fonctions quand parsing sur cgi sera fait
@@ -108,16 +118,11 @@ void Request::handleGetRequest()
 		return ;
 	}
 	if (!_filePath.empty() && is_cgi(_servers.serv[_serverFd], _filePath) == true)
+	{
+		//need to add a typedef for CGI_HANDLER
+		//+ need to pass _queryArg into char* to send to CGI, probably do this with a getter and then in server object
 		handle_cgi(_servers.serv[_serverFd], _filePath);
-	MULTIMAP::iterator itPathRoot, itPathIndex;
-	itPathRoot = _servers.serv[_serverFd].conf.find("root");
-	itPathIndex = _servers.serv[_serverFd].conf.find("index");
-	if (_filePath == "") {
-		_filePath = itPathRoot->second + itPathIndex->second;
-		_statusCode = 200;
-		return ;
 	}
-	_filePath.insert(0, itPathRoot->second + "/");
 	// Return 404 Not Found if the file does not exist
 	if (access(_filePath.c_str(), F_OK)) {
 		_statusCode = 404;
@@ -133,19 +138,22 @@ void Request::handleGetRequest()
 
 void Request::handleQuery()
 {
-	// while (_queryString.length() != 0) {
-		// _queryArg.push_back(_queryString.substr(0, _queryString.find_first_of("&")));
-	// }
+	std::string arg;
+	size_t ampersandPos;
+	while (_queryString.length() != 0) {
+		if (_queryString.find("&") != std::string::npos)
+			ampersandPos = _queryString.find_first_of("&");
+		else
+			ampersandPos = _queryString.length();
+		arg = _queryString.substr(0, ampersandPos);
+		_queryArg.push_back(arg);
+		_queryString.erase(0, ampersandPos + 1);
+		std::cout << _queryString.length() << "\n\n";
+	}
 }
 
 void Request::handlePostRequest(void)
 {
-	// Parse buffer to find file path such as : POST /file.extension HTTP1.1
-	_filePath = _buffer.substr(_buffer.find_first_of(" ") + 1);
-	_filePath = _filePath.substr(1, _filePath.find_first_of(" ") - 1);
-	MULTIMAP::iterator itPathRoot;
-	itPathRoot = _servers.serv[_serverFd].conf.find("root");
-	_filePath.insert(0, itPathRoot->second);
 	// Return 403 Forbidden is the file is core of our project
 	if (isFileProtected()) {
 		_statusCode = 403;
@@ -182,7 +190,7 @@ void Request::handleDeleteRequest()
 	_statusCode = 200;
 }
 
-bool Request::isAllowedMethod(std::string& method, data& servers, int server)
+bool Request::isMethodAllowed(std::string& method, data& servers, int server)
 {
 	MULTIMAP copy = servers.serv[server].conf;
 	MULTIMAP::iterator it;

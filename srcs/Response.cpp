@@ -14,6 +14,16 @@
 
 std::string Response::_CRLF = "\r\n";
 
+std::string Response::_400Page = "HTTP/1.1 400 Bad Request\r\n"
+"Content-type: text/html\r\n"
+"\r\n"
+"<html>\r\n"
+"<body>\r\n"
+"<h1>Bad Request</h1>\r\n"
+"<p>The request sent is not valid.</p>\r\n"
+"</body>\r\n"
+"</html>\r\n\r\n";
+
 std::string Response::_404Page = "HTTP/1.1 404 Not Found\r\n"
 "Content-type: text/html\r\n"
 "\r\n"
@@ -46,7 +56,6 @@ std::string Response::_405Page = "HTTP/1.1 405 Not Allowed\r\n"
 
 Response::Response()
 {
-	_statusCode = 0;
 	_contentType.first = "Content-Type: ";
 	_contentLength.first = "Content-Length: ";
 	_connection.first = "Connection: ";
@@ -62,28 +71,20 @@ void Response::buildResponse(const Request& request, const std::string& filePath
 	if (request._statusCode == 200 || request._statusCode == 201) {
 		switch (request._requestType) {
 			case GET_REQUEST:
+				if (request._requestSubType == DIR_LISTING)
+					handleDirectoryListing(filePath);
+				else {
 				buildGetHeader(request._requestSubType);
 				buildGetBody(filePath);
+				}
 				break;
 			case POST_REQUEST:
 				buildPostHeader(request._requestSubType);
 				break;
 			case DELETE_REQUEST:
 				break;
-			case DIR_LISTING:
-				_contentType.second = "text/html";
-				_contentLength.second = directory_listing(filePath).length();
-				_binaryData = directory_listing(filePath);
-				break;
-			default:
-				break;
 		}
 		//do this in another function and probably need to rename functions
-		buildCompleteResponse(request._statusCode);
-	}
-	else if (request._statusCode == 7)
-	{
-	
 		buildCompleteResponse(request._statusCode);
 	}
 	else
@@ -130,6 +131,13 @@ void Response::buildGetBody(const std::string& filePath)
 		std::cerr << "Error: Failed opening file to get binary data\n ";
 }
 
+void Response::handleDirectoryListing(const std::string& filePath)
+{
+	_contentType.second = "text/html";
+	_contentLength.second = directory_listing(filePath).length();
+	_binaryData = directory_listing(filePath);	
+}
+
 void Response::buildPostHeader(int requestSubType)
 {
 	//Idk ??
@@ -158,27 +166,20 @@ void Response::buildErrorResponse(int statusCode)
 			_completeResponse = _403Page;
 			break;
 		case 405:
-			std::cerr << "Error 405: Client asked for forbidden ressource\n";
+			std::cerr << "Error 405: Client sent a method not allowed\n";
 			_completeResponse = _405Page;
 			break;
+		case 400:
+			std::cerr << "Error 400: Client sent a bad request\n";
+			_completeResponse = _400Page;
+			break;
 	}
-}
-
-void Response::setStatusCode(int statusCode)
-{
-	_statusCode = statusCode;
-}
-
-int Response::getStatusCode(void)
-{
-	return _statusCode;
 }
 
 std::string& Response::getCompleteResponse(void)
 {
 	return _completeResponse;
 }
-
 
 //Probably move this function somewhere else
 std::string Response::itostr(int i)
