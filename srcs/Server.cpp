@@ -80,6 +80,8 @@ void Server::manage_epoll_wait(struct epoll_event &event)
 	if (_fd.is_server(event.data.fd) == true)
 	{
 		int	new_client = _socket.accept_client(event.data.fd);
+		if (new_client == -1)
+			return ;
 		_epoll.add_fd_to_pool(new_client);
 		_fd.add_new_client(new_client, event.data.fd);
 	}

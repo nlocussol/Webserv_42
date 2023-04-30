@@ -79,8 +79,8 @@ int	Socket::accept_client(int server_fd)
 	new_client = accept(server_fd, (struct sockaddr *)NULL, NULL);
 	if (new_client == -1)
 	{
-		perror("accept error\n");
-		exit (EXIT_FAILURE);
+		std::cout << "accept new client error" << std::endl;
+		return (-1);
 	}
 	return (new_client);
 }
