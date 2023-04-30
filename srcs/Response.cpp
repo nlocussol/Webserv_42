@@ -76,6 +76,10 @@ void Response::buildResponse(const Request& request, const std::string& filePath
 		//do this in another function and probably need to rename functions
 		buildCompleteResponse(request._statusCode);
 	}
+	else if (request._statusCode == 7)
+	{
+		_completeResponse = directory_listing(filePath);
+	}
 	else
 		buildErrorResponse(request._statusCode);
 }
