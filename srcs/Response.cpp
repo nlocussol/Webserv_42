@@ -34,6 +34,16 @@ std::string Response::_403Page = "HTTP/1.1 403 Forbidden\r\n"
 "</body>\r\n"
 "</html>\r\n\r\n";
 
+std::string Response::_405Page = "HTTP/1.1 405 Not Allowed\r\n"
+"Content-type: text/html\r\n"
+"\r\n"
+"<html>\r\n"
+"<body>\r\n"
+"<h1>Method Not Allowed</h1>\r\n"
+"<p>This error does not allow this method.</p>\r\n"
+"</body>\r\n"
+"</html>\r\n\r\n";
+
 Response::Response()
 {
 	_statusCode = 0;
@@ -49,14 +59,14 @@ Response::~Response()
 
 void Response::buildResponse(const Request& request, const std::string& filePath)
 {
-	if (_statusCode == 200 || _statusCode == 201) {
-		switch (request.getRequestType()) {
+	if (request._statusCode == 200 || request._statusCode == 201) {
+		switch (request._requestType) {
 			case GET_REQUEST:
-				buildGetHeader(request.getRequestSubType());
+				buildGetHeader(request._requestSubType);
 				buildGetBody(filePath);
 				break;
 			case POST_REQUEST:
-				buildPostHeader(request.getRequestSubType());
+				buildPostHeader(request._requestSubType);
 				break;
 			case DELETE_REQUEST:
 				break;
@@ -64,10 +74,10 @@ void Response::buildResponse(const Request& request, const std::string& filePath
 				break;
 		}
 		//do this in another function and probably need to rename functions
-		buildCompleteResponse();
+		buildCompleteResponse(request._statusCode);
 	}
 	else
-		buildErrorResponse();
+		buildErrorResponse(request._statusCode);
 }
 
 void Response::buildGetHeader(int requestSubType)
@@ -115,10 +125,10 @@ void Response::buildPostHeader(int requestSubType)
 	//Idk ??
 }
 
-void Response::buildCompleteResponse()
+void Response::buildCompleteResponse(int statusCode)
 {
 	_completeResponse =
-		"HTTP/1.1 " + itostr(_statusCode) + _CRLF 
+		"HTTP/1.1 " + itostr(statusCode) + _CRLF 
 		+ _contentType.first + _contentType.second + _CRLF 
 		+ _contentLength.first + itostr(_contentLength.second) + _CRLF
 		+ _connection.first + _connection.second + _CRLF
@@ -126,9 +136,9 @@ void Response::buildCompleteResponse()
 		+ _binaryData;
 }
 
-void Response::buildErrorResponse()
+void Response::buildErrorResponse(int statusCode)
 {
-	switch (_statusCode) {
+	switch (statusCode) {
 		case 404:
 			std::cerr << "Error 404: Client asked for non existing ressource\n";
 			_completeResponse = _404Page;
@@ -136,6 +146,10 @@ void Response::buildErrorResponse()
 		case 403:
 			std::cerr << "Error 403: Client asked for forbidden ressource\n";
 			_completeResponse = _403Page;
+			break;
+		case 405:
+			std::cerr << "Error 405: Client asked for forbidden ressource\n";
+			_completeResponse = _405Page;
 			break;
 	}
 }

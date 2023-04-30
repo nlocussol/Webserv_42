@@ -32,12 +32,6 @@ Server& Server::operator=(const Server& other)
 	return *this;
 }
 
-Server::Server(std::multimap<std::string, std::string>& config)
-{
-	_config = config;
-	_running = true;
-}
-
 void Server::setSocket(void)
 {
 	int	server;
@@ -94,27 +88,26 @@ void Server::manage_epoll_wait(struct epoll_event &event)
 		int	server;
 		server = _fd.find_matching_server(event.data.fd);	
 		readRequest(event.data.fd);/*, server*/
+		Request request(_buffer);
 		std::cout << "Request-----\n" << _buffer;
-		_request.setBuffer(_buffer);
-		_request.parseRequest();
-		_request.findRequestType();
-		Response response;
-		switch (_request.getRequestType()) {
-			case GET_REQUEST:
-				response.setStatusCode(handleGetRequest(server));
-				break;
-			case POST_REQUEST:
-				response.setStatusCode(handlePostRequest(server));
-				break;
-			case DELETE_REQUEST:
-				response.setStatusCode(handleDeleteRequest(server));
-				break;
-			default :
-				break;
+		request.parseRequest(_servers, server);
+		request.findRequestType();
+		if (request._statusCode != UNSUPPORTED_REQUEST) {
+			request.findRequestSubType();
+			switch (request._requestType) {
+				case GET_REQUEST:
+					request._statusCode = handleGetRequest(server);
+					break;
+				case POST_REQUEST:
+					request._statusCode = handlePostRequest(server);
+					break;
+				case DELETE_REQUEST:
+					request._statusCode = handleDeleteRequest(server);
+					break;
+			}
 		}
-		if (response.getStatusCode() != UNSUPPORTED_REQUEST)
-			_request.findRequestSubType();
-		response.buildResponse(_request, _filePath);
+		Response response;
+		response.buildResponse(request, _filePath);
 		// std::cout << "Response------\n" << response.getCompleteResponse();
 		sendResponse(response, event.data.fd);
 		_filePath.clear();
