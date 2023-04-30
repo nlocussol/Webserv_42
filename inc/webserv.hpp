@@ -14,7 +14,7 @@
 typedef enum request_type {UNSUPPORTED_REQUEST = 1, GET_REQUEST, POST_REQUEST, DELETE_REQUEST} e_request;
 typedef enum request_sub_type {TEXT = 1, IMAGE, VIDEO} e_requestsubtype;
 
-int		handle_cgi(MULTIMAP map, std::string exec);
-bool	is_cgi(MULTIMAP map, std::string file);
+int		handle_cgi(block_serv server, std::string exec);
+bool	is_cgi(block_serv server, std::string file);
 
 #endif

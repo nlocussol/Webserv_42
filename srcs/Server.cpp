@@ -135,10 +135,8 @@ int Server::handleGetRequest(int server)
 	 * décommenter ces fonctions quand parsing sur cgi sera fait
 	 * pour l'instant, renvoie un fd mais peu renvoyer une string au besoin
 	*/
-	/*
-	 if (is_cgi(_servers.serv[server].conf, _filePath) == true)
-		handle_cgi(_servers.serv[server].conf, _filePath);
-	*/
+	if (!_filePath.empty() && is_cgi(_servers.serv[server], _filePath) == true)
+		handle_cgi(_servers.serv[server], _filePath);
 	MULTIMAP::iterator itPathRoot, itPathIndex;
 	itPathRoot = _servers.serv[server].conf.find("root");
 	itPathIndex = _servers.serv[server].conf.find("index");
