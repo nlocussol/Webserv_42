@@ -21,6 +21,8 @@ void pars_dir(string path, MULTIMAP & copy) {
 	if (it == copy.end() && path == "root")
 		throw (logic_error("Error: need a root in servers block!"));
 	while (it != copy.end()) {
+		if (path == "root" && (it->second == "srcs/" || it->second == "inc/" || it->second == "conf/"))
+			throw (logic_error("Error: " + it->first + " can't be: " + it->second));
 		DIR *file = opendir(it->second.c_str());
 		if (!file)
 			throw (logic_error("Error: " + it->first + " have a bad path: " + it->second));
@@ -34,7 +36,7 @@ void pars_file(string path, MULTIMAP & copy, string & root) {
 	MULTIMAP::iterator it = copy.find(path);
 	while (it != copy.end()) {
 		fstream file;
-		file.open((root + "/" + it->second).c_str());
+		file.open((root + it->second).c_str());
 		if (!file)
 			throw (logic_error("Error: " + it->first + " have a bad path: " + it->second));
 		copy.erase(it);
@@ -86,7 +88,7 @@ void pars_errpage(MULTIMAP & copy, MULTIMAP & current, string & root) {
 		current.erase(it_current);
 		it = copy.find("errpage");
 		it_current = current.find("errpage");
-		file.open((root + "/" + it->second).c_str());
+		file.open((root + it->second).c_str());
 		if (!file)
 			throw (logic_error("Error: errpage redirection can't be open: " + it->second));
 		string file = it->second;
