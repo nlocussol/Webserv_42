@@ -19,19 +19,19 @@ using namespace std;
 typedef multimap<string, string> MULTIMAP;
 
 struct block_location {
-	vector<block_location> serv;
-	MULTIMAP conf;
+	vector<block_location> v_location;
+	MULTIMAP conf_location;
 	string path;
 	int stage;
 };
 
 struct block_serv {
-	vector<block_location> serv;
-	MULTIMAP conf;
+	vector<block_location> v_location;
+	MULTIMAP conf_serv;
 };
 
 struct data {
-	vector<block_serv> serv;
+	vector<block_serv> v_serv;
 };
 
 void pars_conf(string & file, data & servers);

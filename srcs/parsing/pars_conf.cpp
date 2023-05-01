@@ -38,9 +38,9 @@ void recursive_location(fstream & file, block_serv & servers, vector<string> opt
 	if (tab.size() != 1 || tab[0] != "{")
 		throw (logic_error("Error: need a bracket after location block!"));
 	block_location location;
-	servers.serv.push_back(location);
-	int index = servers.serv.size() - 1;
-	servers.serv[index].stage = stage;
+	servers.v_location.push_back(location);
+	int index = servers.v_location.size() - 1;
+	servers.v_location[index].stage = stage;
 	vector<string>::iterator it;
 	while (getline(file, line)) {
 		if (!line.empty()) {
@@ -54,7 +54,7 @@ void recursive_location(fstream & file, block_serv & servers, vector<string> opt
 		else if (find_bracket(tab))
 			throw (logic_error("Error: a bracket are a bad position in file!"));
 		else if (tab.size() == 2 && tab[0] == "location") {
-			servers.serv[index].path = tab[1];
+			servers.v_location[index].path = tab[1];
 			recursive_location(file, servers, options, stage + 1);
 		}
 		else if (it != options.end()) {
@@ -71,7 +71,7 @@ void recursive_location(fstream & file, block_serv & servers, vector<string> opt
 			else if (tab[0] == "redirect" && tab.size() != 2)
 				throw (logic_error("Error: redirect take only one arguments!"));
 			for (unsigned long i = 1; i < tab.size(); i++)
-				servers.serv[index].conf.insert(make_pair(tab[0], tab[i]));
+				servers.v_location[index].conf_location.insert(make_pair(tab[0], tab[i]));
 		} 
 		else
 			throw (logic_error("Error: bad input!"));
@@ -87,8 +87,8 @@ void pars_line(fstream & file, data & servers, vector<string> options) {
 	if (tab.size() != 1 || tab[0] != "{")
 		throw (logic_error("Error: need a bracket after server block!"));
 	block_serv serv;
-	servers.serv.push_back(serv);
-	int index = servers.serv.size() - 1;
+	servers.v_serv.push_back(serv);
+	int index = servers.v_serv.size() - 1;
 	vector<string>::iterator it;
 	while (getline(file, line)) {
 		if (!line.empty()) {
@@ -104,7 +104,7 @@ void pars_line(fstream & file, data & servers, vector<string> options) {
 		else if (tab[0] == "location") {
 			if (tab.size() != 2)
 				throw (logic_error("Error: location block need a path!"));
-			recursive_location(file, servers.serv[index], options, 0);
+			recursive_location(file, servers.v_serv[index], options, 0);
 		}
 		else if (it != options.end()) {
 			if (tab.size() < 2)
@@ -120,7 +120,7 @@ void pars_line(fstream & file, data & servers, vector<string> options) {
 			else if (tab[0] == "redirect" && tab.size() != 2)
 				throw (logic_error("Error: redirect take only one arguments!"));
 			for (unsigned long i = 1; i < tab.size(); i++)
-				servers.serv[index].conf.insert(make_pair(tab[0], tab[i]));
+				servers.v_serv[index].conf_serv.insert(make_pair(tab[0], tab[i]));
 		} 
 		else
 			throw (logic_error("Error: bad input!"));

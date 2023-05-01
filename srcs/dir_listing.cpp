@@ -7,11 +7,11 @@
 #include "../inc/parsing.hpp"
 
 MULTIMAP find_location_path(string &path, block_serv servers) {
-	for (unsigned long i = 0; i < servers.serv.size(); i++) {
-		if (servers.serv[i].path == path)
-			return (servers.serv[i].conf);
+	for (unsigned long i = 0; i < servers.v_location.size(); i++) {
+		if (servers.v_location[i].path == path)
+			return (servers.v_location[i].conf_location);
 	}
-	return (servers.conf);
+	return (servers.conf_serv);
 }
 
 bool	is_dir_listing(std::string path, block_serv & servers)

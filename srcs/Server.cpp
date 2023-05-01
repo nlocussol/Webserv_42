@@ -9,7 +9,7 @@ bool Server::_running = true;
 Server::Server(data servers) : _socket(), _epoll(), _fd() 
 {
 	signal(SIGINT, handle_sigint);
-	_nb_server = servers.serv.size();
+	_nb_server = servers.v_serv.size();
 	_running = true;
 	_servers = servers;
 }
@@ -40,8 +40,8 @@ void Server::setSocket(void)
 	_epoll.create_epoll();
 	for (int i = 0; i < _nb_server; i++)
 	{
-		it  = _servers.serv[i].conf.find("listen");
-		while (it != _servers.serv[i].conf.end())
+		it  = _servers.v_serv[i].conf_serv.find("listen");
+		while (it != _servers.v_serv[i].conf_serv.end())
 		{
 			port = atoi(it->second.c_str());
 			std::cout << "Server " << i << " listen on port " << port << std::endl;
@@ -50,8 +50,8 @@ void Server::setSocket(void)
 			_fd.set_fd_servers(server, i);
 			_epoll.add_fd_to_pool(server);
 
-			_servers.serv[i].conf.erase(it);
-			it  = _servers.serv[i].conf.find("listen");
+			_servers.v_serv[i].conf_serv.erase(it);
+			it  = _servers.v_serv[i].conf_serv.find("listen");
 		}
 	}
 }

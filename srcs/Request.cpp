@@ -62,10 +62,10 @@ void Request::parseRequest(data& servers, int serv)
 
 void Request::parseURL(const std::string& url)
 {
-	MULTIMAP::iterator root = _servers.serv[_serverFd].conf.find("root");
+	MULTIMAP::iterator root = _servers.v_serv[_serverFd].conf_serv.find("root");
 	_filePath = url.substr(0, url.find_first_of("?"));
 	if (_filePath == "/")	{
-		MULTIMAP::iterator index = _servers.serv[_serverFd].conf.find("index");
+		MULTIMAP::iterator index = _servers.v_serv[_serverFd].conf_serv.find("index");
 		_filePath = root->second + index->second;
 		return ;
 	}
@@ -112,16 +112,16 @@ void Request::handleGetRequest()
 	 * décommenter ces fonctions quand parsing sur cgi sera fait
 	 * pour l'instant, renvoie un fd mais peu renvoyer une string au besoin
 	*/
-	if (!_filePath.empty() && is_dir_listing(_filePath, _servers.serv[_serverFd]) == true) {
+	if (!_filePath.empty() && is_dir_listing(_filePath, _servers.v_serv[_serverFd]) == true) {
 		_statusCode = 200;
 		_requestSubType = DIR_LISTING;
 		return ;
 	}
-	if (!_filePath.empty() && is_cgi(_servers.serv[_serverFd], _filePath) == true)
+	if (!_filePath.empty() && is_cgi(_servers.v_serv[_serverFd], _filePath) == true)
 	{
 		//need to add a typedef for CGI_HANDLER
 		//+ need to pass _queryArg into char* to send to CGI, probably do this with a getter and then in server object
-		handle_cgi(_servers.serv[_serverFd], _filePath);
+		handle_cgi(_servers.v_serv[_serverFd], _filePath);
 	}
 	// Return 404 Not Found if the file does not exist
 	if (access(_filePath.c_str(), F_OK)) {
@@ -192,7 +192,7 @@ void Request::handleDeleteRequest()
 
 bool Request::isMethodAllowed(std::string& method, data& servers, int server)
 {
-	MULTIMAP copy = servers.serv[server].conf;
+	MULTIMAP copy = servers.v_serv[server].conf_serv;
 	MULTIMAP::iterator it;
 
 	it = copy.find("methods");
