@@ -4,19 +4,15 @@
 
 void fill_root(MULTIMAP & current) {
 	MULTIMAP::iterator it = current.find("root");
-	while (it != current.end()) {
-		if (it->second[it->second.size() - 1] != '/')
-			it->second += "/";
-		current.erase(it);
-		it = current.find("root");
-	}
+	if (it->second[it->second.size() - 1] != '/')
+		it->second += "/";
 }
 
 void pars_manager(block_location & servers, vector<int> & ports) {
 	MULTIMAP::iterator it = servers.conf_location.find("root");
 	MULTIMAP copy = servers.conf_location;
 
-	//fill_root(servers.conf_location);
+	fill_root(servers.conf_location);
 	pars_dir("root", copy);
 	pars_file("index", copy, it->second);
 	pars_listen(copy, ports);
@@ -30,7 +26,7 @@ void pars_manager(block_serv & servers, vector<int> & ports) {
 	MULTIMAP::iterator it = servers.conf_serv.find("root");
 	MULTIMAP copy = servers.conf_serv;
 
-	//fill_root(servers.conf_serv);
+	fill_root(servers.conf_serv);
 	pars_dir("root", copy);
 	pars_file("index", copy, it->second);
 	pars_listen(copy, ports);
@@ -59,8 +55,8 @@ void pars_struct(data & servers) {
 			vector<int> tmp;
 			int stage = servers.v_serv[i].v_location[j].stage;
 			string path = servers.v_serv[i].v_location[j].path;
-			//if (path[path.size() - 1] != '/')
-			//	path += "/";
+			if (path[path.size() - 1] != '/')
+				servers.v_serv[i].v_location[j].path += "/";
 			if (stage == 0)
 				fill_location(servers.v_serv[i].v_location[j].conf_location, servers.v_serv[i].conf_serv);
 			else {

@@ -19,7 +19,6 @@ using namespace std;
 typedef multimap<string, string> MULTIMAP;
 
 struct block_location {
-	vector<block_location> v_location;
 	MULTIMAP conf_location;
 	string path;
 	int stage;
