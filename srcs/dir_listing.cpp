@@ -24,7 +24,7 @@ bool	is_dir_listing(std::string path, block_serv & servers)
 	MULTIMAP copy = find_location_path(path, servers);
 	MULTIMAP::iterator it = copy.find("autoindex");
 	if (it != copy.end()
-		|| (it->second == "on" && copy.find("index") == copy.end()))
+		&& it->second == "on" && copy.find("index") == copy.end())
 		return true;
 	return false;
 }

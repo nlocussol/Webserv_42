@@ -66,16 +66,17 @@ Response::~Response()
 {
 }
 
-void Response::buildResponse(const Request& request, const std::string& filePath)
+void Response::buildResponse(const Request& request)
 {
 	if (request._statusCode == 200 || request._statusCode == 201) {
 		switch (request._requestType) {
 			case GET_REQUEST:
-				if (request._requestSubType == DIR_LISTING)
-					handleDirectoryListing(filePath);
+				if (request._requestSubType == DIR_LISTING) {
+					handleDirectoryListing(request._filePath);
+				}
 				else {
-				buildGetHeader(request._requestSubType);
-				buildGetBody(filePath);
+					buildGetHeader(request._requestSubType);
+					buildGetBody(request._filePath);
 				}
 				break;
 			case POST_REQUEST:
@@ -127,7 +128,7 @@ void Response::buildGetBody(const std::string& filePath)
 		_binaryData = fileSs.str();
 		delete [] fileData;
 	}
-	else 
+	else
 		std::cerr << "Error: Failed opening file to get binary data\n ";
 }
 

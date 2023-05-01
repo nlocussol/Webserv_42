@@ -32,7 +32,7 @@ run: all
 	./$(NAME) conf/default.conf
 
 run2: all
-	valgrind --show-leak-kinds=all --leak-check=full ./$(NAME) conf/default.conf
+	valgrind ./$(NAME) conf/default.conf
 
 re: fclean all
 

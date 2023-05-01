@@ -6,7 +6,7 @@
 
 class Response { 
 	public:
-	 void buildResponse(const Request&, const std::string&);
+	 void buildResponse(const Request&);
 	 std::string& getCompleteResponse(void);
 	 Response();
 	 ~Response();

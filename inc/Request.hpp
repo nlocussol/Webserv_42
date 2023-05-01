@@ -13,7 +13,7 @@ class Request {
 	 Request(std::string&, data&, int);
 	 ~Request();
 	 void parseRequest(data&, int);
-	 void parseURL(const std::string&);
+	 void parseURI(const std::string&);
 	 void findRequestType();
  	 void findRequestSubType();
 	 bool isMethodAllowed(std::string&, data&, int);
@@ -28,6 +28,7 @@ class Request {
 	 int _requestSubType;
 	 int _statusCode;
 	 bool _query;
+	 std::string _rootPath;
 	 std::string _filePath;
 	 std::string _queryString;
 	 std::vector<std::string> _queryArg;

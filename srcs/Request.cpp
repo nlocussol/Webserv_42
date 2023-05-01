@@ -38,13 +38,13 @@ void Request::parseRequest(data& servers, int serv)
 		_statusCode = 400;
 		return ;
 	}
-	parseURL(first_line[1]);
+	parseURI(first_line[1]);
 	if (!isMethodAllowed(first_line[0], servers, serv)) {
 		_statusCode = 405;
 		return ;
 	}
 	findRequestType();
-	if (_statusCode != UNSUPPORTED_REQUEST) {
+	if (_requestType != UNSUPPORTED_REQUEST) {
 		findRequestSubType();
 		switch (_requestType) {
 			case GET_REQUEST:
@@ -60,34 +60,55 @@ void Request::parseRequest(data& servers, int serv)
 	}
 }
 
-void Request::parseURL(const std::string& url)
+void Request::parseURI(const std::string& uri)
 {
 	MULTIMAP::iterator root = _servers.v_serv[_serverFd].conf_serv.find("root");
-	_filePath = url.substr(0, url.find_first_of("?"));
-	if (_filePath == "/")	{
-		MULTIMAP::iterator index = _servers.v_serv[_serverFd].conf_serv.find("index");
+	MULTIMAP::iterator index = _servers.v_serv[_serverFd].conf_serv.find("index");
+	_rootPath = root->second;
+	_rootPath.erase(_rootPath.end() - 1);
+	_filePath = uri.substr(0, uri.find_first_of("?"));
+	if (_filePath == "/" && index->second != "")	{
 		_filePath = root->second + index->second;
 		return ;
 	}
-	_filePath.insert(0, root->second.erase(root->second.length() - 1,1));
-	std::cout << "path = " << _filePath << "\n";
-	if (url.find("?") != std::string::npos) {
+	// Remove first /
+	_filePath.erase(0, 1);
+
+	//Insert root path if not already in URI
+	if (_filePath.compare(0, _rootPath.length(), _rootPath)) {
+		_filePath.insert(0, _rootPath);
+		//Add a / between root and file path cause client are dumb mfs
+		if (_filePath[_rootPath.length()] != '/')
+			_filePath.insert(_rootPath.length(), "/");
+	}
+
+	//If autoindex is turned off or not specified, return a 403 Forbidden error
+	//Need to fix it ffff
+	// if (!is_dir_listing(_filePath, _servers.v_serv[_serverFd])) {
+	// 	_statusCode = 403;
+	// 	_requestType = ERROR_RESPONSE;
+	// 	std::cout <<"here\n";
+	// 	return;
+	// }
+	if (uri.find("?") != std::string::npos) {
 		_query = true;
-		_queryString = url.substr(url.find_first_of("?") + 1);
+		_queryString = uri.substr(uri.find_first_of("?") + 1);
 	}
 }
 
 void Request::findRequestType(void)
 {
-	//Need to parse only on first line, else METHOD could be in body
-	if (_buffer.find("GET") != std::string::npos)
-		_requestType = GET_REQUEST;
-	else if (_buffer.find("POST") != std::string::npos)
-		_requestType = POST_REQUEST;
-	else if (_buffer.find("DELETE") != std::string::npos)
-		_requestType = DELETE_REQUEST;
-	else 
-		_requestType = UNSUPPORTED_REQUEST;
+	if (_statusCode == 0) {
+		//Need to parse only on first line, else METHOD could be in body
+		if (_buffer.find("GET") != std::string::npos)
+			_requestType = GET_REQUEST;
+		else if (_buffer.find("POST") != std::string::npos)
+			_requestType = POST_REQUEST;
+		else if (_buffer.find("DELETE") != std::string::npos)
+			_requestType = DELETE_REQUEST;
+		else 
+			_requestType = UNSUPPORTED_REQUEST;
+	}
 }
 
 void Request::findRequestSubType(void)
@@ -140,6 +161,8 @@ void Request::handleQuery()
 {
 	std::string arg;
 	size_t ampersandPos;
+	//need to test if it works + what to do with it + need to translate + to space " " and special characters zzz
+	//It is needed in some CGI where the _queryArg needs to be translated into env for execve 
 	while (_queryString.length() != 0) {
 		if (_queryString.find("&") != std::string::npos)
 			ampersandPos = _queryString.find_first_of("&");
