@@ -30,7 +30,7 @@ vector<string> mysplit(string & line, string delimiter) {
 	return (tab);
 }
 
-void recursive_location(fstream & file, block_serv & servers, vector<string> options, int stage) {
+void recursive_location(fstream & file, block_serv & servers, vector<string> options, int stage, string & path) {
 	string line;
 	if (!getline(file, line))
 		throw (logic_error("Error: need a bracket after location block!"));
@@ -41,6 +41,7 @@ void recursive_location(fstream & file, block_serv & servers, vector<string> opt
 	servers.v_location.push_back(location);
 	int index = servers.v_location.size() - 1;
 	servers.v_location[index].stage = stage;
+	servers.v_location[index].path = path;
 	vector<string>::iterator it;
 	while (getline(file, line)) {
 		if (!line.empty()) {
@@ -53,9 +54,10 @@ void recursive_location(fstream & file, block_serv & servers, vector<string> opt
 			return ;
 		else if (find_bracket(tab))
 			throw (logic_error("Error: a bracket are a bad position in file!"));
-		else if (tab.size() == 2 && tab[0] == "location") {
-			servers.v_location[index].path = tab[1];
-			recursive_location(file, servers, options, stage + 1);
+		else if (tab[0] == "location") {
+			if (tab.size() != 2)
+				throw (logic_error("Error: location block need a path!"));
+			recursive_location(file, servers, options, stage + 1, tab[1]);
 		}
 		else if (it != options.end()) {
 			if (tab.size() < 2)
@@ -104,7 +106,7 @@ void pars_line(fstream & file, data & servers, vector<string> options) {
 		else if (tab[0] == "location") {
 			if (tab.size() != 2)
 				throw (logic_error("Error: location block need a path!"));
-			recursive_location(file, servers.v_serv[index], options, 0);
+			recursive_location(file, servers.v_serv[index], options, 0, tab[1]);
 		}
 		else if (it != options.end()) {
 			if (tab.size() < 2)

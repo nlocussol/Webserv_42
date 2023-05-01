@@ -21,11 +21,14 @@ void pars_dir(string path, MULTIMAP & copy) {
 	if (it == copy.end() && path == "root")
 		throw (logic_error("Error: need a root in servers block!"));
 	while (it != copy.end()) {
-		if (path == "root" && (it->second == "srcs/" || it->second == "inc/" || it->second == "conf/"))
-			throw (logic_error("Error: " + it->first + " can't be: " + it->second));
 		DIR *file = opendir(it->second.c_str());
 		if (!file)
 			throw (logic_error("Error: " + it->first + " have a bad path: " + it->second));
+		if (path == "root") {
+			string root = it->second.substr(0, it->second.find('/') + 1);
+			if (root == "srcs/" || root == "inc/" || root == "conf/")
+				throw (logic_error("Error: " + it->first + " can't start with: " + root));
+		}
 		closedir(file);
 		copy.erase(it);
 		it = copy.find(path);
