@@ -94,7 +94,7 @@ void Server::manage_epoll_wait(struct epoll_event &event)
 		request.parseRequest(_servers, serverFd);
 		Response response(_servers.v_serv[serverFd]);
 		response.buildResponse(request);
-		std::cout << "Response------\n" << response.getCompleteResponse();
+		//std::cout << "Response------\n" << response.getCompleteResponse();
 		sendResponse(response, event.data.fd);
 	}
 }
