@@ -112,10 +112,13 @@ bool Response::check_dir(string & filePath, block_serv & server) {
 	DIR *dir = opendir(filePath.c_str());
 	if (dir == NULL)
 		return true;
+	closedir(dir);
 	MULTIMAP copy = find_location_path(filePath, server);
 	MULTIMAP::iterator index = copy.find("index");
 	if (index != copy.end()) {
-		filePath += "/" + index->second;
+		if (filePath[filePath.size() - 1] != '/')
+			filePath += "/";
+		filePath += index->second;
 		cout << "file: "<<filePath<<endl;
 		return true;
 	}

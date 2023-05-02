@@ -60,8 +60,12 @@ std::string directory_listing(std::string path)
 
     dir = opendir (path.c_str()); 
     while ((dp = readdir (dir)) != NULL) {
-			std::string test = dp->d_name;
-			body += "\t\t\t<li><a href=\"" + path + "/" + test +  "\">" + dp->d_name + "</a></li>\r\n";
+			if (static_cast<string>(dp->d_name) == "." || static_cast<string>(dp->d_name) == "..")
+				continue ;
+			body += "\t\t\t<li><a href=\"" + path;
+			if (path[path.size() - 1] != '/')
+				body += "/";
+			body += static_cast<string>(dp->d_name) + "\">" + dp->d_name + "</a></li>\r\n";
 		}
 	body += "\t\t</ul>\r\n\
 	</body>\r\n\
