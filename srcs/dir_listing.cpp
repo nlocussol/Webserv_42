@@ -43,7 +43,7 @@ bool	is_dir_listing(std::string path, block_serv & servers)
  *
 **/
 
-std::string directory_listing(std::string path)
+std::string directory_listing(std::string path, block_serv & server)
 {
     DIR *dir;
     struct dirent *dp;
@@ -59,14 +59,20 @@ std::string directory_listing(std::string path)
 		<ul>\r\n";
 
     dir = opendir (path.c_str()); 
+	std::string ls;
+	MULTIMAP map = find_location_path(path, server);
+	std::string root = map.find("root")->second;
+	path.erase(0, root.size());
+	std::cout << "path" << path << std::endl;
     while ((dp = readdir (dir)) != NULL) {
-			if (static_cast<string>(dp->d_name) == "." || static_cast<string>(dp->d_name) == "..")
-				continue ;
-			body += "\t\t\t<li><a href=\"" + path;
-			if (path[path.size() - 1] != '/')
-				body += "/";
-			body += static_cast<string>(dp->d_name) + "\">" + dp->d_name + "</a></li>\r\n";
-		}
+		ls = dp->d_name;
+		if (ls == "." || ls == "..")
+			continue ;
+		body += "\t\t\t<li><a href=\"" + path;
+		if (path[path.size() - 1] != '/')
+			body += "/";
+		body += ls + "\">" + ls + "</a></li>\r\n";
+	}
 	body += "\t\t</ul>\r\n\
 	</body>\r\n\
 </html>\r\n";

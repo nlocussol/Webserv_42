@@ -54,12 +54,13 @@ std::string Response::_405Page = "HTTP/1.1 405 Not Allowed\r\n"
 "</body>\r\n"
 "</html>\r\n\r\n";
 
-Response::Response()
+Response::Response(block_serv serv)
 {
 	_contentType.first = "Content-Type: ";
 	_contentLength.first = "Content-Length: ";
 	_connection.first = "Connection: ";
 	_connection.second = "keep_alive";
+	_server = serv;
 }
 
 Response::~Response()
@@ -132,7 +133,6 @@ void Response::buildGetBody(std::string& filePath, block_serv server)
 		cout << "on a un pb" << endl;
 		return ;
 	}
-	cout << "file after: "<<filePath<<endl;
 	std::ifstream file(filePath.c_str(), std::ios::in | std::ios::binary);
 	if (file) {
 		//Find file size and append it to buffer
@@ -157,8 +157,8 @@ void Response::buildGetBody(std::string& filePath, block_serv server)
 void Response::handleDirectoryListing(const std::string& filePath)
 {
 	_contentType.second = "text/html";
-	_contentLength.second = directory_listing(filePath).length();
-	_binaryData = directory_listing(filePath);	
+	_contentLength.second = directory_listing(filePath, _server).length();
+	_binaryData = directory_listing(filePath, _server);	
 }
 
 void Response::buildPostHeader(int requestSubType)

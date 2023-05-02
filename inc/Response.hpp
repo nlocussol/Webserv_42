@@ -6,10 +6,11 @@
 #include "parsing.hpp"
 
 class Response { 
+
 	public:
 	 void buildResponse(Request&);
 	 std::string& getCompleteResponse(void);
-	 Response();
+	 Response(block_serv);
 	 ~Response();
 
 	private:
@@ -33,6 +34,8 @@ class Response {
 	 static std::string _403Page;
 	 static std::string _405Page;
 	 static std::string _400Page;
+	 block_serv			_server;
+	 
  } ;
 
 #endif // RESPONSE_HPP_
