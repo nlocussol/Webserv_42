@@ -3,10 +3,11 @@
 
 #include <string>
 #include "Request.hpp"
+#include "parsing.hpp"
 
 class Response { 
 	public:
-	 void buildResponse(const Request&);
+	 void buildResponse(Request&);
 	 std::string& getCompleteResponse(void);
 	 Response();
 	 ~Response();
@@ -14,7 +15,8 @@ class Response {
 	private:
 	 void buildCompleteResponse(int);
 	 void buildGetHeader(int);
-	 void buildGetBody(const std::string&);
+	 void buildGetBody(std::string&, block_serv );
+	 bool check_dir(string &, block_serv &);
 	 void handleDirectoryListing(const std::string&);
 	 void buildPostHeader(int);
 	 void buildErrorResponse(int);

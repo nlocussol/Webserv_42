@@ -26,6 +26,8 @@ bool	is_cgi(block_serv server, std::string file)
 	else
 		path = "/";
 	copy = find_location_path(path, server);
+	if (copy.find("cgi") == copy.end())
+		return (false);
 	copy.erase(copy.find("cgi")); 
 	extend = copy.find("cgi")->second; 
 	check = file.rfind(extend);

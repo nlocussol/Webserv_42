@@ -66,7 +66,7 @@ Response::~Response()
 {
 }
 
-void Response::buildResponse(const Request& request)
+void Response::buildResponse(Request& request)
 {
 	if (request._statusCode == 200 || request._statusCode == 201) {
 		switch (request._requestType) {
@@ -76,7 +76,7 @@ void Response::buildResponse(const Request& request)
 				}
 				else {
 					buildGetHeader(request._requestSubType);
-					buildGetBody(request._filePath);
+					buildGetBody(request._filePath, request._servers.v_serv[request._serverFd]);
 				}
 				break;
 			case POST_REQUEST:
@@ -108,9 +108,28 @@ void Response::buildGetHeader(int requestSubType)
 	}
 }
 
-void Response::buildGetBody(const std::string& filePath)
+bool Response::check_dir(string & filePath, block_serv & server) {
+	DIR *dir = opendir(filePath.c_str());
+	if (dir == NULL)
+		return true;
+	MULTIMAP copy = find_location_path(filePath, server);
+	MULTIMAP::iterator index = copy.find("index");
+	if (index != copy.end()) {
+		filePath += "/" + index->second;
+		cout << "file: "<<filePath<<endl;
+		return true;
+	}
+	return false;
+}
+
+void Response::buildGetBody(std::string& filePath, block_serv server)
 {
 	//probably need to test if every syscall worked
+	if (!check_dir(filePath, server)) {
+		cout << "on a un pb" << endl;
+		return ;
+	}
+	cout << "file after: "<<filePath<<endl;
 	std::ifstream file(filePath.c_str(), std::ios::in | std::ios::binary);
 	if (file) {
 		//Find file size and append it to buffer
