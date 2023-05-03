@@ -2,6 +2,7 @@
 #include "../inc/Response.hpp"
 #include "../inc/webserv.hpp"
 #include <cstdlib>
+#include <cstring>
 #include <unistd.h>
 
 bool Server::_running = true;
@@ -107,6 +108,7 @@ void Server::readRequest(int epoll_fd)
 	if (recv(epoll_fd, buff, BUFFER_SIZE - 1, 0) == 0)
 		_fd.close_fd(epoll_fd);
 	_buffer = buff;
+	// write(1, _buffchar, BUFFER_SIZE);
 	std::memset(buff, 0, BUFFER_SIZE);
 }
 

@@ -2,7 +2,10 @@
 #define REQUEST_HPP_
 
 #include <string>
+#include <vector>
 #include "parsing.hpp"
+
+#define BUFFER_SIZE 262000
 
 class Request { 
 	friend class Server;
@@ -20,7 +23,9 @@ class Request {
 	 bool isFileProtected() const;
  	 void handleGetRequest();
  	 void handleQuery();
- 	 void handlePostRequest();
+ 	 void handlePostRequest(vector<string> &);
+	 bool handleUpload(vector<string> &);
+	 bool dlImage(string &, vector<string> &, int);
  	 void handleDeleteRequest();
 
 	private:
