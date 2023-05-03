@@ -51,7 +51,7 @@ void Request::parseRequest(data& servers, int serv)
 				handleGetRequest();
 				break;
 			case POST_REQUEST:
-				handlePostRequest();
+				handlePostRequest(lines);
 				break;
 			case DELETE_REQUEST:
 				handleDeleteRequest();
@@ -175,8 +175,45 @@ void Request::handleQuery()
 	}
 }
 
-void Request::handlePostRequest(void)
+bool Request::dlImage(string & id, vector<string> & lines, int i) {
+	ofstream file;
+	for (; lines[i].find(id) == string::npos; i++) { }
+	i++;
+	size_t j = lines[i].find("filename=\"") + 10;
+	string file_name;
+	for (; lines[i][j] && lines[i][j] != '"'; j++)
+		file_name += lines[i][j];
+	file.open(file_name.c_str());
+	if (!file) {
+		cout << "Can't upload file because the file can't be create" << endl;
+		return false;
+	}
+	i += 3;
+	string upload = _buffer.substr(_buffer.find("Content-Disposition:"));
+	string str = upload.substr(upload.find("Content-Type:"));
+	upload = str.substr(str.find("\n") + 3);
+	file << upload;
+	file.close();
+	return true;
+}
+
+bool Request::handleUpload(vector<string> & lines) {
+	for (unsigned long i = 0; i < lines.size(); i++) {
+		if (lines[i].find("boundary=") != string::npos) {
+			string str = lines[i].substr(lines[i].find("boundary=") + 9);
+			string id = str.substr(str.find_last_of('-') + 1);
+			if (!dlImage(id, lines, i + 1))
+				return false;
+			return (true);
+		}
+	}
+	return (false);
+}
+
+void Request::handlePostRequest(vector<string> & lines)
 {
+	if (handleUpload(lines))
+		return ;
 	// Return 403 Forbidden is the file is core of our project
 	if (isFileProtected()) {
 		_statusCode = 403;
@@ -210,6 +247,13 @@ void Request::handlePostRequest(void)
 
 void Request::handleDeleteRequest()
 {
+	if (remove(_filePath.c_str()) < 0) {	
+		string root = _filePath.substr(0, _filePath.find('/') + 1);
+		if (root == "srcs/" || root == "inc/" || root == "conf/")
+			cout << "Can't remove file in " << root << endl;
+		else
+			cout << "Can't remove " << _filePath << endl;
+	}
 	_statusCode = 200;
 }
 

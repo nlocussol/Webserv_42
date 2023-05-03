@@ -2,6 +2,7 @@
 #include "../inc/Response.hpp"
 #include "../inc/webserv.hpp"
 #include <cstdlib>
+#include <cstring>
 #include <unistd.h>
 
 bool Server::_running = true;
@@ -106,7 +107,8 @@ void Server::readRequest(int epoll_fd)
 	//Armand -> condition a enveler si probleme, doit prevenir de l'ouverture de plus de 1024 fd
 	if (recv(epoll_fd, buff, BUFFER_SIZE - 1, 0) == 0)
 		close(epoll_fd);
-	_buffer = buff;
+	_buffer.assign(buff, BUFFER_SIZE);
+	// write(1, _buffchar, BUFFER_SIZE);
 	std::memset(buff, 0, BUFFER_SIZE);
 }
 
