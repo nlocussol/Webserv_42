@@ -91,7 +91,7 @@ void Server::manage_epoll_wait(struct epoll_event &event)
 		serverFd = _fd.find_matching_server(event.data.fd);	
 		readRequest(event.data.fd);/*, server*/
 		Request request(_buffer, _servers, serverFd);
-		std::cout << "Request-----\n" << _buffer;
+		// std::cout << "Request-----\n" << _buffer;
 		request.parseRequest(_servers, serverFd);
 		Response response(_servers.v_serv[serverFd]);
 		response.buildResponse(request);
