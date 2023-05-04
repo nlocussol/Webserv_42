@@ -171,6 +171,8 @@ void Response::buildCompleteResponse(int statusCode)
 	_completeResponse =
 		"HTTP/1.1 " + itostr(statusCode) + _CRLF 
 		+ _contentType.first + _contentType.second + _CRLF 
+		+ "Set-Cookie: yummy_cookie=choco" + _CRLF
+		+ "Set-Cookie: tastie=aaah" + _CRLF
 		+ _contentLength.first + itostr(_contentLength.second) + _CRLF
 		+ _connection.first + _connection.second + _CRLF
 		+ _CRLF

@@ -1,4 +1,5 @@
 #include "../inc/FdManager.hpp"
+#include <unistd.h>
 #include <utility>
 #include <iostream>
 
@@ -66,3 +67,22 @@ int		FdManager::find_matching_server(int client)
 	}
 }
 
+void	FdManager::close_fd(int client)
+{
+	std::map<int, int>::iterator it;
+	it = _fd_pool.find(client);
+	close (client);
+	_fd_pool.erase(it);
+}
+
+void	FdManager::close_every_fd()
+{
+	for (std::map<int, int>::iterator it = _fd_servers.begin(); it != _fd_servers.end(); it++)
+	{
+		close(it->first);
+	}
+	for (std::map<int, int>::iterator it = _fd_pool.begin(); it != _fd_servers.end(); it++)
+	{
+		close(it->first);
+	}
+}

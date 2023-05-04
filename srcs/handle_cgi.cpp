@@ -121,7 +121,7 @@ int	handle_cgi(block_serv server, std::string exec)
 			kill (pid, SIGKILL);
 			close(pip[1]);
 			close(pip[0]);
-			std::cout << "y a pas le droit aux while 1 connard" << std::endl;
+			std::cout << "cgi took more than 3sec to be executed" << std::endl;
 			return (-1);
 		}
 	}

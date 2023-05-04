@@ -95,7 +95,7 @@ void Server::manage_epoll_wait(struct epoll_event &event)
 		request.parseRequest(_servers, serverFd);
 		Response response(_servers.v_serv[serverFd]);
 		response.buildResponse(request);
-		//std::cout << "Response------\n" << response.getCompleteResponse();
+	//	std::cout << "Response------\n" << response.getCompleteResponse();
 		sendResponse(response, event.data.fd);
 	}
 }
@@ -106,8 +106,8 @@ void Server::readRequest(int epoll_fd)
 	std::memset(buff, 0, BUFFER_SIZE);
 	//Armand -> condition a enveler si probleme, doit prevenir de l'ouverture de plus de 1024 fd
 	if (recv(epoll_fd, buff, BUFFER_SIZE - 1, 0) == 0)
-		close(epoll_fd);
-	_buffer.assign(buff, BUFFER_SIZE);
+		_fd.close_fd(epoll_fd);
+	_buffer = buff;
 	// write(1, _buffchar, BUFFER_SIZE);
 	std::memset(buff, 0, BUFFER_SIZE);
 }
