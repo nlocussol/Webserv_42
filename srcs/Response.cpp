@@ -12,48 +12,6 @@
 #include <streambuf>
 #include <utility>
 
-std::string Response::_CRLF = "\r\n";
-
-std::string Response::_400Page = "HTTP/1.1 400 Bad Request\r\n"
-"Content-type: text/html\r\n"
-"\r\n"
-"<html>\r\n"
-"<body>\r\n"
-"<h1>Bad Request</h1>\r\n"
-"<p>The request sent is not valid.</p>\r\n"
-"</body>\r\n"
-"</html>\r\n\r\n";
-
-std::string Response::_404Page = "HTTP/1.1 404 Not Found\r\n"
-"Content-type: text/html\r\n"
-"\r\n"
-"<html>\r\n"
-"<body>\r\n"
-"<h1>Not Found</h1>\r\n"
-"<p>The requested URL was not found on this server.</p>\r\n"
-"</body>\r\n"
-"</html>\r\n\r\n";
-
-std::string Response::_403Page = "HTTP/1.1 403 Forbidden\r\n"
-"Content-type: text/html\r\n"
-"\r\n"
-"<html>\r\n"
-"<body>\r\n"
-"<h1>Forbidden</h1>\r\n"
-"<p>You don't have permission to access this URL on this server.</p>\r\n"
-"</body>\r\n"
-"</html>\r\n\r\n";
-
-std::string Response::_405Page = "HTTP/1.1 405 Not Allowed\r\n"
-"Content-type: text/html\r\n"
-"\r\n"
-"<html>\r\n"
-"<body>\r\n"
-"<h1>Method Not Allowed</h1>\r\n"
-"<p>This error does not allow this method.</p>\r\n"
-"</body>\r\n"
-"</html>\r\n\r\n";
-
 Response::Response(block_serv serv)
 {
 	_contentType.first = "Content-Type: ";
@@ -61,10 +19,6 @@ Response::Response(block_serv serv)
 	_connection.first = "Connection: ";
 	_connection.second = "keep_alive";
 	_server = serv;
-}
-
-Response::~Response()
-{
 }
 
 void Response::buildResponse(Request& request)
@@ -126,13 +80,13 @@ bool Response::check_dir(string & filePath, block_serv & server) {
 	return false;
 }
 
-void Response::buildGetBody(std::string& filePath, block_serv server)
+void Response::buildGetBody(std::string& filePath, block_serv& server)
 {
-	//probably need to test if every syscall worked
-	if (!check_dir(filePath, server)) {
-		cout << "on a un pb" << endl;
-		return ;
-	}
+	// probably need to test if every syscall worked
+	// if (!check_dir(filePath, server)) {
+	// 	cout << "on a un pb" << endl;
+	// 	return ;
+	// }
 	std::ifstream file(filePath.c_str(), std::ios::in | std::ios::binary);
 	if (file) {
 		//Find file size and append it to buffer
@@ -181,24 +135,8 @@ void Response::buildCompleteResponse(int statusCode)
 
 void Response::buildErrorResponse(int statusCode)
 {
-	switch (statusCode) {
-		case 404:
-			std::cerr << "Error 404: Client asked for non existing ressource\n";
-			_completeResponse = _404Page;
-			break;
-		case 403:
-			std::cerr << "Error 403: Client asked for forbidden ressource\n";
-			_completeResponse = _403Page;
-			break;
-		case 405:
-			std::cerr << "Error 405: Client sent a method not allowed\n";
-			_completeResponse = _405Page;
-			break;
-		case 400:
-			std::cerr << "Error 400: Client sent a bad request\n";
-			_completeResponse = _400Page;
-			break;
-	}
+	ErrorPage& errorPage = ErrorPage::getInstance();
+	_completeResponse = errorPage.getErrorPage(statusCode);
 }
 
 std::string& Response::getCompleteResponse(void)
@@ -212,4 +150,10 @@ std::string Response::itostr(int i)
 	std::stringstream ss;
 	ss << i;
 	return ss.str();
+}
+
+std::string Response::_CRLF = "\r\n";
+
+Response::~Response()
+{
 }

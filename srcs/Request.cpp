@@ -19,6 +19,15 @@ Request::Request(std::string& buffer, data& servers, int serverFd)
 	_buffer = buffer;
 	_servers = servers;
 	_serverFd = serverFd;
+	_root = _servers.v_serv[_serverFd].conf_serv.find("root");
+	_rootPath = _root->second;
+	_index = _servers.v_serv[_serverFd].conf_serv.find("index");
+
+	MULTIMAP::iterator autoindex = _servers.v_serv[_serverFd].conf_serv.find("autoindex");
+	if (autoindex == _servers.v_serv[_serverFd].conf_serv.end() || autoindex->second == "off") 
+		_autoindex = false;
+	else
+		_autoindex = true;
 }
 
 void Request::parseRequest(data& servers, int serv)
@@ -28,18 +37,20 @@ void Request::parseRequest(data& servers, int serv)
 		_statusCode = 200;
 		return ;
 	}
-	std::vector<std::string> lines = mysplit(_buffer, "\n");
-	if (lines.size() == 0) {
+
+	_lines = mysplit(_buffer, "\n");
+	if (_lines.size() == 0) {
 		_statusCode = 400;
 		return ;
 	}
-	std::vector<std::string> first_line = mysplit(lines[0], " ");
-	if (first_line.size() != 3 || first_line[2].find("HTTP") == std::string::npos){
+	_requestLine = mysplit(_lines[0], " ");
+	if (_requestLine.size() != 3 || _requestLine[2].find("HTTP") == std::string::npos){
 		_statusCode = 400;
 		return ;
 	}
-	parseURI(first_line[1]);
-	if (!isMethodAllowed(first_line[0], servers, serv)) {
+	parseURI(_requestLine[1]);
+	//Doublon isMethodAllowed && findRequestType
+	if (!isMethodAllowed(_requestLine[0], servers, serv)) {
 		_statusCode = 405;
 		return ;
 	}
@@ -51,7 +62,7 @@ void Request::parseRequest(data& servers, int serv)
 				handleGetRequest();
 				break;
 			case POST_REQUEST:
-				handlePostRequest(lines);
+				handlePostRequest(_lines);
 				break;
 			case DELETE_REQUEST:
 				handleDeleteRequest();
@@ -62,13 +73,10 @@ void Request::parseRequest(data& servers, int serv)
 
 void Request::parseURI(const std::string& uri)
 {
-	MULTIMAP::iterator root = _servers.v_serv[_serverFd].conf_serv.find("root");
-	MULTIMAP::iterator index = _servers.v_serv[_serverFd].conf_serv.find("index");
-	_rootPath = root->second;
 	_rootPath.erase(_rootPath.end() - 1);
 	_filePath = uri.substr(0, uri.find_first_of("?"));
-	if (_filePath == "/" && index->second != "")	{
-		_filePath = root->second + index->second;
+	if (_filePath == "/")	{
+		_filePath = _root->second + _index->second;
 		return ;
 	}
 	// Remove first /
@@ -96,7 +104,7 @@ void Request::parseURI(const std::string& uri)
 	}
 }
 
-void Request::findRequestType(void)
+void Request::findRequestType()
 {
 	if (_statusCode == 0) {
 		//Need to parse only on first line, else METHOD could be in body
@@ -111,7 +119,7 @@ void Request::findRequestType(void)
 	}
 }
 
-void Request::findRequestSubType(void)
+void Request::findRequestSubType()
 {
 	if (_query == true)
 		_requestSubType = QUERY;
@@ -126,10 +134,12 @@ void Request::findRequestSubType(void)
 
 void Request::handleGetRequest()
 {
-	if (_requestSubType == QUERY)
+	if (_requestSubType == QUERY) {
 		handleQuery();
+		return;
+	}
 	/*
-	 * regrade si c'est un cgi et le lance au besoin.
+	 * regarde si c'est un cgi et le lance au besoin.
 	 * décommenter ces fonctions quand parsing sur cgi sera fait
 	 * pour l'instant, renvoie un fd mais peu renvoyer une string au besoin
 	*/
@@ -143,18 +153,20 @@ void Request::handleGetRequest()
 		//need to add a typedef for CGI_HANDLER
 		//+ need to pass _queryArg into char* to send to CGI, probably do this with a getter and then in server object
 		handle_cgi(_servers.v_serv[_serverFd], _filePath);
-	}
-	// Return 404 Not Found if the file does not exist
-	if (access(_filePath.c_str(), F_OK)) {
-		_statusCode = 404;
 		return;
 	}
+
+	// Return 404 Not Found if the file does not exist
+	if (access(_filePath.c_str(), F_OK))
+		_statusCode = 404;
 	// Return 403 Forbidden if the file is not readable
-	if (access(_filePath.c_str(), R_OK)) {
+	else if (access(_filePath.c_str(), R_OK))
 		_statusCode = 403;
-		return ;
-	}
-	_statusCode = 200;
+	// Respond 403 if URI is a directory but autoindex is off
+	else if (is_dir_listing(_filePath, _servers.v_serv[_serverFd]) == AUTOINDEX_OFF)
+		_statusCode = 403;
+	else
+		_statusCode = 200;
 }
 
 void Request::handleQuery()

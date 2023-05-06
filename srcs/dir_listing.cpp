@@ -5,6 +5,7 @@
 #include <libgen.h>
 #include <iostream>
 #include "../inc/parsing.hpp"
+#include "../inc/webserv.hpp"
 
 MULTIMAP find_location_path(const string &path, block_serv servers) {
 	for (unsigned long i = 0; i < servers.v_location.size(); i++) {
@@ -14,19 +15,19 @@ MULTIMAP find_location_path(const string &path, block_serv servers) {
 	return (servers.conf_serv);
 }
 
-bool	is_dir_listing(std::string path, block_serv & servers)
+int	is_dir_listing(std::string path, block_serv & servers)
 {
 	DIR *dir;
   if ((dir = opendir (path.c_str())) == NULL)
-  	return false;
+  	return NOT_DIR;
   closedir(dir);
 
 	MULTIMAP copy = find_location_path(path, servers);
 	MULTIMAP::iterator it = copy.find("autoindex");
 	if (it != copy.end()
 		&& it->second == "on" && copy.find("index") == copy.end())
-		return true;
-	return false;
+		return AUTOINDEX_OK;
+	return AUTOINDEX_OFF;
 }
 
 /**
