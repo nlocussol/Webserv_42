@@ -15,9 +15,10 @@ class Request {
 	 Request(std::string&, data&, int);
 	 ~Request();
 	 void parseRequest(data&, int);
-	 void parseURI(const std::string&);
+	 void parseURI();
 	 void findRequestType();
  	 void findRequestSubType();
+ 	 bool parseRequestLine(void);
 	 bool isMethodAllowed(std::string&, data&, int);
 	 bool isFileProtected() const;
  	 void handleGetRequest();
@@ -36,6 +37,7 @@ class Request {
 	 int _statusCode;
 	 bool _query;
 	 bool _autoindex;
+	 std::string _uri;
 	 std::string _rootPath;
 	 std::string _filePath;
 	 std::string _queryString;

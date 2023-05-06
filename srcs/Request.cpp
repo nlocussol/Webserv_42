@@ -43,12 +43,9 @@ void Request::parseRequest(data& servers, int serv)
 		_statusCode = 400;
 		return ;
 	}
-	_requestLine = mysplit(_lines[0], " ");
-	if (_requestLine.size() != 3 || _requestLine[2].find("HTTP") == std::string::npos){
-		_statusCode = 400;
+	if (!parseRequestLine())
 		return ;
-	}
-	parseURI(_requestLine[1]);
+	parseURI();
 	//Doublon isMethodAllowed && findRequestType
 	if (!isMethodAllowed(_requestLine[0], servers, serv)) {
 		_statusCode = 405;
@@ -71,10 +68,29 @@ void Request::parseRequest(data& servers, int serv)
 	}
 }
 
-void Request::parseURI(const std::string& uri)
+
+//Check if request line is in METHOD URI HTTP/X.X format
+bool Request::parseRequestLine()
 {
+	_requestLine = mysplit(_lines[0], " ");
+	if (_requestLine.size() != 3) {
+		_statusCode = 400;
+		return false;
+	}
+	// Remove last character of HTTP request version (\r)
+	_requestLine[2].erase(_requestLine[2].length() - 1);
+	if (_requestLine[2] != "HTTP/1.1" && _requestLine[2] != "HTTP/1.0") {
+		_statusCode = 400;
+		return false;
+	}
+	return true;
+}
+
+void Request::parseURI()
+{
+	_uri = _requestLine[1];
 	_rootPath.erase(_rootPath.end() - 1);
-	_filePath = uri.substr(0, uri.find_first_of("?"));
+	_filePath = _uri.substr(0, _uri.find_first_of("?"));
 	if (_filePath == "/")	{
 		_filePath = _root->second + _index->second;
 		return ;
@@ -90,17 +106,9 @@ void Request::parseURI(const std::string& uri)
 			_filePath.insert(_rootPath.length(), "/");
 	}
 
-	//If autoindex is turned off or not specified, return a 403 Forbidden error
-	//Need to fix it ffff
-	// if (!is_dir_listing(_filePath, _servers.v_serv[_serverFd])) {
-	// 	_statusCode = 403;
-	// 	_requestType = ERROR_RESPONSE;
-	// 	std::cout <<"here\n";
-	// 	return;
-	// }
-	if (uri.find("?") != std::string::npos) {
+	if (_uri.find("?") != std::string::npos) {
 		_query = true;
-		_queryString = uri.substr(uri.find_first_of("?") + 1);
+		_queryString = _uri.substr(_uri.find_first_of("?") + 1);
 	}
 }
 
@@ -187,41 +195,6 @@ void Request::handleQuery()
 	}
 }
 
-bool Request::dlImage(string & id, vector<string> & lines, int i) {
-	ofstream file;
-	for (; lines[i].find(id) == string::npos; i++) { }
-	i++;
-	size_t j = lines[i].find("filename=\"") + 10;
-	string file_name;
-	for (; lines[i][j] && lines[i][j] != '"'; j++)
-		file_name += lines[i][j];
-	file.open(file_name.c_str());
-	if (!file) {
-		cout << "Can't upload file because the file can't be create" << endl;
-		return false;
-	}
-	i += 3;
-	string upload = _buffer.substr(_buffer.find("Content-Disposition:"));
-	string str = upload.substr(upload.find("Content-Type:"));
-	upload = str.substr(str.find("\n") + 3);
-	file << upload;
-	file.close();
-	return true;
-}
-
-bool Request::handleUpload(vector<string> & lines) {
-	for (unsigned long i = 0; i < lines.size(); i++) {
-		if (lines[i].find("boundary=") != string::npos) {
-			string str = lines[i].substr(lines[i].find("boundary=") + 9);
-			string id = str.substr(str.find_last_of('-') + 1);
-			if (!dlImage(id, lines, i + 1))
-				return false;
-			return (true);
-		}
-	}
-	return (false);
-}
-
 void Request::handlePostRequest(vector<string> & lines)
 {
 	if (handleUpload(lines))
@@ -250,11 +223,47 @@ void Request::handlePostRequest(vector<string> & lines)
 	}
 	// Create file with the same name and fill it with body of POST request
 	size_t bodyBegin = _buffer.find("\r\n\r\n");
+	// need to check if find worked
 	std::string bodyContent = _buffer.substr(bodyBegin + 4);
 	std::ofstream outfile(_filePath.c_str());
 	outfile << bodyContent;
 	outfile.close();
 	_statusCode = 200;
+}
+
+bool Request::dlImage(std::string & id, std::vector<std::string> & lines, int i) {
+	std::ofstream file;
+	for (; lines[i].find(id) == std::string::npos; i++) { }
+	i++;
+	size_t j = lines[i].find("filename=\"") + 10;
+	std::string file_name;
+	for (; lines[i][j] && lines[i][j] != '"'; j++)
+		file_name += lines[i][j];
+	file.open(file_name.c_str());
+	if (!file) {
+		std::cout << "Can't upload file because the file can't be created" << std::endl;
+		return false;
+	}
+	i += 3;
+	std::string upload = _buffer.substr(_buffer.find("Content-Disposition:"));
+	std::string str = upload.substr(upload.find("Content-Type:"));
+	upload = str.substr(str.find("\n") + 3);
+	file << upload;
+	file.close();
+	return true;
+}
+
+bool Request::handleUpload(vector<string> & lines) {
+	for (unsigned long i = 0; i < lines.size(); i++) {
+		if (lines[i].find("boundary=") != string::npos) {
+			string str = lines[i].substr(lines[i].find("boundary=") + 9);
+			string id = str.substr(str.find_last_of('-') + 1);
+			if (!dlImage(id, lines, i + 1))
+				return false;
+			return (true);
+		}
+	}
+	return (false);
 }
 
 void Request::handleDeleteRequest()
