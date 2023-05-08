@@ -38,20 +38,70 @@ bool	is_cgi(block_serv server, std::string file)
 	return (false);
 }
 
-int	check_cgi_args(std::string inter, std::string exec)
+int	check_cgi_args(std::string inter, std::string exec, int *flag)
 {
 
 	if (access(exec.c_str(), X_OK) < 0)
 	{
 		std::cout << "Can't use " << exec << " as an exectuable." << std::endl;
+		(*flag) = PERM_DENIED;
 		return (-1);
 	}
 	if (access(inter.c_str(), X_OK) < 0)
 	{
 		std::cout << "Can't use " << inter << " as an interpreter." << std::endl;
+		(*flag) = PERM_DENIED;
 		return (-1);
 	}
 	return (0);
+}
+
+bool check_time (int pid, int pip[2], int *flag)
+{
+	clock_t begin = clock();
+	clock_t end = clock();
+	double time = 0;
+	int	check = 0;
+	int	wstatus;
+	while (check == 0)
+	{
+		if ((check = waitpid(pid, &wstatus, WNOHANG)) == -1)
+		{
+			std::cerr << "waitpid error" << std::endl;
+			close(pip[0]);
+			close(pip[1]);
+		}
+		end = clock();
+		time = static_cast<double>(end - begin) / CLOCKS_PER_SEC;
+		if (time > MAX_CGI_WAITING)
+		{
+			kill (pid, SIGKILL);
+			close(pip[1]);
+			close(pip[0]);
+			std::cout << "cgi took more than 3sec to be executed" << std::endl;
+			(*flag) = TIME_OUT;
+			return (false);
+		}
+	}
+	close(pip[1]);
+	return (true);
+}
+
+string get_output_cgi(int fd, int *flag)
+{
+	int ret;
+	char	buff[(int)2e16];
+	string	out;
+
+	while ((ret = read(fd, buff, (int)2e16))> 0) 
+		out += buff;
+	if (ret == -1)
+	{
+		(*flag) = RUNTIME_ERROR;
+		cout << "Read error" << endl;
+		return (string());
+	}
+	return (out);
 }
 
 /**
@@ -71,19 +121,18 @@ int	check_cgi_args(std::string inter, std::string exec)
  *
 **/ 
 
-int	handle_cgi(block_serv server, std::string exec)
+string handle_cgi(block_serv server, std::string exec, int *flag)
 {
 	int	pip[2];
 	int	pid;
-	int	wstatus;
 	MULTIMAP map;
 	map = find_location_path(exec, server);
 	std::string inter = map.find("cgi")->second;
 	string str = map.find("root")->second + "/" + exec;
 	char	*param[3] = {(char *)inter.c_str(), (char *)str.c_str(), NULL};
 
-	if (check_cgi_args(inter, str) == -1)
-		return (-1);
+	if (check_cgi_args(inter, str, flag) == -1)
+		return (std::string());
 	pipe(pip);
 	pid = fork();
 	if (pid == -1)
@@ -102,29 +151,7 @@ int	handle_cgi(block_serv server, std::string exec)
 		close(pip[1]);
 		exit(EXIT_FAILURE);
 	}
-	clock_t begin = clock();
-	clock_t end = clock();
-	double time = 0;
-	int	check = 0;
-	while (check == 0)
-	{
-		if ((check = waitpid(pid, &wstatus, WNOHANG)) == -1)
-		{
-			std::cerr << "waitpid error" << std::endl;
-			close(pip[0]);
-			close(pip[1]);
-		}
-		end = clock();
-		time = static_cast<double>(end - begin) / CLOCKS_PER_SEC;
-		if (time > MAX_CGI_WAITING)
-		{
-			kill (pid, SIGKILL);
-			close(pip[1]);
-			close(pip[0]);
-			std::cout << "cgi took more than 3sec to be executed" << std::endl;
-			return (-1);
-		}
-	}
-	close(pip[1]);
-	return (pip[0]);
+	if (check_time(pid, pip, flag) == false)
+		return (string());
+	return (get_output_cgi(pip[0], flag));
 }

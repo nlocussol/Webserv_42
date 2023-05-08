@@ -9,7 +9,10 @@
 #include <sys/wait.h>
 #include <fcntl.h>
 
+#define TIME_OUT 1
+#define PERM_DENIED 2
 #define MAX_CGI_WAITING 3
+#define RUNTIME_ERROR 4
 
 enum request_type {UNSUPPORTED_REQUEST = 1, GET_REQUEST, POST_REQUEST, DELETE_REQUEST, DIR_LISTING, ERROR_RESPONSE};
 enum request_sub_type {TEXT = 1, IMAGE, VIDEO, QUERY};
