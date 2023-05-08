@@ -28,6 +28,7 @@ void	Epoll::create_epoll()
 	_fd_epoll = epoll_create1(0);
 	if (_fd_epoll == -1){
 		std::cerr << "Failed to create epoll fd" << std::endl;
+		std::exit (1);
 	}
 }
 

@@ -82,6 +82,7 @@ int	Socket::accept_client(int server_fd)
 		std::cout << "accept new client error" << std::endl;
 		return (-1);
 	}
+	make_socket_non_blocking(new_client);
 	return (new_client);
 }
 

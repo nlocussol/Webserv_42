@@ -72,7 +72,7 @@ void Server::runServer(void)
 
 void Server::manage_epoll_wait(struct epoll_event &event)
 {
-	if (((event.events & EPOLLERR) || (event.events & EPOLLHUP) || (!(event.events & EPOLLIN))))
+	if ((event.events & EPOLLERR) || (event.events & EPOLLHUP) )
 	{
 		std::cerr << "fd wrong signal" << std::endl;
 		close (event.data.fd);
@@ -81,12 +81,17 @@ void Server::manage_epoll_wait(struct epoll_event &event)
 	{
 		int	new_client = _socket.accept_client(event.data.fd);
 		if (new_client == -1)
+		{
+			cerr << "Accept " << event.data.fd << " error" << endl;
 			return ;
+		}
 		_epoll.add_fd_to_pool(new_client);
 		_fd.add_new_client(new_client, event.data.fd);
 	}
 	else
 	{
+		if (!(event.events & EPOLLIN))
+			return ;
 		int	serverFd;
 		serverFd = _fd.find_matching_server(event.data.fd);	
 		readRequest(event.data.fd);/*, server*/
@@ -105,7 +110,7 @@ void Server::readRequest(int epoll_fd)
 	char buff[BUFFER_SIZE];
 	std::memset(buff, 0, BUFFER_SIZE);
 	//Armand -> condition a enveler si probleme, doit prevenir de l'ouverture de plus de 1024 fd
-	if (recv(epoll_fd, buff, BUFFER_SIZE - 1, 0) == 0)
+	if (recv(epoll_fd, buff, BUFFER_SIZE - 1, MSG_DONTWAIT) == 0)
 		_fd.close_fd(epoll_fd);
 	_buffer.assign(buff, BUFFER_SIZE);
 	// write(1, _buffchar, BUFFER_SIZE);
