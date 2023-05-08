@@ -12,13 +12,13 @@ class Request {
 	friend class Response;
 
 	public:
-	 Request();
 	 Request(std::string&, data&, int);
 	 ~Request();
 	 void parseRequest(data&, int);
-	 void parseURI(const std::string&);
+	 void parseURI();
 	 void findRequestType();
  	 void findRequestSubType();
+ 	 bool parseRequestLine(void);
 	 bool isMethodAllowed(std::string&, data&, int);
 	 bool isFileProtected() const;
  	 void handleGetRequest();
@@ -29,14 +29,21 @@ class Request {
  	 void handleDeleteRequest();
 
 	private:
+	 Request();
+	 MULTIMAP::iterator _root;
+	 MULTIMAP::iterator _index;
 	 int _requestType;
 	 int _requestSubType;
 	 int _statusCode;
 	 bool _query;
+	 bool _autoindex;
+	 std::string _uri;
 	 std::string _rootPath;
 	 std::string _filePath;
 	 std::string _queryString;
 	 std::vector<std::string> _queryArg;
+	 std::vector<std::string> _lines;
+	 std::vector<std::string> _requestLine;
 	 std::string _buffer;
 	 data _servers;
 	 int _serverFd;
