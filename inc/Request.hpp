@@ -5,8 +5,6 @@
 #include <vector>
 #include "parsing.hpp"
 
-#define BUFFER_SIZE 262144
-
 class Request { 
 	friend class Server;
 	friend class Response;

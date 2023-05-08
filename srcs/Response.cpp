@@ -17,7 +17,7 @@ Response::Response(block_serv serv)
 	_contentType.first = "Content-Type: ";
 	_contentLength.first = "Content-Length: ";
 	_connection.first = "Connection: ";
-	_connection.second = "keep_alive";
+	_connection.second = "close";
 	_server = serv;
 }
 
@@ -123,7 +123,7 @@ void Response::buildPostHeader(int requestSubType)
 void Response::buildCompleteResponse(int statusCode)
 {
 	_completeResponse =
-		"HTTP/1.1 " + itostr(statusCode) + _CRLF 
+		_HTTPVersion + itostr(statusCode) + _CRLF 
 		+ _contentType.first + _contentType.second + _CRLF 
 		+ "Set-Cookie: yummy_cookie=choco" + _CRLF
 		+ "Set-Cookie: tastie=aaah" + _CRLF
@@ -153,6 +153,7 @@ std::string Response::itostr(int i)
 }
 
 std::string Response::_CRLF = "\r\n";
+std::string Response::_HTTPVersion = "HTTP/1.1 ";
 
 Response::~Response()
 {

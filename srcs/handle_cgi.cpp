@@ -90,10 +90,10 @@ bool check_time (int pid, int pip[2], int *flag)
 string get_output_cgi(int fd, int *flag)
 {
 	int ret;
-	char	buff[(int)2e16];
+	char	buff[BUFFER_SIZE];
 	string	out;
 
-	while ((ret = read(fd, buff, (int)2e16))> 0) 
+	while ((ret = read(fd, buff, BUFFER_SIZE) > 0))
 		out += buff;
 	if (ret == -1)
 	{

@@ -158,9 +158,10 @@ void Request::handleGetRequest()
 	}
 	if (!_filePath.empty() && is_cgi(_servers.v_serv[_serverFd], _filePath) == true)
 	{
+		int flag;
 		//need to add a typedef for CGI_HANDLER
 		//+ need to pass _queryArg into char* to send to CGI, probably do this with a getter and then in server object
-		handle_cgi(_servers.v_serv[_serverFd], _filePath);
+		handle_cgi(_servers.v_serv[_serverFd], _filePath, &flag);
 		return;
 	}
 

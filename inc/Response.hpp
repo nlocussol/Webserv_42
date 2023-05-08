@@ -33,6 +33,7 @@ class Response {
 	 block_serv _server;
 
 	 static std::string _CRLF;
+	 static std::string _HTTPVersion;
 	 
  } ;
 
