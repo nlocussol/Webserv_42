@@ -93,7 +93,8 @@ void Server::manage_epoll_wait(struct epoll_event &event)
 		if (!(event.events & EPOLLIN))
 			return ;
 		int	serverFd;
-		serverFd = _fd.find_matching_server(event.data.fd);	
+		serverFd = _fd.find_matching_server(event.data.fd);
+		// Need to fix read so we don't send 400 bad request perma
 		readRequest(event.data.fd);/*, server*/
 		Request request(_buffer, _servers, serverFd);
 		std::cout << "Request-----\n" << _buffer;

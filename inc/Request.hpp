@@ -13,6 +13,7 @@ class Request {
 	 Request(std::string&, data&, int);
 	 ~Request();
 	 void parseRequest(data&, int);
+	 bool fillMapHeader();
 	 void parseURI();
 	 void findRequestType();
  	 void findRequestSubType();
@@ -35,14 +36,15 @@ class Request {
 	 int _statusCode;
 	 bool _query;
 	 bool _autoindex;
+	 std::vector<std::string> _requestLine;
 	 std::string _uri;
 	 std::string _rootPath;
 	 std::string _filePath;
 	 std::string _queryString;
 	 std::vector<std::string> _queryArg;
 	 std::vector<std::string> _lines;
-	 std::vector<std::string> _requestLine;
 	 std::string _buffer;
+	 std::map<std::string, std::string> _headerMap;
 	 data _servers;
 	 int _serverFd;
  } ;

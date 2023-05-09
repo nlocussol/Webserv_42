@@ -37,12 +37,8 @@ void Request::parseRequest(data& servers, int serv)
 		_statusCode = 200;
 		return ;
 	}
-
-	_lines = mysplit(_buffer, "\n");
-	if (_lines.size() == 0) {
-		_statusCode = 400;
+	if (!fillMapHeader())
 		return ;
-	}
 	if (!parseRequestLine())
 		return ;
 	parseURI();
@@ -68,6 +64,38 @@ void Request::parseRequest(data& servers, int serv)
 	}
 }
 
+bool Request::fillMapHeader()
+{
+	// Find end of header's request, if not present it is not a valid HTTP request
+	size_t headerEnd = _buffer.find("\r\n\r\n");
+	if (headerEnd == std::string::npos) {
+		_statusCode = 400;
+		return false;
+	}
+	// Split on every line return, basic HTTP request we accept need at least 2 lines
+	// 1 is the request line and 1 header line
+	_lines = mysplit(_buffer, "\n");
+	size_t nbLines = _lines.size();
+	if (nbLines < 2) {
+		_statusCode = 400;
+		return false;
+	}
+	// Fill map header, ignore request line because we parse it later
+	// Break if end of header is found, ignore whatever else is on this line
+	std::string key, value;
+	for (size_t i = 1 ; _lines[i] != "\r" ; ++i) {
+		// Find first ": " if not found send a bad request
+		size_t colonPos = _lines[i].find(": ");
+		if (colonPos == std::string::npos) {
+			_statusCode = 400;
+			return false;
+		}
+		key = _lines[i].substr(0, colonPos);
+		value = _lines[i].substr(colonPos + 2, _lines[i].length());
+		_headerMap.insert(std::make_pair(key, value));
+	}
+	return true;
+}
 
 //Check if request line is in METHOD URI HTTP/X.X format
 bool Request::parseRequestLine()
@@ -85,6 +113,9 @@ bool Request::parseRequestLine()
 	}
 	return true;
 }
+
+
+
 
 void Request::parseURI()
 {
