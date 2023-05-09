@@ -77,7 +77,6 @@ void pars_methods(MULTIMAP & copy) {
 
 void pars_errpage(MULTIMAP & copy, MULTIMAP & current, string & root) {
 	MULTIMAP::iterator it = copy.find("errpage");
-	MULTIMAP::iterator it_current = copy.find("errpage");
 	fstream file; 
 	while (it != copy.end()) {
 		for (int i = 0; it->second[i]; i++) {
@@ -88,9 +87,7 @@ void pars_errpage(MULTIMAP & copy, MULTIMAP & current, string & root) {
 		if (nb < 100 || nb > 599)
 			throw (logic_error("Error: errpage has bad input: " + it->second + " (between 100 and 599)!"));
 		copy.erase(it);
-		current.erase(it_current);
 		it = copy.find("errpage");
-		it_current = current.find("errpage");
 		file.open((root + it->second).c_str());
 		if (!file)
 			throw (logic_error("Error: errpage redirection can't be open: " + it->second));
@@ -98,9 +95,7 @@ void pars_errpage(MULTIMAP & copy, MULTIMAP & current, string & root) {
 		stringstream str;
 		str << nb;
 		copy.erase(it);
-		current.erase(it_current);
 		current.insert(make_pair("errpage_" + str.str(), file));
 		it = copy.find("errpage");
-		it_current = current.find("errpage");
 	}
 }

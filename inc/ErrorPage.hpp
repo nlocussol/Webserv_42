@@ -7,6 +7,7 @@ class ErrorPage {
 	public:
 		static ErrorPage& getInstance();
 		std::string getErrorPage(int);
+		std::string getConfPage(std::string, int &);
 
 	private:
 	 ErrorPage();

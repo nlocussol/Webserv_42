@@ -1,4 +1,6 @@
 #include "../inc/ErrorPage.hpp"
+#include "../inc/webserv.hpp"
+#include <fstream>
 #include <string>
 #include <iostream>
 
@@ -6,6 +8,20 @@ ErrorPage& ErrorPage::getInstance()
 {
 	static ErrorPage instance;
 	return instance;
+}
+
+std::string ErrorPage::getConfPage(std::string file, int &code) {
+	std::fstream errpage(file.c_str());
+	std::string line;
+	std::string buff = "HTTP/1.1 " + itostr(code) + " Bad Request\r\n"
+	"Content-type: text/html\r\n"
+	"Connection: closed\r\n"
+	"\r\n";
+	while (getline (errpage, line)) {
+		buff += line + "\r\n";
+		line.clear();
+	}
+	return buff;
 }
 
 std::string ErrorPage::getErrorPage(int statusCode)
