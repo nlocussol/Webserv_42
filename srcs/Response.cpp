@@ -44,7 +44,7 @@ void Response::buildResponse(Request& request)
 		buildCompleteResponse(request._statusCode);
 	}
 	else
-		buildErrorResponse(request._statusCode);
+		buildErrorResponse(request);
 }
 
 void Response::buildGetHeader(int requestSubType)
@@ -133,10 +133,15 @@ void Response::buildCompleteResponse(int statusCode)
 		+ _binaryData;
 }
 
-void Response::buildErrorResponse(int statusCode)
+void Response::buildErrorResponse(Request & request)
 {
 	ErrorPage& errorPage = ErrorPage::getInstance();
-	_completeResponse = errorPage.getErrorPage(statusCode);
+	MULTIMAP copy = find_location_path(request._filePath, request._servers.v_serv[request._serverFd]);
+	MULTIMAP::iterator it = copy.find("errpage_" + itostr(request._statusCode));
+	if (it != copy.end())
+		_completeResponse = errorPage.getConfPage(copy.find("root")->second + it->second, request._statusCode);
+	else
+		_completeResponse = errorPage.getErrorPage(request._statusCode);
 }
 
 std::string& Response::getCompleteResponse(void)
@@ -145,7 +150,7 @@ std::string& Response::getCompleteResponse(void)
 }
 
 //Probably move this function somewhere else
-std::string Response::itostr(int i)
+std::string itostr(int i)
 {
 	std::stringstream ss;
 	ss << i;

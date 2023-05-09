@@ -25,5 +25,6 @@ bool	is_cgi(block_serv server, std::string file);
 MULTIMAP find_location_path(const string &path, block_serv servers);
 int	is_dir_listing(std::string path, block_serv & servers);
 std::string directory_listing(std::string path, block_serv &server);
+std::string itostr(int i);
 
 #endif
