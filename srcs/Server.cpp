@@ -13,6 +13,7 @@ Server::Server(data servers) : _socket(), _epoll(), _fd()
 	_nb_server = servers.v_serv.size();
 	_running = true;
 	_servers = servers;
+	_posBuffer = 0;
 }
 
 Server::~Server()
@@ -108,6 +109,13 @@ void Server::manage_epoll_wait(struct epoll_event &event)
 
 void Server::readRequest(int epoll_fd)
 {
+	// _buffer.resize(_posBuffer + BUFFER_SIZE);
+	// _recvReturn = recv(epoll_fd, (char *)_buffer.c_str() + _posBuffer, BUFFER_SIZE, MSG_DONTWAIT);
+	// if (_recvReturn < 0) {
+	// 	std::cerr << "Error while reading\n";
+	// 	return ;
+	// }
+	// _posBuffer += _recvReturn;
 	char buff[BUFFER_SIZE];
 	std::memset(buff, 0, BUFFER_SIZE);
 	//Armand -> condition a enveler si probleme, doit prevenir de l'ouverture de plus de 1024 fd
@@ -115,7 +123,7 @@ void Server::readRequest(int epoll_fd)
 		_fd.close_fd(epoll_fd);
 	_buffer.assign(buff, BUFFER_SIZE);
 	// write(1, _buffchar, BUFFER_SIZE);
-	std::memset(buff, 0, BUFFER_SIZE);
+	std::memset(buff, 0, BUFFER_SIZE);	
 }
 
 void Server::sendResponse(Response& response, int client_fd) 

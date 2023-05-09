@@ -38,6 +38,8 @@ class Server {
 	 FdManager _fd;
 	 int _nb_server;
 	 std::string _buffer;
+	 size_t _recvReturn;
+	 size_t _posBuffer;
 	 data _servers;
  } ;
 

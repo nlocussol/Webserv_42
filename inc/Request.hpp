@@ -15,15 +15,16 @@ class Request {
 	 void parseRequest(data&, int);
 	 bool fillMapHeader();
 	 void parseURI();
-	 void findRequestType();
+	 bool findRequestType();
  	 void findRequestSubType();
  	 bool parseRequestLine(void);
 	 bool isMethodAllowed(std::string&, data&, int);
 	 bool isFileProtected() const;
  	 void handleGetRequest();
  	 void handleQuery();
- 	 void handlePostRequest(vector<string> &);
-	 bool handleUpload(vector<string> &);
+ 	 void handlePostRequest();
+ 	 void handleChunkedTransfer();
+	 bool handleUpload();
 	 bool dlImage(string &, vector<string> &, int);
  	 void handleDeleteRequest();
 
@@ -34,6 +35,7 @@ class Request {
 	 int _requestType;
 	 int _requestSubType;
 	 int _statusCode;
+	 size_t _headerEnd;
 	 bool _query;
 	 bool _autoindex;
 	 std::vector<std::string> _requestLine;

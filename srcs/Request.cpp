@@ -42,33 +42,29 @@ void Request::parseRequest(data& servers, int serv)
 	if (!parseRequestLine())
 		return ;
 	parseURI();
-	//Doublon isMethodAllowed && findRequestType
-	if (!isMethodAllowed(_requestLine[0], servers, serv)) {
-		_statusCode = 405;
+	if (!isMethodAllowed(_requestLine[0], servers, serv))
 		return ;
-	}
-	findRequestType();
-	if (_requestType != UNSUPPORTED_REQUEST) {
-		findRequestSubType();
-		switch (_requestType) {
-			case GET_REQUEST:
-				handleGetRequest();
-				break;
-			case POST_REQUEST:
-				handlePostRequest(_lines);
-				break;
-			case DELETE_REQUEST:
-				handleDeleteRequest();
-				break;
-		}
+	if (!findRequestType())
+		return ;
+	findRequestSubType();
+	switch (_requestType) {
+		case GET_REQUEST:
+			handleGetRequest();
+			break;
+		case POST_REQUEST:
+			handlePostRequest();
+			break;
+		case DELETE_REQUEST:
+			handleDeleteRequest();
+			break;
 	}
 }
 
 bool Request::fillMapHeader()
 {
 	// Find end of header's request, if not present it is not a valid HTTP request
-	size_t headerEnd = _buffer.find("\r\n\r\n");
-	if (headerEnd == std::string::npos) {
+	_headerEnd = _buffer.find("\r\n\r\n");
+	if (_headerEnd == std::string::npos) {
 		_statusCode = 400;
 		return false;
 	}
@@ -92,6 +88,8 @@ bool Request::fillMapHeader()
 		}
 		key = _lines[i].substr(0, colonPos);
 		value = _lines[i].substr(colonPos + 2, _lines[i].length());
+		// Erase \r
+		value.erase(value.length() - 1);
 		_headerMap.insert(std::make_pair(key, value));
 	}
 	return true;
@@ -113,9 +111,6 @@ bool Request::parseRequestLine()
 	}
 	return true;
 }
-
-
-
 
 void Request::parseURI()
 {
@@ -143,19 +138,21 @@ void Request::parseURI()
 	}
 }
 
-void Request::findRequestType()
+bool Request::findRequestType()
 {
-	if (_statusCode == 0) {
-		//Need to parse only on first line, else METHOD could be in body
-		if (_buffer.find("GET") != std::string::npos)
-			_requestType = GET_REQUEST;
-		else if (_buffer.find("POST") != std::string::npos)
-			_requestType = POST_REQUEST;
-		else if (_buffer.find("DELETE") != std::string::npos)
-			_requestType = DELETE_REQUEST;
-		else 
-			_requestType = UNSUPPORTED_REQUEST;
+	//Need to parse only on first line, else METHOD could be in body
+	if (_requestLine[0] == "GET")
+		_requestType = GET_REQUEST;
+	else if (_requestLine[0] == "POST")
+		_requestType = POST_REQUEST;
+	else if (_requestLine[0] == "DELETE")
+		_requestType = DELETE_REQUEST;
+	else {
+		_requestType = UNSUPPORTED_REQUEST;
+		_statusCode = 405;
+		return false;
 	}
+	return true;
 }
 
 void Request::findRequestSubType()
@@ -223,13 +220,19 @@ void Request::handleQuery()
 		arg = _queryString.substr(0, ampersandPos);
 		_queryArg.push_back(arg);
 		_queryString.erase(0, ampersandPos + 1);
-		std::cout << _queryString.length() << "\n\n";
+		// std::cout << _queryString.length() << "\n\n";
 	}
 }
 
-void Request::handlePostRequest(vector<string> & lines)
+void Request::handlePostRequest()
 {
-	if (handleUpload(lines))
+	std::map<std::string, std::string>::iterator it;
+	it = _headerMap.find("Transfer-Encoding");
+	if (it != _headerMap.end() && it->second == "chunked") {
+		handleChunkedTransfer();
+		return ;
+	}
+	if (handleUpload())
 		return ;
 	// Return 403 Forbidden is the file is core of our project
 	if (isFileProtected()) {
@@ -246,7 +249,7 @@ void Request::handlePostRequest(vector<string> & lines)
 			return ;
 		}
 		else {
-	// Need to add proper error code return, but file should be deletable since we access it upward
+	// Need to add proper error code return, but file should be deletable since we access it upward|
 			if (std::remove(_filePath.c_str())) {
 				_statusCode = 0;
 				return ;
@@ -261,6 +264,18 @@ void Request::handlePostRequest(vector<string> & lines)
 	outfile << bodyContent;
 	outfile.close();
 	_statusCode = 200;
+}
+
+void Request::handleChunkedTransfer()
+{
+	std::string unChunkedData;
+	std::vector<std::string>::iterator it = find(_lines.begin(), _lines.end(), "\r");
+	std::vector<std::string>::iterator ite = _lines.end();
+
+	while (it != ite) {
+
+		it++;
+	}
 }
 
 bool Request::dlImage(std::string & id, std::vector<std::string> & lines, int i) {
@@ -285,12 +300,12 @@ bool Request::dlImage(std::string & id, std::vector<std::string> & lines, int i)
 	return true;
 }
 
-bool Request::handleUpload(vector<string> & lines) {
-	for (unsigned long i = 0; i < lines.size(); i++) {
-		if (lines[i].find("boundary=") != string::npos) {
-			string str = lines[i].substr(lines[i].find("boundary=") + 9);
+bool Request::handleUpload() {
+	for (unsigned long i = 0; i < _lines.size(); i++) {
+		if (_lines[i].find("boundary=") != string::npos) {
+			string str = _lines[i].substr(_lines[i].find("boundary=") + 9);
 			string id = str.substr(str.find_last_of('-') + 1);
-			if (!dlImage(id, lines, i + 1))
+			if (!dlImage(id, _lines, i + 1))
 				return false;
 			return (true);
 		}
@@ -322,6 +337,7 @@ bool Request::isMethodAllowed(std::string& method, data& servers, int server)
 		copy.erase(it);
 		it = copy.find("methods");
 	}
+	_statusCode = 405;
 	return false;
 }
 

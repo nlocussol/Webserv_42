@@ -19,7 +19,6 @@ class Epoll
 
 		int			_fd_epoll;
 		struct epoll_event	_event;
-		
 };
 
 #endif
