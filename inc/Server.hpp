@@ -11,7 +11,7 @@
 #include "Response.hpp"
 #include "Epoll.hpp"
 #include "Socket.hpp"
-#include "FdManager.hpp"
+#include "Client.hpp"
 #include "parsing.hpp"
 
 #define MAX_EVENT 10
@@ -33,14 +33,18 @@ class Server {
 	 static bool _running;
 
 	private:
+	 bool	isServer(int fdFromEpoll);
+	 void	acceptNewClient(int fdFromEpoll);
+	 int	findMatchingServer(int fdClient);
 	 Socket _socket;
 	 Epoll _epoll;
-	 FdManager _fd;
 	 int _nb_server;
 	 std::string _buffer;
 	 size_t _recvReturn;
 	 size_t _posBuffer;
 	 data _servers;
+	 multimap<int, int> _serversId;
+	 vector<Client>	_clients;
  } ;
 
 void	handle_sigint(int signum);

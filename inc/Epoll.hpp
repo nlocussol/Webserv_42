@@ -15,8 +15,8 @@ class Epoll
 		void	add_fd_to_pool(int fd);
 		void	create_epoll();
 		int		get_fd_epoll();
-	 private:
 
+	 private:
 		int			_fd_epoll;
 		struct epoll_event	_event;
 };

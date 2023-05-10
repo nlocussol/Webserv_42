@@ -26,6 +26,7 @@
  	{
 		_fd_server = copy._fd_server;
 		_port = copy._port;
+		_server_addr = copy._server_addr;
  	}
  	return (*this);
  } 
