@@ -27,6 +27,7 @@ class Request {
 	 bool handleUpload();
 	 bool dlImage(string &, vector<string> &, int);
  	 void handleDeleteRequest();
+	 int checkHexa(string &, string hexa);
 
 	 int _requestType;
 

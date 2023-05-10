@@ -292,51 +292,43 @@ void Request::handlePostRequest()
 	_statusCode = 200;
 }
 
+int Request::checkHexa(string &line, string hexa) {
+	for (int i = 0; line[i + 1]; i++) {
+		if (!strchr(hexa.c_str(), line[i]))
+			return (-1);
+	}
+	unsigned int x;   
+	stringstream ss;
+	ss << std::hex << line;
+	ss >> x;
+	return (x);
+}
+
 void Request::handleChunkedTransfer()
 {
-	//Does not work anymore cause changed some shits in header parsing
-	// // Check if _headerEnd + 4 is valid else ff
-	// _buffer = _buffer.substr(_headerEnd + 4);
-	// // cout << _buffer;
-	// size_t crlfPos;
-	// std::string hexValueStr;
-	// size_t hexValue;
-	// std::string unChunkedData;
-	// size_t chunkSize;
-	// while (!_buffer.empty()) {
-	// 	crlfPos = _buffer.find("\r\n");
-	// 	if (crlfPos == std::string::npos) {
-	// 		_statusCode = 400;
-	// 		return;
-	// 	}
-	// 	hexValueStr = _buffer.substr(0, crlfPos);
-	// 	for (size_t i = 0 ; hexValueStr[i] ; i++) {
-	// 		if (!strchr("0123456789abcdef", hexValueStr[i])) {
-	// 			_statusCode = 400;
-	// 			return ;
-	// 		}
-	// 	}
-	// 	hexValue = (size_t)strtol(hexValueStr.c_str(), NULL, 16);
-	// 	_buffer = _buffer.substr(hexValueStr.length() + 2);
-	// 	crlfPos = _buffer.find("\r\n");
-	// 	if (crlfPos == std::string::npos) {
-	// 		_statusCode = 400;
-	// 		return;
-	// 	}
-	// 	// test append with null byte
-	// 	unChunkedData.append(_buffer.substr(0, crlfPos));
-	// 	for (chunkSize = 0 ; unChunkedData[chunkSize] ; chunkSize++) ;
-	// 	if (chunkSize != hexValue) {
-	// 		_statusCode = 400;
-	// 		return ;
-	// 	}
-	// 	crlfPos = _buffer.find("\r\n");
-	// 	if (crlfPos == std::string::npos) {
-	// 		_statusCode = 400;
-	// 		return;
-	// 	}
-	// 	_buffer = _buffer.substr(crlfPos);
-	// }
+	int hexa_value = 0;
+	int cnt;
+	string body = _buffer.substr(_buffer.find("\r\n\r\n") + 4);
+	vector<string> tab = mysplit(body, "\n");
+	for (unsigned long i = 0; i < tab.size(); i++) {
+		if (i % 2 == 0) {
+			hexa_value = checkHexa(tab[i], "0123456789abcdef");
+			if (hexa_value < 0) {
+				_statusCode = 400;
+				return ;
+			}
+		}
+		else {
+			cnt = 0;
+			if (hexa_value == 0 && tab[i] == "\r")
+				return ;
+			for (; tab[i][cnt]; cnt++) {}
+			if (cnt - 1 != hexa_value) {
+				_statusCode = 400;
+				return ;
+			}
+		}	
+	}
 }
 
 bool Request::dlImage(std::string & id, std::vector<std::string> & lines, int i) {
