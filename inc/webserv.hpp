@@ -28,5 +28,8 @@ int	is_dir_listing(std::string path, block_serv & servers);
 bool is_dir(std::string&);
 std::string directory_listing(std::string path, block_serv &server);
 std::string itostr(int i);
+char** vector_to_c_array(const std::vector<std::string>& queryArg);
+std::vector<std::string> string_to_vector(std::string& bodyContent);
+int checkHexa(std::string& line, std::string hexa);
 
 #endif

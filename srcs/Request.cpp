@@ -37,11 +37,6 @@ Request::Request(std::string& buffer, data& servers, int serverFd)
 
 void Request::parseRequest()
 {
-	// Client requests an empty string ??? Idk what to respond back
-	// if (_buffer.length() == 0) {
-	// 	_statusCode = 200;
-	// 	return ;
-	// }
 	if (!basicRequestParsing())
 		return ;
 	if (!parseRequestLine())
@@ -197,7 +192,7 @@ void Request::findRequestSubType()
 		_requestSubType = QUERY;
 		return ;
 	}
-	std::map<std::string, std::string>::iterator it;
+	map_it it;
 	it = _headerMap.find("Accept");
 	if (it->second.find("text") != std::string::npos) 
 		_requestSubType = TEXT;
@@ -248,10 +243,9 @@ void Request::handleGetRequest()
 		handle_cgi(_servers.v_serv[_serverId], _filePath, &flag, *this);
 		return ;
 	}
-	if (!_filePath.empty() && is_dir_listing(_filePath, _servers.v_serv[_serverId]) == true) {
+	if (!_filePath.empty() && is_dir_listing(_filePath, _servers.v_serv[_serverId])) {
 		_statusCode = 200;
 		_dirList = true;
-		_requestSubType = DIR_LISTING;
 		return ;
 	}
 
@@ -270,29 +264,30 @@ void Request::handleGetRequest()
 
 void Request::handleQuery()
 {
-	std::string arg;
-	size_t ampersandPos;
 	//need to test if it works + what to do with it + need to translate + to space " " and special characters zzz
 	//It is needed in some CGI where the _queryArg needs to be translated into env for execv
-	while (_queryString.length() != 0) {
-		if (_queryString.find("&") != std::string::npos)
-			ampersandPos = _queryString.find_first_of("&");
-		else
-			ampersandPos = _queryString.length();
-		arg = _queryString.substr(0, ampersandPos);
-		_queryArg.push_back(arg);
-		_queryString.erase(0, ampersandPos + 1);
+	_queryArg = string_to_vector(_queryString);
+
+	// Probably can delete this below
+	// while (_queryString.length() != 0) {
+	// 	if (_queryString.find("&") != std::string::npos)
+	// 		ampersandPos = _queryString.find_first_of("&");
+	// 	else
+	// 		ampersandPos = _queryString.length();
+	// 	arg = _queryString.substr(0, ampersandPos);
+	// 	_queryArg.push_back(arg);
+	// 	_queryString.erase(0, ampersandPos + 1);
 		// std::cout << _queryString.length() << "\n\n";
-	}
+	// }
 }
 
 void Request::handlePostRequest()
 {
-	if (!checkBodyLength()) {
+	if (!checkBodySize()) {
 		_statusCode = 507;
 		return ;
 	}
-	std::map<std::string, std::string>::iterator it;
+	map_it it;
 	it = _headerMap.find("Transfer-Encoding");
 	if (it != _headerMap.end() && it->second == "chunked") {
 		handleChunkedTransfer();
@@ -332,12 +327,12 @@ void Request::handlePostRequest()
 	_statusCode = 200;
 }
 
-bool	Request::checkBodyLength()
+bool	Request::checkBodySize()
 {
 	if (_servers.v_serv[_serverId].conf_serv.find("limit_client_body_size") == _servers.v_serv[_serverId].conf_serv.end())
 		return true;
 
-	std::map<std::string, std::string>::iterator it;
+	map_it it;
 	size_t	len;
 	size_t	limitLen;
 	char	*check;
@@ -383,19 +378,6 @@ void Request::handleChunkedTransfer()
 	}
 }
 
-int Request::checkHexa(string& line, string hexa)
-{
-	for (int i = 0; line[i + 1]; i++) {
-		if (!strchr(hexa.c_str(), line[i]))
-			return (-1);
-	}
-	unsigned int x;   
-	stringstream ss;
-	ss << std::hex << line;
-	ss >> x;
-	return (x);
-}
-
 bool Request::dlImage(std::string & id, std::vector<std::string> & lines, int i)
 {
 	std::ofstream file;
@@ -421,6 +403,10 @@ bool Request::dlImage(std::string & id, std::vector<std::string> & lines, int i)
 
 bool Request::handleUpload()
 {
+	// map_it it = _headerMap.find("Content-Type");
+	// if (it == _headerMap.end())
+	// 	return false;
+	// std::string
 	for (size_t i = 0; i < _lines.size(); i++) {
 		if (_lines[i].find("boundary=") != string::npos) {
 			string str = _lines[i].substr(_lines[i].find("boundary=") + 9);

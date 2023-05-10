@@ -62,7 +62,7 @@ int	is_dir_listing(std::string path, block_serv & servers)
  *
 **/
 
-std::string directory_listing(std::string path, block_serv & server)
+std::string directory_listing(std::string path, block_serv& server)
 {
     DIR *dir;
     struct dirent *dp;

@@ -55,6 +55,10 @@ std::string ErrorPage::getErrorPage(int statusCode)
 			std::cerr << "Error 508: Loop detected\n";
 			return _508Page;
 			break;
+		case 301:
+			std::cerr << "Code 301: Permanent redirection\n";
+			return _301Page;
+			break;
 	}
 	std::string ff = "les problemes\n";
 	return ff;
@@ -135,3 +139,5 @@ std::string ErrorPage::_508Page = "HTTP/1.1 508 Loop Detected\r\n"
 "<p>The server terminated an operation because it encountered an infinite loop while processing a request.</p>\r\n"
 "</body>\r\n"
 "</html>\r\n\r\n";
+
+std::string ErrorPage::_301Page = "HTTP/1.1 301 Moved permanently\r\nLocation: ";

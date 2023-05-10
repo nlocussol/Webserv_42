@@ -24,7 +24,6 @@ int main (int ac, char *av[])
 		file = "conf/default.conf";
 	data servers;
 	// Singleton allocation init
-	ErrorPage& errorPage = ErrorPage::getInstance();
 	try {
 		pars_conf(file, servers);	
 		pars_struct(servers);

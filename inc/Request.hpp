@@ -27,14 +27,15 @@ class Request {
 	 bool handleUpload();
 	 bool dlImage(string &, vector<string> &, int);
  	 void handleDeleteRequest();
-	 int checkHexa(string &, string hexa);
-   bool checkBodyLength();
+   bool checkBodySize();
 
 	 int _methodInt;
 	 std::string _bodyContent;
 	 std::vector<std::string> _queryArg;
 
 	private:
+	 typedef std::map<std::string, std::string>::iterator map_it;
+
 	 Request();
 	 std::string _buffer;
 	 std::string _method;

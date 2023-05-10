@@ -22,7 +22,7 @@ class Client
 	 private:
 		std::string	_buffer;
 		size_t _pos;
-		size_t _readReturn;
+		int _readReturn;
 		int			_fdClient;
 		int			_fdServer;
 		int			_idServer;

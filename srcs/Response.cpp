@@ -33,7 +33,7 @@ void Response::buildResponse(Request& request)
 					handleDirectoryListing(request._filePath);
 				else {
 					buildGetHeader(request._requestSubType);
-					buildGetBody(request._filePath, request._servers.v_serv[request._serverId]);
+					buildGetBody(request._filePath);
 				}
 				break;
 			case POST_REQUEST:
@@ -51,7 +51,9 @@ void Response::buildResponse(Request& request)
 
 void Response::handleRedirection(Request& request)
 {
-	_completeResponse = "HTTP/1.1 301 Moved permanently\r\nLocation: " + request._filePath + "\r\n\r\n";
+	ErrorPage& errorPage = ErrorPage::getInstance();
+	_completeResponse = errorPage.getErrorPage(request._statusCode);
+	_completeResponse += request._filePath + _CRLF + _CRLF;
 }
 
 void Response::buildGetHeader(int requestSubType)
@@ -87,7 +89,7 @@ bool Response::check_dir(string & filePath, block_serv & server) {
 	return false;
 }
 
-void Response::buildGetBody(std::string& filePath, block_serv& server)
+void Response::buildGetBody(std::string& filePath)
 {
 	// probably need to test if every syscall worked
 	// if (!check_dir(filePath, server)) {
@@ -124,6 +126,7 @@ void Response::handleDirectoryListing(const std::string& filePath)
 
 void Response::buildPostHeader(int requestSubType)
 {
+	(void) requestSubType;
 	//Idk ??
 }
 
@@ -138,6 +141,7 @@ void Response::buildCompleteResponse(int statusCode)
 		+ _binaryData;
 }
 
+// Check if there is a defined file for error page, else use default one
 void Response::buildErrorResponse(Request & request)
 {
 	ErrorPage& errorPage = ErrorPage::getInstance();
@@ -152,14 +156,6 @@ void Response::buildErrorResponse(Request & request)
 std::string& Response::getCompleteResponse(void)
 {
 	return _completeResponse;
-}
-
-//Probably move this function somewhere else
-std::string itostr(int i)
-{
-	std::stringstream ss;
-	ss << i;
-	return ss.str();
 }
 
 std::string Response::_CRLF = "\r\n";

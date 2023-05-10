@@ -19,6 +19,7 @@ class ErrorPage {
 	 static std::string _400Page;
 	 static	std::string _507Page;
 	 static	std::string _508Page;
+	 static	std::string _301Page;
  } ;
 
 #endif // ERRORPAGE_HPP_
