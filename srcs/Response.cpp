@@ -27,11 +27,10 @@ void Response::buildResponse(Request& request)
 		handleRedirection(request);
 	}
 	else if (request._statusCode == 200 || request._statusCode == 201) {
-		switch (request._requestType) {
+		switch (request._methodInt) {
 			case GET_REQUEST:
-				if (request._requestSubType == DIR_LISTING) {
+				if (request._dirList)
 					handleDirectoryListing(request._filePath);
-				}
 				else {
 					buildGetHeader(request._requestSubType);
 					buildGetBody(request._filePath, request._servers.v_serv[request._serverId]);

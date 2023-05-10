@@ -18,7 +18,7 @@
 #define BUFFER_SIZE 262144
 
 enum request_type {UNSUPPORTED_REQUEST = 1, GET_REQUEST, POST_REQUEST, DELETE_REQUEST, DIR_LISTING, ERROR_RESPONSE};
-enum request_sub_type {TEXT = 1, IMAGE, VIDEO, QUERY};
+enum request_sub_type {DEFAULT, TEXT, IMAGE, VIDEO, QUERY};
 enum autoindex {NOT_DIR, AUTOINDEX_OK, AUTOINDEX_OFF};
 
 string handle_cgi(block_serv server, std::string exec, int *flag, Request&);

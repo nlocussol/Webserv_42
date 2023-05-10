@@ -19,6 +19,7 @@ Request::Request(std::string& buffer, data& servers, int serverFd)
 {
 	_statusCode = 0;
 	_query = false;
+	_dirList = false;
 	_cgi = false;
 	_buffer = buffer;
 	_servers = servers;
@@ -34,25 +35,26 @@ Request::Request(std::string& buffer, data& servers, int serverFd)
 		_autoindex = true;
 }
 
-void Request::parseRequest(data& servers, int serv)
+void Request::parseRequest()
 {
 	// Client requests an empty string ??? Idk what to respond back
-	if (_buffer.length() == 0) {
-		_statusCode = 200;
-		return ;
-	}
-	if (!fillMapHeader())
+	// if (_buffer.length() == 0) {
+	// 	_statusCode = 200;
+	// 	return ;
+	// }
+	if (!basicRequestParsing())
 		return ;
 	if (!parseRequestLine())
 		return ;
-	parseURI();
 	if (!isMethodAllowed())
 		return ;
-	if (!findRequestType())
+	parseURI();
+	if (!fillMapHeader())
 		return ;
 	findRequestSubType();
-
-	switch (_requestType) {
+	if (!checkBasicRedirection())
+		return ;
+	switch (_methodInt) {
 		case GET_REQUEST:
 			handleGetRequest();
 			break;
@@ -65,7 +67,7 @@ void Request::parseRequest(data& servers, int serv)
 	}
 }
 
-bool Request::fillMapHeader()
+bool Request::basicRequestParsing()
 {
 	// Find end of header's request, if not present it is not a valid HTTP request
 	_headerEnd = _buffer.find("\r\n\r\n");
@@ -82,6 +84,44 @@ bool Request::fillMapHeader()
 		_statusCode = 400;
 		return false;
 	}
+	return true;
+}
+
+//Check if request line is in METHOD URI HTTP/X.X format
+bool Request::parseRequestLine()
+{
+	_requestLine = mysplit(_lines[0], " ");
+	if (_requestLine.size() != 3) {
+		_statusCode = 400;
+		return false;
+	}
+
+	_method = _requestLine[0];
+	if (_method == "GET")
+		_methodInt = GET_REQUEST;
+	else if (_method == "POST")
+		_methodInt = POST_REQUEST;
+	else if (_method == "DELETE")
+		_methodInt = DELETE_REQUEST;
+	else {
+		_methodInt = UNSUPPORTED_REQUEST;
+		_statusCode = 405;
+		return false;
+	}
+
+	_uri = _requestLine[1];
+	// Remove last character of HTTP request version (\r)
+	_requestLine[2].erase(_requestLine[2].length() - 1);
+	_httpVersion = _requestLine[2];
+	if (_httpVersion != "HTTP/1.1" && _httpVersion != "HTTP/1.0") {
+		_statusCode = 400;
+		return false;
+	}
+	return true;
+}
+
+bool Request::fillMapHeader()
+{
 	// Fill map header, ignore request line because we parse it later
 	// Break if end of header is found, ignore whatever else is on this line
 	std::string key, value;
@@ -101,27 +141,8 @@ bool Request::fillMapHeader()
 	return true;
 }
 
-//Check if request line is in METHOD URI HTTP/X.X format
-bool Request::parseRequestLine()
-{
-	_requestLine = mysplit(_lines[0], " ");
-	if (_requestLine.size() != 3) {
-		_statusCode = 400;
-		return false;
-	}
-	_method = _requestLine[0];
-	// Remove last character of HTTP request version (\r)
-	_requestLine[2].erase(_requestLine[2].length() - 1);
-	if (_requestLine[2] != "HTTP/1.1" && _requestLine[2] != "HTTP/1.0") {
-		_statusCode = 400;
-		return false;
-	}
-	return true;
-}
-
 void Request::parseURI()
 {
-	_uri = _requestLine[1];
 	//fix
 	_rootPath.erase(_rootPath.end() - 1);
 	_filePath = _uri.substr(0, _uri.find_first_of("?"));
@@ -137,7 +158,6 @@ void Request::parseURI()
 	}
 	// Remove first /
 	_filePath.erase(0, 1);
-
 	//Insert root path if not already in URI
 	if (_filePath.compare(0, _rootPath.length(), _rootPath)) {
 		_filePath.insert(0, _rootPath);
@@ -149,49 +169,50 @@ void Request::parseURI()
 		_query = true;
 		_queryString = _uri.substr(_uri.find_first_of("?") + 1);
 	}
+	if (is_cgi(_servers.v_serv[_serverId], _filePath)) {
+		_cgi = true;
+	}
 }
 
-bool Request::findRequestType()
+bool Request::isMethodAllowed()
 {
-	//Need to parse only on first line, else METHOD could be in body
-	if (_requestLine[0] == "GET")
-		_requestType = GET_REQUEST;
-	else if (_requestLine[0] == "POST")
-		_requestType = POST_REQUEST;
-	else if (_requestLine[0] == "DELETE")
-		_requestType = DELETE_REQUEST;
-	else {
-		_requestType = UNSUPPORTED_REQUEST;
-		_statusCode = 405;
-		return false;
+	//Check if method is allowed on this path
+	MULTIMAP copy = find_location_path(_filePath, _servers.v_serv[_serverId]);
+	MULTIMAP::iterator it;
+
+	it = copy.find("methods");
+	while (it != copy.end()) {
+		if (it->second == _method)
+			return true;
+		copy.erase(it);
+		it = copy.find("methods");
 	}
-	return true;
+	_statusCode = 405;
+	return false;
 }
 
 void Request::findRequestSubType()
 {
-	if (_query == true)
+	if (_query == true) {
 		_requestSubType = QUERY;
-	else if (_buffer.find("Accept: text") != std::string::npos) 
-		_requestSubType = TEXT;
-	else if (_buffer.find("Accept: image") != std::string::npos) 
-		_requestSubType = IMAGE;
-	else
-		_requestSubType = 1;
-	//1 is equal to IMAGE, browser accepts everything idk but need to implement better
-}
-
-void Request::handleGetRequest()
-{
-	if (_requestSubType == QUERY) {
-		handleQuery();
-		return;
-	}
-	if (is_cgi(_servers.v_serv[_serverId], _filePath)) {
-		int flag;
-		handle_cgi(_servers.v_serv[_serverId], _filePath, &flag, *this);
 		return ;
 	}
+	std::map<std::string, std::string>::iterator it;
+	it = _headerMap.find("Accept");
+	if (it->second.find("text") != std::string::npos) 
+		_requestSubType = TEXT;
+	else if (it->second.find("image") != std::string::npos) 
+		_requestSubType = IMAGE;
+	else
+		_requestSubType = DEFAULT;
+}
+
+// Check if the client ask for a dir with autoindex on without last /
+// if so redirect to same path with /
+// also check the opposite, if client ask for a file with / at the end
+// if so redirect to same path without /
+bool Request::checkBasicRedirection()
+{
 	if (is_dir(_filePath) && _filePath[_filePath.size() - 1] != '/') {
 		MULTIMAP copy = find_location_path(_filePath, _servers.v_serv[_serverId]);
 		MULTIMAP::iterator it = copy.find("autoindex");
@@ -200,32 +221,39 @@ void Request::handleGetRequest()
 			_filePath += "/";
 			_statusCode = 301;
 		}
-		return ;
+		return false;
 	}
 	if (!is_dir(_filePath) && _filePath[_filePath.size() - 1] == '/') {
 		_filePath.erase(0, _rootPath.size());
 		_filePath.erase(_filePath.size() - 1);
 		_statusCode = 301;
-		return ;
+		return false;
+	}
+	return true;
+}
+
+void Request::handleGetRequest()
+{
+	if (_query) {
+		handleQuery();
+		return;
 	}
 	/*
 	 * regarde si c'est un cgi et le lance au besoin.
 	 * décommenter ces fonctions quand parsing sur cgi sera fait
 	 * pour l'instant, renvoie un fd mais peu renvoyer une string au besoin
 	*/
+	if (_cgi) {
+		int flag;
+		handle_cgi(_servers.v_serv[_serverId], _filePath, &flag, *this);
+		return ;
+	}
 	if (!_filePath.empty() && is_dir_listing(_filePath, _servers.v_serv[_serverId]) == true) {
 		_statusCode = 200;
+		_dirList = true;
 		_requestSubType = DIR_LISTING;
 		return ;
 	}
-	// if (!_filePath.empty() && is_cgi(_servers.v_serv[_serverId], _filePath) == true)
-	// {
-	// 	int flag;
-	// 	//need to add a typedef for CGI_HANDLER
-	// 	//+ need to pass _queryArg into char* to send to CGI, probably do this with a getter and then in server object
-	// 	handle_cgi(_servers.v_serv[_serverId], _filePath, &flag);
-	// 	return;
-	// }
 
 	// Return 404 Not Found if the file does not exist
 	if (access(_filePath.c_str(), F_OK))
@@ -260,13 +288,17 @@ void Request::handleQuery()
 
 void Request::handlePostRequest()
 {
+	if (!checkBodyLength()) {
+		_statusCode = 507;
+		return ;
+	}
 	std::map<std::string, std::string>::iterator it;
-
 	it = _headerMap.find("Transfer-Encoding");
 	if (it != _headerMap.end() && it->second == "chunked") {
 		handleChunkedTransfer();
 		return ;
 	}
+
 	if (handleUpload())
 		return ;
 	// Check if the file already exists, if it does try to delete it
@@ -290,14 +322,9 @@ void Request::handlePostRequest()
 	size_t bodyBegin = _buffer.find("\r\n\r\n");
 	// need to check if find worked
 	_bodyContent = _buffer.substr(bodyBegin + 4);
-	if (is_cgi(_servers.v_serv[_serverId], _filePath)) {
+	if (_cgi) {
 		int flag;
 		handle_cgi(_servers.v_serv[_serverId], _filePath, &flag, *this);
-	}
-	if (checkBodyLength(_bodyContent) == false)
-	{
-		_statusCode = 507;
-		return ;
 	}
 	std::ofstream outfile(_filePath.c_str());
 	outfile << _bodyContent;
@@ -305,7 +332,7 @@ void Request::handlePostRequest()
 	_statusCode = 200;
 }
 
-bool	Request::checkBodyLength(std::string bodyContent)
+bool	Request::checkBodyLength()
 {
 	if (_servers.v_serv[_serverId].conf_serv.find("limit_client_body_size") == _servers.v_serv[_serverId].conf_serv.end())
 		return true;
@@ -324,21 +351,9 @@ bool	Request::checkBodyLength(std::string bodyContent)
 			return (false);
 		return (true);
 	}
-	if (bodyContent.length() > limitLen)
+	if (_bodyContent.length() > limitLen)
 		return (false);
 	return (true);
-}
-
-int Request::checkHexa(string &line, string hexa) {
-	for (int i = 0; line[i + 1]; i++) {
-		if (!strchr(hexa.c_str(), line[i]))
-			return (-1);
-	}
-	unsigned int x;   
-	stringstream ss;
-	ss << std::hex << line;
-	ss >> x;
-	return (x);
 }
 
 void Request::handleChunkedTransfer()
@@ -368,7 +383,21 @@ void Request::handleChunkedTransfer()
 	}
 }
 
-bool Request::dlImage(std::string & id, std::vector<std::string> & lines, int i) {
+int Request::checkHexa(string& line, string hexa)
+{
+	for (int i = 0; line[i + 1]; i++) {
+		if (!strchr(hexa.c_str(), line[i]))
+			return (-1);
+	}
+	unsigned int x;   
+	stringstream ss;
+	ss << std::hex << line;
+	ss >> x;
+	return (x);
+}
+
+bool Request::dlImage(std::string & id, std::vector<std::string> & lines, int i)
+{
 	std::ofstream file;
 	for (; lines[i].find(id) == std::string::npos; i++) { }
 	i++;
@@ -390,8 +419,9 @@ bool Request::dlImage(std::string & id, std::vector<std::string> & lines, int i)
 	return true;
 }
 
-bool Request::handleUpload() {
-	for (unsigned long i = 0; i < _lines.size(); i++) {
+bool Request::handleUpload()
+{
+	for (size_t i = 0; i < _lines.size(); i++) {
 		if (_lines[i].find("boundary=") != string::npos) {
 			string str = _lines[i].substr(_lines[i].find("boundary=") + 9);
 			string id = str.substr(str.find_last_of('-') + 1);
@@ -413,20 +443,4 @@ void Request::handleDeleteRequest()
 			cout << "Can't remove " << _filePath << endl;
 	}
 	_statusCode = 200;
-}
-
-bool Request::isMethodAllowed()
-{
-	MULTIMAP copy = find_location_path(_filePath, _servers.v_serv[_serverId]);
-	MULTIMAP::iterator it;
-
-	it = copy.find("methods");
-	while (it != copy.end()) {
-		if (it->second == _method)
-			return true;
-		copy.erase(it);
-		it = copy.find("methods");
-	}
-	_statusCode = 405;
-	return false;
 }

@@ -16,15 +16,15 @@
  *
 **/ 
 
-bool	is_cgi(block_serv server, std::string file)
+bool	is_cgi(block_serv server, std::string filePath)
 {
 	std::string	extend;	
 	std::size_t		check;
 	string path;
 	MULTIMAP copy;
 
-	if (file.find('/') != string::npos)
-		path = file.erase(file.find_last_of('/'), file.size());
+	if (filePath.find('/') != string::npos)
+		path = filePath.erase(filePath.find_last_of('/'), filePath.size());
 	else
 		path = "/";
 	copy = find_location_path(path, server);
@@ -32,8 +32,8 @@ bool	is_cgi(block_serv server, std::string file)
 		return (false);
 	copy.erase(copy.find("cgi")); 
 	extend = copy.find("cgi")->second; 
-	check = file.rfind(extend);
-	if (check != std::string::npos && check + extend.length() == file.size() && extend.length() != file.length())
+	check = filePath.rfind(extend);
+	if (check != std::string::npos && check + extend.length() == filePath.size() && extend.length() != filePath.length())
 	{
 		return (true);
 	}
@@ -174,12 +174,12 @@ string handle_cgi(block_serv server, std::string exec, int *flag, Request& reque
 		dup2(pip[1], 1);
 		close(pip[0]);
 		close(pip[1]);
-		if (request._requestType == GET_REQUEST && request._queryArg.size() > 0) {
+		if (request._methodInt == GET_REQUEST && request._queryArg.size() > 0) {
 			char** env = vector_to_c_array(request._queryArg);
 			execve(inter.c_str(), param, env);
 			delete [] env;
 		}
-		else if (request._requestType == POST_REQUEST && request._bodyContent.size() > 0) {
+		else if (request._methodInt == POST_REQUEST && request._bodyContent.size() > 0) {
 			std::vector<std::string> envVector = string_to_vector(request._bodyContent);
 			char **env = vector_to_c_array(envVector);
 			execve(inter.c_str(), param, env);
