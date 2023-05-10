@@ -193,13 +193,23 @@ void Request::handleGetRequest()
 		return;
 	}
 
+	if (is_dir(_filePath) && _filePath[_filePath.size() - 1] != '/') {
+		MULTIMAP copy = find_location_path(_filePath, _servers.v_serv[_serverId]);
+		MULTIMAP::iterator it = copy.find("autoindex");
+		if (it != copy.end() && it->second == "on") {
+			_filePath.erase(0, _rootPath.size());
+			_filePath += "/";
+			_statusCode = 301;
+		}
+		return ;
+	}
+
 	if (!is_dir(_filePath) && _filePath[_filePath.size() - 1] == '/') {
 		_filePath.erase(0, _rootPath.size());
 		_filePath.erase(_filePath.size() - 1);
 		_statusCode = 301;
 		return ;
 	}
-	//ici nathan
 	/*
 	 * regarde si c'est un cgi et le lance au besoin.
 	 * décommenter ces fonctions quand parsing sur cgi sera fait
