@@ -44,8 +44,8 @@ void Request::parseRequest(data& servers, int serv)
 	if (!parseRequestLine())
 		return ;
 	parseURI();
-	// if (!isMethodAllowed())
-	// 	return ;
+	if (!isMethodAllowed())
+		return ;
 	if (!findRequestType())
 		return ;
 	findRequestSubType();

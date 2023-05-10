@@ -8,9 +8,18 @@
 #include "../inc/webserv.hpp"
 
 MULTIMAP find_location_path(const string &path, block_serv servers) {
+	string str = path.substr(0, path.find_last_of('/'));
+	MULTIMAP::iterator it;
 	for (unsigned long i = 0; i < servers.v_location.size(); i++) {
-		if (servers.v_location[i].path == path)
+		it = servers.v_location[i].conf_location.find("root");
+		string loc_path = it->second;
+		if (loc_path[loc_path.size() - 1] == '/' && servers.v_location[i].path[0] == '/')
+			loc_path += servers.v_location[i].path.substr(1);
+		// cout << "STRRRRR: " << str + "/" << endl;
+		// cout << "LOC_PATHHHH: " << loc_path << endl;
+		if (str + "/" == loc_path) {
 			return (servers.v_location[i].conf_location);
+		}
 	}
 	return (servers.conf_serv);
 }

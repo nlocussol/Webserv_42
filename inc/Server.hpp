@@ -24,7 +24,7 @@ class Server {
 	 Server& operator=(const Server&);
 	 void	setSocket(void);
 	 void	runServer(void);
-	 void readRequest(int epoll_fd);
+	 bool	readRequest(int epoll_fd);
 	 int handlePostRequest(int);
 	 bool isFileProtected() const;
 	 int handleDeleteRequest(int);

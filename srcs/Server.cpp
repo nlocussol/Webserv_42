@@ -94,7 +94,8 @@ void Server::manage_epoll_wait(struct epoll_event &event)
 		}
 
 		// Need to fix read so we don't send 400 bad request perma
-		readRequest(event.data.fd);/*, server*/
+		if (readRequest(event.data.fd) == false)
+			return; /*, server*/
 		Request request(_buffer, _servers, serverFd);
 		std::cout << "Request-----\n" << _buffer;
 		request.parseRequest(_servers, serverFd);
@@ -105,7 +106,7 @@ void Server::manage_epoll_wait(struct epoll_event &event)
 	}
 }
 
-void Server::readRequest(int epoll_fd)
+bool	Server::readRequest(int epoll_fd)
 {
 	// vector<Client>::iterator client;
 	// for (client = _clients.begin(); client != _clients.end(); client++)
@@ -124,10 +125,14 @@ void Server::readRequest(int epoll_fd)
 	std::memset(buff, 0, BUFFER_SIZE);
 	//Armand -> condition a enveler si probleme, doit prevenir de l'ouverture de plus de 1024 fd
 	if (recv(epoll_fd, buff, BUFFER_SIZE - 1, MSG_DONTWAIT) == 0)
+	{
 		close(epoll_fd);
+		return (false);
+	}
 	_buffer.assign(buff, BUFFER_SIZE);
 	// write(1, _buffchar, BUFFER_SIZE);
 	// std::memset(buff, 0, BUFFER_SIZE);	
+	return (true);
 }
 
 void Server::sendResponse(Response& response, int client_fd) 
