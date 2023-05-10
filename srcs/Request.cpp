@@ -50,11 +50,7 @@ void Request::parseRequest(data& servers, int serv)
 	if (!findRequestType())
 		return ;
 	findRequestSubType();
-	if (is_cgi(servers.v_serv[_serverId], _filePath)) {
-		int flag;
-		handle_cgi(servers.v_serv[_serverId], _filePath, &flag, *this);
-		return ;
-	}
+
 	switch (_requestType) {
 		case GET_REQUEST:
 			handleGetRequest();
@@ -125,9 +121,7 @@ bool Request::parseRequestLine()
 void Request::parseURI()
 {
 	_uri = _requestLine[1];
-	if (_uri.find(".py")) {
-		_cgi = true;
-	}
+	//fix
 	_rootPath.erase(_rootPath.end() - 1);
 	_filePath = _uri.substr(0, _uri.find_first_of("?"));
 	if (_filePath == "/")	{
@@ -192,7 +186,11 @@ void Request::handleGetRequest()
 		handleQuery();
 		return;
 	}
-
+	if (is_cgi(_servers.v_serv[_serverId], _filePath)) {
+		int flag;
+		handle_cgi(_servers.v_serv[_serverId], _filePath, &flag, *this);
+		return ;
+	}
 	if (!is_dir(_filePath) && _filePath[_filePath.size() - 1] == '/') {
 		_filePath.erase(0, _rootPath.size());
 		_filePath.erase(_filePath.size() - 1);
@@ -237,7 +235,7 @@ void Request::handleQuery()
 	std::string arg;
 	size_t ampersandPos;
 	//need to test if it works + what to do with it + need to translate + to space " " and special characters zzz
-	//It is needed in some CGI where the _queryArg needs to be translated into env for execve 
+	//It is needed in some CGI where the _queryArg needs to be translated into env for execv
 	while (_queryString.length() != 0) {
 		if (_queryString.find("&") != std::string::npos)
 			ampersandPos = _queryString.find_first_of("&");
@@ -260,11 +258,6 @@ void Request::handlePostRequest()
 	}
 	if (handleUpload())
 		return ;
-	// Return 403 Forbidden is the file is core of our project
-	if (isFileProtected()) {
-		_statusCode = 403;
-		return ;
-	}
 	// Check if the file already exists, if it does try to delete it
 	std::ifstream infile;
 	// Also need to test if directory is writable, but j'ai la flemme là
@@ -285,9 +278,14 @@ void Request::handlePostRequest()
 	// Create file with the same name and fill it with body of POST request
 	size_t bodyBegin = _buffer.find("\r\n\r\n");
 	// need to check if find worked
-	std::string bodyContent = _buffer.substr(bodyBegin + 4);
+	_bodyContent = _buffer.substr(bodyBegin + 4);
+	if (is_cgi(_servers.v_serv[_serverId], _filePath)) {
+		int flag;
+		handle_cgi(_servers.v_serv[_serverId], _filePath, &flag, *this);
+		return ;
+	}
 	std::ofstream outfile(_filePath.c_str());
-	outfile << bodyContent;
+	outfile << _bodyContent;
 	outfile.close();
 	_statusCode = 200;
 }
@@ -391,18 +389,5 @@ bool Request::isMethodAllowed()
 		it = copy.find("methods");
 	}
 	_statusCode = 405;
-	return false;
-}
-
-bool Request::isFileProtected() const
-{
-	if (_filePath.find("utils/BIDEN_BLAST.mp4") != std::string::npos)
-		return true;
-	if (_filePath.find("utils/index.html") != std::string::npos)
-		return true;
-	if (_filePath.find("utils/favicon.ico") != std::string::npos)
-		return true;
-	if (_filePath.find("utils/img.jpg") != std::string::npos)
-		return true;
 	return false;
 }

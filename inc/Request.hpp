@@ -19,7 +19,6 @@ class Request {
  	 void findRequestSubType();
  	 bool parseRequestLine(void);
 	 bool isMethodAllowed();
-	 bool isFileProtected() const;
  	 void handleGetRequest();
  	 void handleQuery();
  	 void handlePostRequest();
@@ -30,6 +29,8 @@ class Request {
 	 int checkHexa(string &, string hexa);
 
 	 int _requestType;
+	 std::string _bodyContent;
+	 std::vector<std::string> _queryArg;
 
 	private:
 	 Request();
@@ -47,7 +48,6 @@ class Request {
 	 std::string _rootPath;
 	 std::string _filePath;
 	 std::string _queryString;
-	 std::vector<std::string> _queryArg;
 	 std::vector<std::string> _lines;
 	 std::string _buffer;
 	 std::map<std::string, std::string> _headerMap;
