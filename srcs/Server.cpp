@@ -107,13 +107,19 @@ void Server::manage_epoll_wait(struct epoll_event &event)
 
 void Server::readRequest(int epoll_fd)
 {
-	// _buffer.resize(_posBuffer + BUFFER_SIZE);
-	// _recvReturn = recv(epoll_fd, (char *)_buffer.c_str() + _posBuffer, BUFFER_SIZE, MSG_DONTWAIT);
-	// if (_recvReturn < 0) {
-	// 	std::cerr << "Error while reading\n";
+	// vector<Client>::iterator client;
+	// for (client = _clients.begin(); client != _clients.end(); client++)
+	// {
+	// 	if ((*client)._fdClient == epoll_fd)
+	// 		break ;
+	// }
+	// if (client == _clients.end())
+	// {
+	// 	std::cerr << "No matching client in the vector client" << std::endl;
 	// 	return ;
 	// }
-	// _posBuffer += _recvReturn;
+	// (*client).readFromFd();
+	// _buffer = (*client).getBuffer();
 	char buff[BUFFER_SIZE];
 	std::memset(buff, 0, BUFFER_SIZE);
 	//Armand -> condition a enveler si probleme, doit prevenir de l'ouverture de plus de 1024 fd
@@ -121,7 +127,7 @@ void Server::readRequest(int epoll_fd)
 		close(epoll_fd);
 	_buffer.assign(buff, BUFFER_SIZE);
 	// write(1, _buffchar, BUFFER_SIZE);
-	std::memset(buff, 0, BUFFER_SIZE);	
+	// std::memset(buff, 0, BUFFER_SIZE);	
 }
 
 void Server::sendResponse(Response& response, int client_fd) 
@@ -161,11 +167,11 @@ void	Server::acceptNewClient(int fdFromEpoll)
 bool	Server::isServer(int fdFromEpoll)
 {
 	std::map<int, int>::iterator check;
-        check  = _serversId.find(fdFromEpoll);
-        if (check == _serversId.end())
-                return (false);
-        else
-		return (true);
+  check  = _serversId.find(fdFromEpoll);
+  if (check == _serversId.end())
+          return (false);
+  else
+	return (true);
 }
 
 /**

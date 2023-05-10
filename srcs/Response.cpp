@@ -31,7 +31,7 @@ void Response::buildResponse(Request& request)
 				}
 				else {
 					buildGetHeader(request._requestSubType);
-					buildGetBody(request._filePath, request._servers.v_serv[request._serverFd]);
+					buildGetBody(request._filePath, request._servers.v_serv[request._serverId]);
 				}
 				break;
 			case POST_REQUEST:
@@ -136,7 +136,7 @@ void Response::buildCompleteResponse(int statusCode)
 void Response::buildErrorResponse(Request & request)
 {
 	ErrorPage& errorPage = ErrorPage::getInstance();
-	MULTIMAP copy = find_location_path(request._filePath, request._servers.v_serv[request._serverFd]);
+	MULTIMAP copy = find_location_path(request._filePath, request._servers.v_serv[request._serverId]);
 	MULTIMAP::iterator it = copy.find("errpage_" + itostr(request._statusCode));
 	if (it != copy.end())
 		_completeResponse = errorPage.getConfPage(copy.find("root")->second + it->second, request._statusCode);

@@ -18,7 +18,7 @@ class Request {
 	 bool findRequestType();
  	 void findRequestSubType();
  	 bool parseRequestLine(void);
-	 bool isMethodAllowed(std::string&, data&, int);
+	 bool isMethodAllowed();
 	 bool isFileProtected() const;
  	 void handleGetRequest();
  	 void handleQuery();
@@ -40,6 +40,7 @@ class Request {
 	 bool _autoindex;
 	 std::vector<std::string> _requestLine;
 	 std::string _uri;
+	 std::string _method;
 	 std::string _rootPath;
 	 std::string _filePath;
 	 std::string _queryString;
@@ -48,7 +49,7 @@ class Request {
 	 std::string _buffer;
 	 std::map<std::string, std::string> _headerMap;
 	 data _servers;
-	 int _serverFd;
+	 int _serverId;
  } ;
 
 #endif // REQUEST_HPP_

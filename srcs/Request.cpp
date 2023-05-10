@@ -20,13 +20,13 @@ Request::Request(std::string& buffer, data& servers, int serverFd)
 	_query = false;
 	_buffer = buffer;
 	_servers = servers;
-	_serverFd = serverFd;
-	_root = _servers.v_serv[_serverFd].conf_serv.find("root");
+	_serverId = serverFd;
+	_root = _servers.v_serv[_serverId].conf_serv.find("root");
 	_rootPath = _root->second;
-	_index = _servers.v_serv[_serverFd].conf_serv.find("index");
+	_index = _servers.v_serv[_serverId].conf_serv.find("index");
 
-	MULTIMAP::iterator autoindex = _servers.v_serv[_serverFd].conf_serv.find("autoindex");
-	if (autoindex == _servers.v_serv[_serverFd].conf_serv.end() || autoindex->second == "off") 
+	MULTIMAP::iterator autoindex = _servers.v_serv[_serverId].conf_serv.find("autoindex");
+	if (autoindex == _servers.v_serv[_serverId].conf_serv.end() || autoindex->second == "off") 
 		_autoindex = false;
 	else
 		_autoindex = true;
@@ -44,8 +44,8 @@ void Request::parseRequest(data& servers, int serv)
 	if (!parseRequestLine())
 		return ;
 	parseURI();
-	if (!isMethodAllowed(_requestLine[0], servers, serv))
-		return ;
+	// if (!isMethodAllowed())
+	// 	return ;
 	if (!findRequestType())
 		return ;
 	findRequestSubType();
@@ -105,6 +105,7 @@ bool Request::parseRequestLine()
 		_statusCode = 400;
 		return false;
 	}
+	_method = _requestLine[0];
 	// Remove last character of HTTP request version (\r)
 	_requestLine[2].erase(_requestLine[2].length() - 1);
 	if (_requestLine[2] != "HTTP/1.1" && _requestLine[2] != "HTTP/1.0") {
@@ -120,8 +121,14 @@ void Request::parseURI()
 	_rootPath.erase(_rootPath.end() - 1);
 	_filePath = _uri.substr(0, _uri.find_first_of("?"));
 	if (_filePath == "/")	{
-		_filePath = _root->second + _index->second;
-		return ;
+		if (_index == _servers.v_serv[_serverId].conf_serv.end()) {
+			_filePath = _root->second;
+			return;
+		}
+		else {
+			_filePath = _root->second + _index->second;
+			return ;
+		}
 	}
 	// Remove first /
 	_filePath.erase(0, 1);
@@ -181,17 +188,17 @@ void Request::handleGetRequest()
 	 * décommenter ces fonctions quand parsing sur cgi sera fait
 	 * pour l'instant, renvoie un fd mais peu renvoyer une string au besoin
 	*/
-	if (!_filePath.empty() && is_dir_listing(_filePath, _servers.v_serv[_serverFd]) == true) {
+	if (!_filePath.empty() && is_dir_listing(_filePath, _servers.v_serv[_serverId]) == true) {
 		_statusCode = 200;
 		_requestSubType = DIR_LISTING;
 		return ;
 	}
-	if (!_filePath.empty() && is_cgi(_servers.v_serv[_serverFd], _filePath) == true)
+	if (!_filePath.empty() && is_cgi(_servers.v_serv[_serverId], _filePath) == true)
 	{
 		int flag;
 		//need to add a typedef for CGI_HANDLER
 		//+ need to pass _queryArg into char* to send to CGI, probably do this with a getter and then in server object
-		handle_cgi(_servers.v_serv[_serverFd], _filePath, &flag);
+		handle_cgi(_servers.v_serv[_serverId], _filePath, &flag);
 		return;
 	}
 
@@ -202,7 +209,7 @@ void Request::handleGetRequest()
 	else if (access(_filePath.c_str(), R_OK))
 		_statusCode = 403;
 	// Respond 403 if URI is a directory but autoindex is off
-	else if (is_dir_listing(_filePath, _servers.v_serv[_serverFd]) == AUTOINDEX_OFF)
+	else if (is_dir_listing(_filePath, _servers.v_serv[_serverId]) == AUTOINDEX_OFF)
 		_statusCode = 403;
 	else
 		_statusCode = 200;
@@ -361,14 +368,14 @@ void Request::handleDeleteRequest()
 	_statusCode = 200;
 }
 
-bool Request::isMethodAllowed(std::string& method, data& servers, int server)
+bool Request::isMethodAllowed()
 {
-	MULTIMAP copy = servers.v_serv[server].conf_serv;
+	MULTIMAP copy = find_location_path(_filePath, _servers.v_serv[_serverId]);
 	MULTIMAP::iterator it;
 
 	it = copy.find("methods");
 	while (it != copy.end()) {
-		if (it->second == method)
+		if (it->second == _method)
 			return true;
 		copy.erase(it);
 		it = copy.find("methods");
