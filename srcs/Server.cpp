@@ -53,7 +53,6 @@ void Server::setSocket(void)
 			_serversId.insert(make_pair(server, i));
 			_epoll.add_fd_to_pool(server);
 
-			std::cout << "port: " << port << " id: " << i << " fd: " << server <<std::endl;
 			_servers.v_serv[i].conf_serv.erase(it);
 			it  = _servers.v_serv[i].conf_serv.find("listen");
 		}
@@ -126,13 +125,13 @@ bool	Server::readRequest(int epoll_fd)
 	//Armand -> condition a enveler si probleme, doit prevenir de l'ouverture de plus de 1024 fd
 	if (recv(epoll_fd, buff, BUFFER_SIZE - 1, MSG_DONTWAIT) == 0)
 	{
-		close(epoll_fd);
-		for (vector<Client>::iterator it = _clients.begin(); it != _clients.end(); it++)
-			if ((*it).getFdClient() == epoll_fd)
-			{
+		for (vector<Client>::iterator it = _clients.begin(); it != _clients.end(); it++){
+			if ((*it).getFdClient() == epoll_fd){
 				_clients.erase(it);
 				break ;
 			}
+		}
+		close(epoll_fd);
 		return (false);
 	}
 	_buffer.assign(buff, BUFFER_SIZE);

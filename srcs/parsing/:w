@@ -10,8 +10,8 @@ void pars_rewrite(MULTIMAP & copy) {
 		if (dir[0] == '/')
 			dir = it->second.substr(1);
 		dir = root->second + dir;
-		if (!is_dir(dir))
-			throw (logic_error("Error: rewrite argument can be only a directory: " + it->second));
+		if (!is_dir(root->second + dir))
+			throw (logic_error("Error: rewrite argument can be only a directory"));
 		copy.erase(it);
 		it = copy.find("rewrite");
 	}

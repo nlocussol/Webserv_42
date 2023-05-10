@@ -47,6 +47,14 @@ std::string ErrorPage::getErrorPage(int statusCode)
 			std::cerr << "Error 400: Client sent a bad request\n";
 			return _400Page;
 			break;
+		case 507:
+			std::cerr << "Error 507: Insufficient Storage\n";
+			return _507Page;
+			break;
+		case 508:
+			std::cerr << "Error 508: Loop detected\n";
+			return _508Page;
+			break;
 	}
 	std::string ff = "les problemes\n";
 	return ff;
@@ -101,5 +109,29 @@ std::string ErrorPage::_405Page = "HTTP/1.1 405 Not Allowed\r\n"
 "<h1>Method Not Allowed</h1>\r\n"
 "<hr>\r\n"
 "<p>This error does not allow this method.</p>\r\n"
+"</body>\r\n"
+"</html>\r\n\r\n";
+
+std::string ErrorPage::_507Page = "HTTP/1.1 507 Insufficient Storage\r\n"
+"Content-type: text/html\r\n"
+"Connection: closed\r\n"
+"\r\n"
+"<html>\r\n"
+"<body>\r\n"
+"<h1>Insufficient Storage</h1>\r\n"
+"<hr>\r\n"
+"<p>The server cannot store the representation needed to successfully complete the request.</p>\r\n"
+"</body>\r\n"
+"</html>\r\n\r\n";
+
+std::string ErrorPage::_508Page = "HTTP/1.1 508 Loop Detected\r\n"
+"Content-type: text/html\r\n"
+"Connection: closed\r\n"
+"\r\n"
+"<html>\r\n"
+"<body>\r\n"
+"<h1>Loop Detected</h1>\r\n"
+"<hr>\r\n"
+"<p>The server terminated an operation because it encountered an infinite loop while processing a request.</p>\r\n"
 "</body>\r\n"
 "</html>\r\n\r\n";

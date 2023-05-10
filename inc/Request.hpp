@@ -27,6 +27,7 @@ class Request {
 	 bool dlImage(string &, vector<string> &, int);
  	 void handleDeleteRequest();
 	 int checkHexa(string &, string hexa);
+     bool checkBodyLength(string bodyContent);
 
 	 int _requestType;
 	 std::string _bodyContent;

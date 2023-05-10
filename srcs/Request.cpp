@@ -1,5 +1,6 @@
 #include "../inc/Request.hpp"
 #include "../inc/webserv.hpp"
+#include <cstdlib>
 #include <string>
 #include <cstring>
 #include <sstream>
@@ -191,13 +192,22 @@ void Request::handleGetRequest()
 		handle_cgi(_servers.v_serv[_serverId], _filePath, &flag, *this);
 		return ;
 	}
+	if (is_dir(_filePath) && _filePath[_filePath.size() - 1] != '/') {
+		MULTIMAP copy = find_location_path(_filePath, _servers.v_serv[_serverId]);
+		MULTIMAP::iterator it = copy.find("autoindex");
+		if (it != copy.end() && it->second == "on") {
+			_filePath.erase(0, _rootPath.size());
+			_filePath += "/";
+			_statusCode = 301;
+		}
+		return ;
+	}
 	if (!is_dir(_filePath) && _filePath[_filePath.size() - 1] == '/') {
 		_filePath.erase(0, _rootPath.size());
 		_filePath.erase(_filePath.size() - 1);
 		_statusCode = 301;
 		return ;
 	}
-	//ici nathan
 	/*
 	 * regarde si c'est un cgi et le lance au besoin.
 	 * décommenter ces fonctions quand parsing sur cgi sera fait
@@ -251,6 +261,7 @@ void Request::handleQuery()
 void Request::handlePostRequest()
 {
 	std::map<std::string, std::string>::iterator it;
+
 	it = _headerMap.find("Transfer-Encoding");
 	if (it != _headerMap.end() && it->second == "chunked") {
 		handleChunkedTransfer();
@@ -282,12 +293,40 @@ void Request::handlePostRequest()
 	if (is_cgi(_servers.v_serv[_serverId], _filePath)) {
 		int flag;
 		handle_cgi(_servers.v_serv[_serverId], _filePath, &flag, *this);
+	}
+	if (checkBodyLength(_bodyContent) == false)
+	{
+		_statusCode = 507;
 		return ;
 	}
 	std::ofstream outfile(_filePath.c_str());
 	outfile << _bodyContent;
 	outfile.close();
 	_statusCode = 200;
+}
+
+bool	Request::checkBodyLength(std::string bodyContent)
+{
+	if (_servers.v_serv[_serverId].conf_serv.find("limit_client_body_size") == _servers.v_serv[_serverId].conf_serv.end())
+		return true;
+
+	std::map<std::string, std::string>::iterator it;
+	size_t	len;
+	size_t	limitLen;
+	char	*check;
+
+	it = _headerMap.find("Content-Length");
+	limitLen = strtol(_servers.v_serv[_serverId].conf_serv.find("limit_client_body_size")->second.c_str(), &check, 10);
+	if (it != _headerMap.end())
+	{
+		len = strtol(it->second.c_str(), &check, 10);
+		if (it->second.c_str() == check || len > limitLen)
+			return (false);
+		return (true);
+	}
+	if (bodyContent.length() > limitLen)
+		return (false);
+	return (true);
 }
 
 int Request::checkHexa(string &line, string hexa) {
