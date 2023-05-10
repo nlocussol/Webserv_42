@@ -1,5 +1,6 @@
 #include "../inc/Request.hpp"
 #include "../inc/webserv.hpp"
+#include <cstdlib>
 #include <string>
 #include <cstring>
 #include <sstream>
@@ -237,6 +238,7 @@ void Request::handleQuery()
 void Request::handlePostRequest()
 {
 	std::map<std::string, std::string>::iterator it;
+
 	it = _headerMap.find("Transfer-Encoding");
 	if (it != _headerMap.end() && it->second == "chunked") {
 		handleChunkedTransfer();
@@ -270,10 +272,39 @@ void Request::handlePostRequest()
 	size_t bodyBegin = _buffer.find("\r\n\r\n");
 	// need to check if find worked
 	std::string bodyContent = _buffer.substr(bodyBegin + 4);
+	if (checkBodyLength(bodyContent) == false)
+	{
+		_statusCode = 507;
+		return ;
+	}
 	std::ofstream outfile(_filePath.c_str());
 	outfile << bodyContent;
 	outfile.close();
 	_statusCode = 200;
+}
+
+bool	Request::checkBodyLength(std::string bodyContent)
+{
+	if (_servers.v_serv[_serverId].conf_serv.find("limit_client_body_size") == _servers.v_serv[_serverId].conf_serv.end())
+		return true;
+
+	std::map<std::string, std::string>::iterator it;
+	size_t	len;
+	size_t	limitLen;
+	char	*check;
+
+	it = _headerMap.find("Content-Length");
+	limitLen = strtol(_servers.v_serv[_serverId].conf_serv.find("limit_client_body_size")->second.c_str(), &check, 10);
+	if (it != _headerMap.end())
+	{
+		len = strtol(it->second.c_str(), &check, 10);
+		if (it->second.c_str() == check || len > limitLen)
+			return (false);
+		return (true);
+	}
+	if (bodyContent.length() > limitLen)
+		return (false);
+	return (true);
 }
 
 int Request::checkHexa(string &line, string hexa) {
