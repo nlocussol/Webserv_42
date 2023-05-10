@@ -18,6 +18,7 @@ Request::Request(std::string& buffer, data& servers, int serverFd)
 {
 	_statusCode = 0;
 	_query = false;
+	_cgi = false;
 	_buffer = buffer;
 	_servers = servers;
 	_serverId = serverFd;
@@ -49,6 +50,11 @@ void Request::parseRequest(data& servers, int serv)
 	if (!findRequestType())
 		return ;
 	findRequestSubType();
+	if (is_cgi(servers.v_serv[_serverId], _filePath)) {
+		int flag;
+		handle_cgi(servers.v_serv[_serverId], _filePath, &flag, *this);
+		return ;
+	}
 	switch (_requestType) {
 		case GET_REQUEST:
 			handleGetRequest();
@@ -91,7 +97,7 @@ bool Request::fillMapHeader()
 		}
 		key = _lines[i].substr(0, colonPos);
 		value = _lines[i].substr(colonPos + 2, _lines[i].length());
-		// Erase \r
+		// Erase \r at end of line
 		value.erase(value.length() - 1);
 		_headerMap.insert(std::make_pair(key, value));
 	}
@@ -119,6 +125,9 @@ bool Request::parseRequestLine()
 void Request::parseURI()
 {
 	_uri = _requestLine[1];
+	if (_uri.find(".py")) {
+		_cgi = true;
+	}
 	_rootPath.erase(_rootPath.end() - 1);
 	_filePath = _uri.substr(0, _uri.find_first_of("?"));
 	if (_filePath == "/")	{
@@ -141,7 +150,6 @@ void Request::parseURI()
 		if (_filePath[_rootPath.length()] != '/')
 			_filePath.insert(_rootPath.length(), "/");
 	}
-
 	if (_uri.find("?") != std::string::npos) {
 		_query = true;
 		_queryString = _uri.substr(_uri.find_first_of("?") + 1);
@@ -184,6 +192,14 @@ void Request::handleGetRequest()
 		handleQuery();
 		return;
 	}
+
+	if (!is_dir(_filePath) && _filePath[_filePath.size() - 1] == '/') {
+		_filePath.erase(0, _rootPath.size());
+		_filePath.erase(_filePath.size() - 1);
+		_statusCode = 301;
+		return ;
+	}
+	//ici nathan
 	/*
 	 * regarde si c'est un cgi et le lance au besoin.
 	 * décommenter ces fonctions quand parsing sur cgi sera fait
@@ -194,14 +210,14 @@ void Request::handleGetRequest()
 		_requestSubType = DIR_LISTING;
 		return ;
 	}
-	if (!_filePath.empty() && is_cgi(_servers.v_serv[_serverId], _filePath) == true)
-	{
-		int flag;
-		//need to add a typedef for CGI_HANDLER
-		//+ need to pass _queryArg into char* to send to CGI, probably do this with a getter and then in server object
-		handle_cgi(_servers.v_serv[_serverId], _filePath, &flag);
-		return;
-	}
+	// if (!_filePath.empty() && is_cgi(_servers.v_serv[_serverId], _filePath) == true)
+	// {
+	// 	int flag;
+	// 	//need to add a typedef for CGI_HANDLER
+	// 	//+ need to pass _queryArg into char* to send to CGI, probably do this with a getter and then in server object
+	// 	handle_cgi(_servers.v_serv[_serverId], _filePath, &flag);
+	// 	return;
+	// }
 
 	// Return 404 Not Found if the file does not exist
 	if (access(_filePath.c_str(), F_OK))

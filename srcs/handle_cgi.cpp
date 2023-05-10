@@ -1,4 +1,6 @@
 #include "../inc/webserv.hpp"
+#include "../inc/Request.hpp"
+#include "../inc/webserv.hpp"
 #include <cstdlib>
 #include <unistd.h>
 
@@ -121,37 +123,44 @@ string get_output_cgi(int fd, int *flag)
  *
 **/ 
 
-string handle_cgi(block_serv server, std::string exec, int *flag)
+string handle_cgi(block_serv server, std::string exec, int *flag, Request& request)
 {
-	int	pip[2];
-	int	pid;
-	MULTIMAP map;
-	map = find_location_path(exec, server);
-	std::string inter = map.find("cgi")->second;
-	string str = map.find("root")->second + "/" + exec;
-	char	*param[3] = {(char *)inter.c_str(), (char *)str.c_str(), NULL};
+	if (request._requestType == GET_REQUEST) {
+		int	pip[2];
+		int	pid;
+		MULTIMAP map;
+		map = find_location_path(exec, server);
+		std::string inter = map.find("cgi")->second;
+		string str = map.find("root")->second + "/" + exec;
+		char	*param[3] = {(char *)inter.c_str(), (char *)str.c_str(), NULL};
 
-	if (check_cgi_args(inter, str, flag) == -1)
-		return (std::string());
-	pipe(pip);
-	pid = fork();
-	if (pid == -1)
-	{
-		std::cerr << "fork creation error" << std::endl;
-		exit (EXIT_FAILURE);
+		if (check_cgi_args(inter, str, flag) == -1)
+			return (std::string());
+		pipe(pip);
+		pid = fork();
+		if (pid == -1)
+		{
+			std::cerr << "fork creation error" << std::endl;
+			exit (EXIT_FAILURE);
+		}
+		else if (pid == 0)
+		{
+			dup2(pip[1], 1);
+			close(pip[0]);
+			close(pip[1]);
+			execve(inter.c_str(), param, NULL);
+			std::cerr << "execve error" << std::endl;
+			close(pip[0]);
+			close(pip[1]);
+			exit(EXIT_FAILURE);
+		}
+		if (check_time(pid, pip, flag) == false)
+			return (string());
+		return (get_output_cgi(pip[0], flag));
+		}
+	else if (request._requestType == POST_REQUEST) {
+		return "to do";
 	}
-	else if (pid == 0)
-	{
-		dup2(pip[1], 1);
-		close(pip[0]);
-		close(pip[1]);
-		execve(inter.c_str(), param, NULL);
-		std::cerr << "execve error" << std::endl;
-		close(pip[0]);
-		close(pip[1]);
-		exit(EXIT_FAILURE);
-	}
-	if (check_time(pid, pip, flag) == false)
-		return (string());
-	return (get_output_cgi(pip[0], flag));
+	else
+		return "Les problemes\n";
 }
