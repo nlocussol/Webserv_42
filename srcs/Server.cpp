@@ -98,7 +98,7 @@ void Server::manage_epoll_wait(struct epoll_event &event)
 		// Need to fix read so we don't send 400 bad request perma
 		readRequest(event.data.fd);/*, server*/
 		Request request(_buffer, _servers, serverFd);
-		std::cout << "Request-----\n" << _buffer;
+		// std::cout << "Request-----\n" << _buffer;
 		request.parseRequest(_servers, serverFd);
 		Response response(_servers.v_serv[serverFd]);
 		response.buildResponse(request);

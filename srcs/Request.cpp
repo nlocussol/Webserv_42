@@ -1,6 +1,8 @@
 #include "../inc/Request.hpp"
 #include "../inc/webserv.hpp"
 #include <string>
+#include <cstring>
+#include <sstream>
 
 vector<string> mysplit(string & line, string delimiter);
 
@@ -268,13 +270,47 @@ void Request::handlePostRequest()
 
 void Request::handleChunkedTransfer()
 {
+	// Check if _headerEnd + 4 is valid else ff
+	_buffer = _buffer.substr(_headerEnd + 4);
+	// cout << _buffer;
+	size_t crlfPos;
+	std::string hexValueStr;
+	size_t hexValue;
 	std::string unChunkedData;
-	std::vector<std::string>::iterator it = find(_lines.begin(), _lines.end(), "\r");
-	std::vector<std::string>::iterator ite = _lines.end();
-
-	while (it != ite) {
-
-		it++;
+	size_t chunkSize;
+	while (!_buffer.empty()) {
+		crlfPos = _buffer.find("\r\n");
+		if (crlfPos == std::string::npos) {
+			_statusCode = 400;
+			return;
+		}
+		hexValueStr = _buffer.substr(0, crlfPos);
+		for (size_t i = 0 ; hexValueStr[i] ; i++) {
+			if (!strchr("0123456789abcdef", hexValueStr[i])) {
+				_statusCode = 400;
+				return ;
+			}
+		}
+		hexValue = (size_t)strtol(hexValueStr.c_str(), NULL, 16);
+		_buffer = _buffer.substr(hexValueStr.length() + 2);
+		crlfPos = _buffer.find("\r\n");
+		if (crlfPos == std::string::npos) {
+			_statusCode = 400;
+			return;
+		}
+		// test append with null byte
+		unChunkedData.append(_buffer.substr(0, crlfPos));
+		for (chunkSize = 0 ; unChunkedData[chunkSize] ; chunkSize++) ;
+		if (chunkSize != hexValue) {
+			_statusCode = 400;
+			return ;
+		}
+		crlfPos = _buffer.find("\r\n");
+		if (crlfPos == std::string::npos) {
+			_statusCode = 400;
+			return;
+		}
+		_buffer = _buffer.substr(crlfPos);
 	}
 }
 
