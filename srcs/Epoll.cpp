@@ -18,7 +18,8 @@ Epoll::Epoll(const Epoll &copy){
 Epoll & Epoll::operator=(const Epoll &copy){
 	if (&copy != this)
 	{
-
+		_fd_epoll = copy._fd_epoll;
+		_event = copy._event;
 	}
 	return (*this);
 }

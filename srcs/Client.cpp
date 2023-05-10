@@ -38,3 +38,11 @@ int	Client::getFdServer() const{
 int	Client::getIdServer() const{
 	return(_idServer);
 }
+
+std::string Client::getBuffer() const{
+	return(_buffer);
+}
+
+void	Client::setBuffer(std::string newBuffer){
+	_buffer = newBuffer;
+}

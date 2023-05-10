@@ -1,10 +1,7 @@
 #ifndef CLIENT_HPP
 # define CLIENT_HPP
-# include <vector>
-# include <map>
-# include <algorithm>
-# include <stdexcept>
-# include <unistd.h>
+
+# include <iostream>
 
 class Client
 {
@@ -14,14 +11,16 @@ class Client
 		Client (const Client &copy);
 		Client &operator=(const Client&);
 		
-		int	getFdClient() const;
-		int	getFdServer() const;
-		int	getIdServer() const;
+		int		getFdClient() const;
+		int		getFdServer() const;
+		int		getIdServer() const;
+		std::string	getBuffer() const;
+		void	setBuffer(std::string);
 	 private:
 		std::string	_buffer;
-		int	_fdClient;
-		int	_fdServer;
-		int	_idServer;
+		int			_fdClient;
+		int			_fdServer;
+		int			_idServer;
 		
 };
 #endif

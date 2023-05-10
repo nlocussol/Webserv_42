@@ -26,10 +26,10 @@ class Socket
 
  	 private:
 		void	make_socket_non_blocking(int socket);
+
+	 private:
 		int		_fd_server;
 		int		_port;
 		struct sockaddr_in _server_addr;
-		std::vector<std::string> msg;
- 		
  };
 #endif
