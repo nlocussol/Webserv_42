@@ -70,8 +70,8 @@ void recursive_location(fstream & file, block_serv & servers, vector<string> opt
 				throw (logic_error("Error: cgi need two arguments! (using: cgi [path_to_interpreter] [extension])"));
 			else if (tab[0] == "limit_client_body_size" && tab.size() != 2)
 				throw (logic_error("Error: body size take only one arguments!"));
-			else if (tab[0] == "redirect" && tab.size() != 2)
-				throw (logic_error("Error: redirect take only one arguments!"));
+			else if (tab[0] == "rewrite" && tab.size() != 2)
+				throw (logic_error("Error: rewrite take only one arguments!"));
 			for (unsigned long i = 1; i < tab.size(); i++)
 				servers.v_location[index].conf_location.insert(make_pair(tab[0], tab[i]));
 		} 
@@ -119,8 +119,8 @@ void pars_line(fstream & file, data & servers, vector<string> options) {
 				throw (logic_error("Error: cgi need two arguments! (using: cgi [path_to_interpreter] [extension])"));
 			else if (tab[0] == "limit_client_body_size" && tab.size() != 2)
 				throw (logic_error("Error: body size take only one arguments!"));
-			else if (tab[0] == "redirect" && tab.size() != 2)
-				throw (logic_error("Error: redirect take only one arguments!"));
+			else if (tab[0] == "rewrite")
+				throw (logic_error("Error: rewrite can only be defined in location block!"));
 			for (unsigned long i = 1; i < tab.size(); i++)
 				servers.v_serv[index].conf_serv.insert(make_pair(tab[0], tab[i]));
 		} 
@@ -131,7 +131,7 @@ void pars_line(fstream & file, data & servers, vector<string> options) {
 }
 
 void pars_conf(string & file, data & servers) {
-	string opt[NB_OPT] = {"root", "index", "listen", "methods", "errpage", "server_names", "cgi", "autoindex", "redirect", "limit_client_body_size"};
+	string opt[NB_OPT] = {"root", "index", "listen", "methods", "errpage", "server_names", "cgi", "autoindex", "rewrite", "limit_client_body_size"};
 	vector<string> options;
 	DIR	*dir;
 
