@@ -12,6 +12,10 @@ ErrorPage& ErrorPage::getInstance()
 
 std::string ErrorPage::getConfPage(std::string file, int &code) {
 	std::fstream errpage(file.c_str());
+	if (!errpage) {
+		cout << "ff" << endl;
+		return NULL;
+	}
 	std::string line;
 	std::string buff = "HTTP/1.1 " + itostr(code) + " Bad Request\r\n"
 	"Content-type: text/html\r\n"
