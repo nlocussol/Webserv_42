@@ -53,6 +53,7 @@ void Server::setSocket(void)
 			_serversId.insert(make_pair(server, i));
 			_epoll.add_fd_to_pool(server);
 
+			std::cout << "port: " << port << " id: " << i << " fd: " << server <<std::endl;
 			_servers.v_serv[i].conf_serv.erase(it);
 			it  = _servers.v_serv[i].conf_serv.find("listen");
 		}
@@ -92,12 +93,11 @@ void Server::manage_epoll_wait(struct epoll_event &event)
 		{
 			std::cerr << "No matching server for " << event.data.fd << " founded" << std::endl;
 		}
-
 		// Need to fix read so we don't send 400 bad request perma
 		if (readRequest(event.data.fd) == false)
 			return; /*, server*/
 		Request request(_buffer, _servers, serverFd);
-		std::cout << "Request-----\n" << _buffer;
+		//std::cout << "Request-----\n" << _buffer;
 		request.parseRequest(_servers, serverFd);
 		Response response(_servers.v_serv[serverFd]);
 		response.buildResponse(request);
@@ -127,6 +127,12 @@ bool	Server::readRequest(int epoll_fd)
 	if (recv(epoll_fd, buff, BUFFER_SIZE - 1, MSG_DONTWAIT) == 0)
 	{
 		close(epoll_fd);
+		for (vector<Client>::iterator it = _clients.begin(); it != _clients.end(); it++)
+			if ((*it).getFdClient() == epoll_fd)
+			{
+				_clients.erase(it);
+				break ;
+			}
 		return (false);
 	}
 	_buffer.assign(buff, BUFFER_SIZE);
@@ -192,7 +198,9 @@ bool	Server::isServer(int fdFromEpoll)
 int	Server::findMatchingServer(int fdClient)
 {
 	for (vector<Client>::iterator it = _clients.begin(); it != _clients.end(); it++)
+	{
 		if ((*it).getFdClient() == fdClient)
 			return ((*it).getIdServer());
+	}
 	return (-1);
 }
