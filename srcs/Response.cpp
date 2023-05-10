@@ -23,6 +23,9 @@ Response::Response(block_serv serv)
 
 void Response::buildResponse(Request& request)
 {
+	// if (request._statusCode == 301) {
+	// 	handleRedirection(request);
+	// }
 	if (request._statusCode == 200 || request._statusCode == 201) {
 		switch (request._requestType) {
 			case GET_REQUEST:
@@ -45,6 +48,15 @@ void Response::buildResponse(Request& request)
 	}
 	else
 		buildErrorResponse(request);
+}
+
+void Response::handleRedirection(Request& request)
+{
+	std::map<std::string, std::string>::iterator it;
+	it = request._headerMap.find("Host");
+	std::cout << it->second;
+	std::string uri = it->second.substr(0, it->second.find(":"));
+	_completeResponse = "HTTP/1.1 301 Moved permanently\r\nLocation: " + it->second + "/\r\n\r\n";
 }
 
 void Response::buildGetHeader(int requestSubType)

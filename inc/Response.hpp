@@ -17,6 +17,7 @@ class Response {
 	 ~Response();
 
 	private:
+	 void handleRedirection(Request&);
 	 void buildCompleteResponse(int);
 	 void buildGetHeader(int);
 	 void buildGetBody(std::string&, block_serv& );
