@@ -30,15 +30,17 @@ class Request {
 	 int checkHexa(string &, string hexa);
      bool checkBodyLength(string bodyContent);
 
+	 int _requestType;
+
 	private:
 	 Request();
 	 MULTIMAP::iterator _root;
 	 MULTIMAP::iterator _index;
-	 int _requestType;
 	 int _requestSubType;
 	 int _statusCode;
 	 size_t _headerEnd;
 	 bool _query;
+	 bool _cgi;
 	 bool _autoindex;
 	 std::vector<std::string> _requestLine;
 	 std::string _uri;
