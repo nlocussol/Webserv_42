@@ -72,8 +72,10 @@ bool Request::fillMapHeader()
 	}
 	// Split on every line return, basic HTTP request we accept need at least 2 lines
 	// 1 is the request line and 1 header line
-	_lines = mysplit(_buffer, "\n");
+	std::string header = _buffer.substr(0, _headerEnd + 4);
+	_lines = mysplit(header, "\n");
 	size_t nbLines = _lines.size();
+	cout << nbLines<<'\n';
 	if (nbLines < 2) {
 		_statusCode = 400;
 		return false;
