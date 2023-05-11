@@ -20,6 +20,7 @@ void pars_manager(block_location & servers, vector<int> & ports) {
 	pars_errpage(copy, servers.conf_location, it->second);
 	pars_body_size(copy);
 	pars_rewrite(copy);
+	pars_cgi(copy);
 }
 
 void pars_manager(block_serv & servers, vector<int> & ports) {
@@ -28,6 +29,7 @@ void pars_manager(block_serv & servers, vector<int> & ports) {
 
 	fill_root(servers.conf_serv);
 	pars_dir("root", copy);
+	pars_cgi(copy);
 	pars_file("index", copy, it->second);
 	pars_listen(copy, ports);
 	pars_methods(copy);
