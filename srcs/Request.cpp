@@ -244,7 +244,7 @@ void Request::handleGetRequest()
 			_statusCode = 500;
 		return ;
 	}
-	if (!_filePath.empty() && is_dir_listing(_filePath, _servers.v_serv[_serverId])) {
+	if (!_filePath.empty() && is_dir_listing(_filePath, _servers.v_serv[_serverId]) == AUTOINDEX_OK) {
 		_statusCode = 200;
 		_dirList = true;
 		return ;
