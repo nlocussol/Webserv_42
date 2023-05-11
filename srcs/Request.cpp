@@ -50,8 +50,8 @@ void Request::parseRequest()
 	findRequestSubType();
 	// if (!checkBasicRedirection())
 		// return ;
-	// if (!checkRewrite())
-		// return ;
+	if (!checkRewrite())
+		return ;
 	switch (_methodInt) {
 		case GET_REQUEST:
 			handleGetRequest();
@@ -70,6 +70,7 @@ bool Request::checkRewrite() {
 	MULTIMAP::iterator it = copy.find("rewrite");
 	MULTIMAP::iterator autoindex = copy.find("autoindex");
 	if (it != copy.end() && autoindex != copy.end() && autoindex->second == "on") {
+		cout << "HERRREEEEEE" << endl;
 		_filePath = it->second;
 		_statusCode = 301;
 		return false;
