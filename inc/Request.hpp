@@ -15,7 +15,7 @@ class Request {
 	 void parseRequest();
 	 bool basicRequestParsing();
 	 bool fillMapHeader();
-	 void parseURI();
+	 bool parseURI();
  	 void findRequestSubType();
  	 bool parseRequestLine();
 	 bool isMethodAllowed();

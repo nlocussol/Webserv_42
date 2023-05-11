@@ -43,7 +43,8 @@ void Request::parseRequest()
 		return ;
 	if (!isMethodAllowed())
 		return ;
-	parseURI();
+	if (!parseURI())
+		return ;
 	if (!fillMapHeader())
 		return ;
 	if (!checkBasicRedirection())
@@ -136,19 +137,24 @@ bool Request::fillMapHeader()
 	return true;
 }
 
-void Request::parseURI()
+bool Request::parseURI()
 {
 	_rootPath.erase(_rootPath.end() - 1);
 	_filePath = _uri.substr(0, _uri.find_first_of("?"));
 	if (_filePath == "/")	{
 		if (_index == _servers.v_serv[_serverId].conf_serv.end()) {
 			_filePath = _root->second;
-			return;
+			return true;
 		}
 		else {
 			_filePath = _root->second + _index->second;
-			return ;
+			return true;
 		}
+	}
+	// We do not support uri > 2000 characters
+	if (_uri.length() > 2000) {
+		_statusCode = 400;
+		return false;
 	}
 	// Remove first /
 	_filePath.erase(0, 1);
@@ -160,9 +166,8 @@ void Request::parseURI()
 			_filePath.insert(_rootPath.length(), "/");
 	}
 	size_t lastDotPos = _filePath.find_last_of(".");
-	if (lastDotPos != std::string::npos) {
+	if (lastDotPos != std::string::npos)
 		_extension = _filePath.substr(lastDotPos + 1);
-	}
 	// else _dirList == true ??
 	if (_uri.find("?") != std::string::npos) {
 		_query = true;
@@ -172,6 +177,7 @@ void Request::parseURI()
 	if (is_cgi(_servers.v_serv[_serverId], _filePath)) {
 		_cgi = true;
 	}
+	return true;
 }
 
 bool Request::isMethodAllowed()
