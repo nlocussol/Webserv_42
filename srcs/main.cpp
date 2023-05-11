@@ -32,7 +32,12 @@ int main (int ac, char *av[])
 		return (EXIT_FAILURE);
 	}
   	Server server(servers);
-  	server.setSocket();
-  	server.runServer();
+	try {
+		server.setSocket();
+		server.runServer();
+	} catch (std::exception & e) {
+		std::cout << e.what() << std::endl;
+		return (1);
+	}
   	return 0;
 }

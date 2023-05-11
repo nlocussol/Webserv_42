@@ -1,6 +1,8 @@
 #include "../inc/Socket.hpp"
+#include <exception>
 #include <fcntl.h>
 #include <netinet/in.h>
+#include <stdexcept>
 #include <strings.h>
 #include <cstdio>
 
@@ -15,6 +17,8 @@
  }
 
  Socket::~Socket(){
+	 if (_fd_server > 0)
+		 close (_fd_server);
  }
 
  Socket::Socket(const Socket &copy){
@@ -48,29 +52,17 @@ void	Socket::allow_socket_server(int port)
 	_port = port;
 	_fd_server = socket(AF_INET, SOCK_STREAM, 0);
 	if (_fd_server < 0)
-	{
-		std::cerr << "creating socket error" << std::endl;
-		exit (1);
-	}
+		throw std::runtime_error("creating socket error");
 	bzero(&_server_addr, sizeof(struct sockaddr_in));
 	_server_addr.sin_family = AF_INET;
 	_server_addr.sin_addr.s_addr = htonl(INADDR_ANY);
 	_server_addr.sin_port = htons(_port);
 	if (setsockopt(_fd_server, SOL_SOCKET, SO_REUSEADDR, &option, sizeof(int)) < 0)
-	{
-		std::cerr << "setsockopt error" << std::endl;
-		exit (1);
-	}
+		throw std::runtime_error("setsockopt error");
 	if (bind(_fd_server, (struct sockaddr *)&_server_addr, sizeof(_server_addr)) < 0)
-	{
-		std::cerr << "bind socket to the right port error" << std::endl;
-		exit (1);
-	}
+		throw std::runtime_error("bind socket to the right port error");
 	if (listen(_fd_server, MAX_LISTEN) < 0)
-	{
-		std::cerr << "listen error on " << _fd_server << " error" << std::endl;
-		exit (1);
-	}
+		throw std::runtime_error("listen error");
 	make_socket_non_blocking(_fd_server);
 }
 

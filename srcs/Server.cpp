@@ -3,6 +3,7 @@
 #include "../inc/webserv.hpp"
 #include <cstdlib>
 #include <cstring>
+#include <exception>
 #include <unistd.h>
 
 bool Server::_running = true;
@@ -16,8 +17,12 @@ Server::Server(data servers) : _socket(), _epoll()
 	_posBuffer = 0;
 }
 
-Server::~Server()
-{
+Server::~Server(){
+	for (multimap<int, int>::iterator it = _serversId.begin(); it != _serversId.end(); it++)
+	{
+		if (it->first > 0)
+			close (it->first);
+	}
 }
 
 Server::Server(const Server& other)
@@ -49,7 +54,6 @@ void Server::setSocket(void)
 			std::cout << "Server " << i << " listen on port " << port << std::endl;
 			_socket.allow_socket_server(port);
 			server = _socket.get_fdServer();
-			//_fd.set_fd_servers(server, i);
 			_serversId.insert(make_pair(server, i));
 			_epoll.add_fd_to_pool(server);
 

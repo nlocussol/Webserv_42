@@ -2,6 +2,7 @@
 #include <strings.h>
 #include <cstdlib>
 #include <cstdio>
+#include <unistd.h>
 
 Epoll::Epoll(){
 	_fd_epoll = -1;
@@ -9,6 +10,8 @@ Epoll::Epoll(){
 }
 
 Epoll::~Epoll(){
+	if (_fd_epoll > 0)
+		close (_fd_epoll);
 }
 
 Epoll::Epoll(const Epoll &copy){

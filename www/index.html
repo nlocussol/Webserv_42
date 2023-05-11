@@ -2,26 +2,40 @@
 <html>
 	<head>
     	<title>ft_irc</title>
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+		<style>
+			body {
+			padding: 25px;
+			background-color: white;
+			color: black;
+			font-size: 25px;
+			}
+
+			.dark-mode {
+			background-color: black;
+			color: white;
+			}
+		</style>
 	</head>
 	<body>
-		<div class="container">
-   			<div class="jumbotron">
-        		<h1 class="display-4">Hello, world!, I am in <span id="mode">Light Mode</span></h1>
-        		<p class="lead">Cet exemple illustre le changement du theme et la sauvegarde dans le cookie pour le conserver longtemps</p>
-        		<hr class="my-4">
-        		<p>Recharger la page pour voir le changement du theme</p>
-        		<a class="btn btn-primary btn-lg" id="theme-toggle" href="#" role="button">Changer de Thème</a>
-    		</div>
-		</div>
 		<h1>OK:My First Mbaboin</h1>
 		<p>My first paragraph.</p>
-		</br>
+
+		</br><button onclick="myFunction()">change theme</button></br>
+		<script>
+			function myFunction() {
+			var element = document.body;
+			element.classList.toggle("dark-mode");
+			}
+		</script>
+
 		<p>POST REQUEST:</p>
 		<form action="/register" method="post">
   			<input type="text" id="name" name="name">
   			<input type="submit" value="Submit">
 		</form>
 		</br>
+
 		<p>GET REQUEST:</p>
 		<img src="img.jpg">
 		<a href="https://www.youtube.com/watch?v=dQw4w9WgXcQ&pp=ygUJcmljayByb2xs/">Baguette</a>
@@ -36,6 +50,7 @@
 			<input type="text" name="nom">
 			<input type="submit" value="Envoyer">
 		</form>
+
 		<p>DELETE REQUEST:</p>
 		<a data-confirm="Are you sure?" data-method="delete" href="/link-to-resource" rel="nofollow">Delete</a>
 		<form action="test.py" method="get"></form>

@@ -14,6 +14,10 @@ Client::Client(int fdClient, int fdServer, int idServer){
 }
 
 Client::~Client(){
+	if (_fdClient > 0)
+		close (_fdClient);
+	if (_fdServer > 0)
+		close (_fdServer);
 }
 
 Client::Client(const Client &copy){
