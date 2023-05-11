@@ -47,9 +47,11 @@ void Request::parseRequest()
 		return ;
 	if (!fillMapHeader())
 		return ;
-	if (!checkBasicRedirection())
-		return ;
 	findRequestSubType();
+	// if (!checkBasicRedirection())
+		// return ;
+	// if (!checkRewrite())
+		// return ;
 	switch (_methodInt) {
 		case GET_REQUEST:
 			handleGetRequest();
@@ -61,6 +63,18 @@ void Request::parseRequest()
 			handleDeleteRequest();
 			break;
 	}
+}
+
+bool Request::checkRewrite() {
+	MULTIMAP copy = find_location_path(_filePath, _servers.v_serv[_serverId]);
+	MULTIMAP::iterator it = copy.find("rewrite");
+	MULTIMAP::iterator autoindex = copy.find("autoindex");
+	if (it != copy.end() && autoindex != copy.end() && autoindex->second == "on") {
+		_filePath = it->second;
+		_statusCode = 301;
+		return false;
+	}
+	return true;
 }
 
 bool Request::basicRequestParsing()

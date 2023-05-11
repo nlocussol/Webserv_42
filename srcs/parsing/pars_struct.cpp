@@ -19,7 +19,7 @@ void pars_manager(block_location & servers, vector<int> & ports) {
 	pars_methods(copy);
 	pars_errpage(copy, servers.conf_location, it->second);
 	pars_body_size(copy);
-	pars_rewrite(copy);
+	pars_rewrite(copy, it->second);
 	pars_cgi(copy);
 }
 

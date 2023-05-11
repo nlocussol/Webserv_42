@@ -31,16 +31,15 @@ void pars_cgi(MULTIMAP & copy) {
 	}
 }
 
-void pars_rewrite(MULTIMAP & copy) {
+void pars_rewrite(MULTIMAP & copy, string & root) {
 	MULTIMAP::iterator it = copy.find("rewrite");
-	MULTIMAP::iterator root = copy.find("root");
 	while (it != copy.end()) {
 		string dir = it->second;
 		if (dir[0] == '/')
 			dir = it->second.substr(1);
-		dir = root->second + dir;
+		dir = root + dir;
 		if (!is_dir(dir))
-			throw (logic_error("Error: rewrite argument can be only a directory: " + it->second));
+			throw (logic_error("Error: rewrite argument can be only a directory: " + dir));
 		if (dir.find("/../") != string::npos || dir.find("/..") != string::npos ||
 			dir.find("../") != string::npos)
 			throw (logic_error("Error: rewrite argument can't contain .. : " + it->second));

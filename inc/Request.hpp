@@ -27,7 +27,8 @@ class Request {
 	 bool handleUpload();
 	 bool dlImage(string &, vector<string> &, int);
  	 void handleDeleteRequest();
-   bool checkBodySize();
+	 bool checkBodySize();
+	 bool checkRewrite();
 
 	 int _methodInt;
 	 std::string _bodyContent;

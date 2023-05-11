@@ -34,7 +34,7 @@ struct data {
 };
 
 void pars_cgi(MULTIMAP & copy);
-void pars_rewrite(MULTIMAP & copy);
+void pars_rewrite(MULTIMAP & copy, string & root);
 void pars_conf(string & file, data & servers);
 void pars_struct(data & servers);
 void fill_location(MULTIMAP & current, MULTIMAP & conf);
