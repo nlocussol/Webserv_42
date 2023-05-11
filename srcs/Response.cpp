@@ -17,7 +17,7 @@ Response::Response(block_serv serv)
 	_contentType.first = "Content-Type: ";
 	_contentLength.first = "Content-Length: ";
 	_connection.first = "Connection: ";
-	_connection.second = "close";
+	_connection.second = "keep-alive";
 	_server = serv;
 }
 
@@ -32,7 +32,7 @@ void Response::buildResponse(Request& request)
 				if (request._dirList)
 					handleDirectoryListing(request._filePath);
 				else {
-					buildGetHeader(request._requestSubType);
+					buildGetHeader(request._extension);
 					buildGetBody(request._filePath);
 				}
 				break;
@@ -56,20 +56,32 @@ void Response::handleRedirection(Request& request)
 	_completeResponse += request._filePath + _CRLF + _CRLF;
 }
 
-void Response::buildGetHeader(int requestSubType)
+void Response::buildGetHeader(const std::string& extension)
 {
-	switch (requestSubType) {
-		case TEXT:
-			_contentType.second = "text/html";
-			break;
-		case IMAGE:
-			_contentType.second = "image/*";
-			break;
-		case VIDEO:
-			break;
-		default:
-			break;
+	if (extension == "jpg") {
+			_contentType.second = "image/jpg";
 	}
+	else if (extension == "jpeg") {
+			_contentType.second = "image/jpeg";
+	}
+	else if (extension == "ico") {
+			_contentType.second = "image/jpg";
+	}
+	else {
+			_contentType.second = "text/html";
+	}
+	// switch (requestSubType) {
+	// 	case TEXT:
+	// 		_contentType.second = "text/html";
+	// 		break;
+	// 	case IMAGE:
+	// 		_contentType.second = "image/*";
+	// 		break;
+	// 	case VIDEO:
+	// 		break;
+	// 	default:
+	// 		break;
+	// }
 }
 
 bool Response::check_dir(string & filePath, block_serv & server) {
