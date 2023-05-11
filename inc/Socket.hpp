@@ -8,7 +8,7 @@
 # include <iostream>
 # include <vector>
 
-#define MAX_LISTEN 10
+#define MAX_LISTEN 1000
 
 class Socket
  {

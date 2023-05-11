@@ -14,7 +14,7 @@
 #include "Client.hpp"
 #include "parsing.hpp"
 
-#define MAX_EVENT 10
+#define MAX_EVENT 100
 
 class Server { 
 	public:
