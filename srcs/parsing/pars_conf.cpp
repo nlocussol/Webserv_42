@@ -76,7 +76,7 @@ void recursive_location(fstream & file, block_serv & servers, vector<string> opt
 				servers.v_location[index].conf_location.insert(make_pair(tab[0], tab[i]));
 		} 
 		else
-			throw (logic_error("Error: bad input!"));
+			throw (logic_error("Error: bad input: " + tab[0]));
 	}
 	throw (logic_error("Error: need a close bracket at the end of the server!"));
 }
@@ -125,7 +125,7 @@ void pars_line(fstream & file, data & servers, vector<string> options) {
 				servers.v_serv[index].conf_serv.insert(make_pair(tab[0], tab[i]));
 		} 
 		else
-			throw (logic_error("Error: bad input!"));
+			throw (logic_error("Error: bad input: " + tab[0]));
 	}
 	throw (logic_error("Error: need a close bracket at the end of the server!"));
 }

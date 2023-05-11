@@ -24,7 +24,7 @@ void pars_body_size(MULTIMAP & copy) {
 			if (!isdigit(it->second[i]))
 				throw (logic_error("Error: body size take a number as parameter: " + it->second));
 		}
-		int limit = strtod(it->second.c_str(), NULL);
+		double limit = strtod(it->second.c_str(), NULL);
 		if (limit < 0)
 			throw (logic_error("Error: body size can't be negative: " + it->second ));
 		copy.erase(it);
