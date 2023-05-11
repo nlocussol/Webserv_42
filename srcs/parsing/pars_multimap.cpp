@@ -5,7 +5,7 @@
 #include <unistd.h>
 
 void pars_cgi(MULTIMAP & copy) {
-	string exec[3] = {"python", "ruby", "php"};
+	string exec[3] = {"python3", "ruby", "php"};
 	string extension[3]	= {".py", ".rb", ".php"};
 	MULTIMAP::iterator it = copy.find("cgi");
 	int i = 0;
@@ -15,7 +15,7 @@ void pars_cgi(MULTIMAP & copy) {
 		size_t last_slash = it->second.find_last_of('/');
 		string path = it->second;
 		if (last_slash != string::npos)
-			path = it->second.substr(last_slash);
+			path = it->second.substr(last_slash + 1);
 		for (; i < 3; i++) {
 			if (path == exec[i])
 				break ;
