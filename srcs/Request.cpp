@@ -154,6 +154,7 @@ bool Request::fillMapHeader()
 
 bool Request::parseURI()
 {
+	_statusCode = 200;
 	_rootPath.erase(_rootPath.end() - 1);
 	_filePath = _uri.substr(0, _uri.find_first_of("?"));
 	if (_filePath == "/")	{
@@ -189,6 +190,9 @@ bool Request::parseURI()
 		_queryString = _uri.substr(_uri.find_first_of("?") + 1);
 	}
 
+	if (_filePath.find(".py") != std::string::npos) {
+		_cgi = true;
+	}
 	if (is_cgi(_servers.v_serv[_serverId], _filePath)) {
 		_cgi = true;
 	}
@@ -257,7 +261,6 @@ void Request::handleGetRequest()
 {
 	if (_query) {
 		handleQuery();
-		return;
 	}
 	if (_cgi) {
 		int flag = 0;
@@ -268,6 +271,8 @@ void Request::handleGetRequest()
 			_statusCode = 403;
 		else if (flag == RUNTIME_ERROR)
 			_statusCode = 500;
+		else
+			_statusCode = 200;
 		return ;
 	}
 	if (!_filePath.empty() && is_dir_listing(_filePath, _servers.v_serv[_serverId]) == AUTOINDEX_OK) {
@@ -294,7 +299,6 @@ void Request::handleQuery()
 	//need to test if it works + what to do with it + need to translate + to space " " and special characters zzz
 	//It is needed in some CGI where the _queryArg needs to be translated into env for execv
 	_queryArg = string_to_vector(_queryString);
-
 	// Probably can delete this below
 	// while (_queryString.length() != 0) {
 	// 	if (_queryString.find("&") != std::string::npos)

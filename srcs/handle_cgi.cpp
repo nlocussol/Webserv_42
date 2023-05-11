@@ -1,4 +1,3 @@
-#include "../inc/webserv.hpp"
 #include "../inc/Request.hpp"
 #include "../inc/webserv.hpp"
 #include <cstdlib>
@@ -40,18 +39,18 @@ bool	is_cgi(block_serv server, std::string filePath)
 	return (false);
 }
 
-int	check_cgi_args(std::string inter, std::string exec, int *flag)
+int	check_cgi_args(std::string& binCGI, std::string& appPath, int *flag)
 {
 
-	if (access(exec.c_str(), X_OK) < 0)
+	if (access(appPath.c_str(), X_OK) < 0)
 	{
-		std::cout << "Can't use " << exec << " as an exectuable." << std::endl;
+		std::cout << "Can't use " << appPath << " as an exectuable." << std::endl;
 		(*flag) = PERM_DENIED;
 		return (-1);
 	}
-	if (access(inter.c_str(), X_OK) < 0)
+	if (access(binCGI.c_str(), X_OK) < 0)
 	{
-		std::cout << "Can't use " << inter << " as an interpreter." << std::endl;
+		std::cout << "Can't use " << binCGI << " as an interpreter." << std::endl;
 		(*flag) = PERM_DENIED;
 		return (-1);
 	}
@@ -123,17 +122,17 @@ string get_output_cgi(int fd, int *flag)
  *
 **/ 
 
-string handle_cgi(block_serv server, std::string exec, int *flag, Request& request)
+std::string handle_cgi(block_serv& server, std::string appPath, int *flag, Request& request)
 {
 	int	pip[2];
 	int	pid;
 	MULTIMAP map;
-	map = find_location_path(exec, server);
-	std::string inter = map.find("cgi")->second;
-	string str = map.find("root")->second + "/" + exec;
-	char	*param[3] = {(char *)inter.c_str(), (char *)str.c_str(), NULL};
+	map = find_location_path(appPath, server);
+	std::string binCGI = map.find("cgi")->second;
+	// string str = map.find("root")->second + "/" + appPath;
+	char	*param[3] = {(char *)binCGI.c_str(), (char *)appPath.c_str(), NULL};
 
-	if (check_cgi_args(inter, str, flag) == -1)
+	if (check_cgi_args(binCGI, appPath, flag) == -1)
 		return (std::string());
 	pipe(pip);
 	pid = fork();
@@ -147,19 +146,20 @@ string handle_cgi(block_serv server, std::string exec, int *flag, Request& reque
 		dup2(pip[1], 1);
 		close(pip[0]);
 		close(pip[1]);
-		if (request._methodInt == GET_REQUEST && request._queryArg.size() > 0) {
+		if (request._methodInt == GET_REQUEST) {
 			char** env = vector_to_c_array(request._queryArg);
-			execve(inter.c_str(), param, env);
+			execve(binCGI.c_str(), param, env);
 			delete [] env;
 		}
 		else if (request._methodInt == POST_REQUEST && request._bodyContent.size() > 0) {
 			std::vector<std::string> envVector = string_to_vector(request._bodyContent);
 			char **env = vector_to_c_array(envVector);
-			execve(inter.c_str(), param, env);
+			execve(binCGI.c_str(), param, env);
 			delete [] env;
 		}
-		else
-			execve(inter.c_str(), param, NULL);
+		else {
+			execve(binCGI.c_str(), param, NULL);
+		}
 		std::cerr << "execve error" << std::endl;
 		close(pip[0]);
 		close(pip[1]);

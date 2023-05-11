@@ -21,7 +21,7 @@ enum request_type {UNSUPPORTED_REQUEST = 1, GET_REQUEST, POST_REQUEST, DELETE_RE
 enum request_sub_type {DEFAULT, TEXT, IMAGE, VIDEO, QUERY};
 enum autoindex {NOT_DIR, AUTOINDEX_OK, AUTOINDEX_OFF};
 
-string handle_cgi(block_serv server, std::string exec, int *flag, Request&);
+string handle_cgi(block_serv&, std::string, int *flag, Request&);
 bool	is_cgi(block_serv server, std::string file);
 MULTIMAP find_location_path(string &path, block_serv servers);
 int	is_dir_listing(std::string path, block_serv & servers);

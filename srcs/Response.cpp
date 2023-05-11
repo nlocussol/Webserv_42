@@ -29,6 +29,9 @@ void Response::buildResponse(Request& request)
 	else if (request._statusCode == 200 || request._statusCode == 201) {
 		switch (request._methodInt) {
 			case GET_REQUEST:
+				// if (request._cgi) {
+				// 	handleGetCGI(request);
+				// } 
 				if (request._dirList)
 					handleDirectoryListing(request._filePath);
 				else {
@@ -115,6 +118,11 @@ void Response::buildGetBody(std::string& filePath)
 	}
 	else
 		std::cerr << "Error: Failed opening file to get binary data\n ";
+}
+
+void Response::handleGetCGI(const Request& request)
+{
+	(void)request;
 }
 
 void Response::handleDirectoryListing(const std::string& filePath)
