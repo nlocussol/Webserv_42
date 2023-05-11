@@ -1,6 +1,35 @@
 #include "../../inc/parsing.hpp"
 #include "../../inc/webserv.hpp"
 #include <sstream>
+#include <stdexcept>
+#include <unistd.h>
+
+void pars_cgi(MULTIMAP & copy) {
+	string exec[3] = {"python", "ruby", "php"};
+	string extension[3]	= {".py", ".rb", ".php"};
+	MULTIMAP::iterator it = copy.find("cgi");
+	int i = 0;
+	while (it != copy.end()) {
+		if (access(it->second.c_str(), X_OK) < 0)
+			throw (logic_error("Error: cgi executable can't be execute: " + it->second));
+		size_t last_slash = it->second.find_last_of('/');
+		string path = it->second;
+		if (last_slash != string::npos)
+			path = it->second.substr(last_slash);
+		for (; i < 3; i++) {
+			if (path == exec[i])
+				break ;
+			if (i == 2)
+				throw (logic_error("Error: cgi executable must be python, ruby or php"));
+		}
+		copy.erase(it);
+		it = copy.find("cgi");
+		if (it->second != extension[i])
+			throw (logic_error("Error: cgi extension must be " + extension[i] + " if executable is " + exec[i]));
+		copy.erase(it);
+		it = copy.find("cgi");
+	}
+}
 
 void pars_rewrite(MULTIMAP & copy) {
 	MULTIMAP::iterator it = copy.find("rewrite");
@@ -12,6 +41,9 @@ void pars_rewrite(MULTIMAP & copy) {
 		dir = root->second + dir;
 		if (!is_dir(dir))
 			throw (logic_error("Error: rewrite argument can be only a directory: " + it->second));
+		if (dir.find("/../") != string::npos || dir.find("/..") != string::npos ||
+			dir.find("../") != string::npos)
+			throw (logic_error("Error: rewrite argument can't contain .. : " + it->second));
 		copy.erase(it);
 		it = copy.find("rewrite");
 	}
@@ -42,7 +74,9 @@ void pars_dir(string path, MULTIMAP & copy) {
 			throw (logic_error("Error: " + it->first + " have a bad path: " + it->second));
 		if (path == "root") {
 			string root = it->second.substr(0, it->second.find('/') + 1);
-			if (root == "srcs/" || root == "inc/" || root == "conf/")
+			if (root == "srcs/" || root == "inc/" || root == "conf/" ||
+				root.find("/../") != string::npos || root.find("/..") != string::npos ||
+				root.find("../") != string::npos)
 				throw (logic_error("Error: " + it->first + " can't start with: " + root));
 		}
 		closedir(file);
@@ -58,6 +92,9 @@ void pars_file(string path, MULTIMAP & copy, string & root) {
 		file.open((root + it->second).c_str());
 		if (!file)
 			throw (logic_error("Error: " + it->first + " have a bad path: " + it->second));
+		if (it->second.find("/../") != string::npos || it->second.find("/..") != string::npos ||
+			it->second.find("../") != string::npos)
+			throw (logic_error("Error: " + it->second + " can't contain .."));
 		copy.erase(it);
 		it = copy.find(path);
 	}
@@ -107,6 +144,9 @@ void pars_errpage(MULTIMAP & copy, MULTIMAP & current, string & root) {
 		file.open((root + it->second).c_str());
 		if (!file)
 			throw (logic_error("Error: errpage redirection can't be open: " + it->second));
+		if (it->second.find("/../") != string::npos || it->second.find("/..") != string::npos ||
+			it->second.find("../") != string::npos)
+			throw (logic_error("Error: errpage can't contain .. : " + it->second));
 		string file = it->second;
 		stringstream str;
 		str << nb;
