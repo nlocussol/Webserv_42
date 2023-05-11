@@ -59,17 +59,17 @@ void	Socket::allow_socket_server(int port)
 	if (setsockopt(_fd_server, SOL_SOCKET, SO_REUSEADDR, &option, sizeof(int)) < 0)
 	{
 		std::cerr << "setsockopt error" << std::endl;
-		exit (1);
+		std::exit (1);
 	}
 	if (bind(_fd_server, (struct sockaddr *)&_server_addr, sizeof(_server_addr)) < 0)
 	{
 		std::cerr << "bind socket to the right port error" << std::endl;
-		exit (1);
+		std::exit (1);
 	}
 	if (listen(_fd_server, MAX_LISTEN) < 0)
 	{
 		std::cerr << "listen error on " << _fd_server << " error" << std::endl;
-		exit (1);
+		std::exit (1);
 	}
 	make_socket_non_blocking(_fd_server);
 }
