@@ -55,6 +55,10 @@ std::string ErrorPage::getErrorPage(int statusCode)
 			std::cerr << "Error 508: Loop detected\n";
 			return _508Page;
 			break;
+		case 500:
+			std::cerr << "Error 508: Internal Server Error\n";
+			return _508Page;
+			break;
 		case 301:
 			std::cerr << "Code 301: Permanent redirection\n";
 			return _301Page;
@@ -113,6 +117,18 @@ std::string ErrorPage::_405Page = "HTTP/1.1 405 Not Allowed\r\n"
 "<h1>Method Not Allowed</h1>\r\n"
 "<hr>\r\n"
 "<p>This error does not allow this method.</p>\r\n"
+"</body>\r\n"
+"</html>\r\n\r\n";
+
+std::string ErrorPage::_500Page = "HTTP/1.1 500 Internal Server Error\r\n"
+"Content-type: text/html\r\n"
+"Connection: closed\r\n"
+"\r\n"
+"<html>\r\n"
+"<body>\r\n"
+"<h1>Internal Server Error</h1>\r\n"
+"<hr>\r\n"
+"<p>The server encountered an unexpected condition that prevented it from fulfilling the request.</p>\r\n"
 "</body>\r\n"
 "</html>\r\n\r\n";
 

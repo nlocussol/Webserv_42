@@ -233,14 +233,15 @@ void Request::handleGetRequest()
 		handleQuery();
 		return;
 	}
-	/*
-	 * regarde si c'est un cgi et le lance au besoin.
-	 * décommenter ces fonctions quand parsing sur cgi sera fait
-	 * pour l'instant, renvoie un fd mais peu renvoyer une string au besoin
-	*/
 	if (_cgi) {
-		int flag;
+		int flag = 0;
 		handle_cgi(_servers.v_serv[_serverId], _filePath, &flag, *this);
+		if (flag == TIME_OUT)
+			_statusCode = 508;
+		else if (flag == PERM_DENIED)
+			_statusCode = 403;
+		else if (flag == RUNTIME_ERROR)
+			_statusCode = 500;
 		return ;
 	}
 	if (!_filePath.empty() && is_dir_listing(_filePath, _servers.v_serv[_serverId])) {

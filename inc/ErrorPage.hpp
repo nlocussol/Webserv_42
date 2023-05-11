@@ -13,13 +13,14 @@ class ErrorPage {
 	 ErrorPage();
 	 ErrorPage(const ErrorPage& other);
 	 ErrorPage& operator=(const ErrorPage& other);
-	 static std::string _404Page;
-	 static std::string _403Page;
-	 static std::string _405Page;
+	 static	std::string _301Page;
 	 static std::string _400Page;
+	 static std::string _403Page;
+	 static std::string _404Page;
+	 static std::string _405Page;
+	 static	std::string _500Page;
 	 static	std::string _507Page;
 	 static	std::string _508Page;
-	 static	std::string _301Page;
  } ;
 
 #endif // ERRORPAGE_HPP_

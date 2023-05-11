@@ -10,7 +10,7 @@ HEADER	=	inc/Server.hpp inc/Response.hpp \
 			inc/Socket.hpp inc/Epoll.hpp \
 			inc/Client.hpp inc/parsing.hpp 
 OBJS	=	$(addprefix obj/, $(SRC:.cpp=.o))
-CXXFLAGS=	-Wall -Wextra --std=c++98 -g
+CXXFLAGS=	-Wall -Wextra -Werror --std=c++98 -g
 
 
 
