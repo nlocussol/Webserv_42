@@ -46,9 +46,9 @@ void Request::parseRequest()
 	parseURI();
 	if (!fillMapHeader())
 		return ;
-	findRequestSubType();
 	if (!checkBasicRedirection())
 		return ;
+	findRequestSubType();
 	switch (_methodInt) {
 		case GET_REQUEST:
 			handleGetRequest();
@@ -138,7 +138,6 @@ bool Request::fillMapHeader()
 
 void Request::parseURI()
 {
-	//fix
 	_rootPath.erase(_rootPath.end() - 1);
 	_filePath = _uri.substr(0, _uri.find_first_of("?"));
 	if (_filePath == "/")	{
@@ -160,10 +159,16 @@ void Request::parseURI()
 		if (_filePath[_rootPath.length()] != '/')
 			_filePath.insert(_rootPath.length(), "/");
 	}
+	size_t lastDotPos = _filePath.find_last_of(".");
+	if (lastDotPos != std::string::npos) {
+		_extension = _filePath.substr(lastDotPos + 1);
+	}
+	// else _dirList == true ??
 	if (_uri.find("?") != std::string::npos) {
 		_query = true;
 		_queryString = _uri.substr(_uri.find_first_of("?") + 1);
 	}
+
 	if (is_cgi(_servers.v_serv[_serverId], _filePath)) {
 		_cgi = true;
 	}
@@ -194,10 +199,10 @@ void Request::findRequestSubType()
 	}
 	map_it it;
 	it = _headerMap.find("Accept");
-	if (it->second.find("text") != std::string::npos) 
-		_requestSubType = TEXT;
-	else if (it->second.find("image") != std::string::npos) 
+	if (it->second.find("image") != std::string::npos) 
 		_requestSubType = IMAGE;
+	else if (it->second.find("text") != std::string::npos) 
+		_requestSubType = TEXT;
 	else
 		_requestSubType = DEFAULT;
 }

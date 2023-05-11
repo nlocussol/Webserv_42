@@ -19,7 +19,7 @@ class Response {
 	private:
 	 void handleRedirection(Request&);
 	 void buildCompleteResponse(int);
-	 void buildGetHeader(int);
+	 void buildGetHeader(const std::string&);
 	 void buildGetBody(std::string&);
 	 bool check_dir(string &, block_serv &);
 	 void handleDirectoryListing(const std::string&);
