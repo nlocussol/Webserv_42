@@ -70,18 +70,6 @@ void Response::buildGetHeader(const std::string& extension)
 	else {
 			_contentType.second = "text/html";
 	}
-	// switch (requestSubType) {
-	// 	case TEXT:
-	// 		_contentType.second = "text/html";
-	// 		break;
-	// 	case IMAGE:
-	// 		_contentType.second = "image/*";
-	// 		break;
-	// 	case VIDEO:
-	// 		break;
-	// 	default:
-	// 		break;
-	// }
 }
 
 bool Response::check_dir(string & filePath, block_serv & server) {
