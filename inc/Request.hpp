@@ -15,7 +15,7 @@ class Request {
 	 void parseRequest();
 	 bool basicRequestParsing();
 	 bool fillMapHeader();
-	 void parseURI();
+	 bool parseURI();
  	 void findRequestSubType();
  	 bool parseRequestLine();
 	 bool isMethodAllowed();
@@ -44,6 +44,7 @@ class Request {
 	 std::string _httpVersion;
 	 std::string _filePath;
 	 std::string _queryString;
+	 std::string _extension;
 	 bool _query;
 	 bool _cgi;
 	 bool _dirList;
