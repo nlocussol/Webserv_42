@@ -193,7 +193,8 @@ bool Request::parseURI()
 	if (_filePath.find(".py") != std::string::npos) {
 		_cgi = true;
 	}
-	if (is_cgi(_servers.v_serv[_serverId], _filePath)) {
+	_cgiInterpreter = is_cgi(_servers.v_serv[_serverId], _filePath);
+	if (!_cgiInterpreter.empty()) {
 		_cgi = true;
 	}
 	return true;
@@ -264,7 +265,7 @@ void Request::handleGetRequest()
 	}
 	if (_cgi) {
 		int flag = 0;
-		_cgiBody = handle_cgi(_servers.v_serv[_serverId], _filePath, &flag, *this);
+		_cgiBody = handle_cgi(_cgiInterpreter, _filePath, &flag, *this);
 		if (flag == TIME_OUT)
 			_statusCode = 508;
 		else if (flag == PERM_DENIED)
@@ -351,7 +352,7 @@ void Request::handlePostRequest()
 	// need to check if find worked
 	if (_cgi) {
 		int flag;
-		handle_cgi(_servers.v_serv[_serverId], _filePath, &flag, *this);
+		handle_cgi(_cgiInterpreter, _filePath, &flag, *this);
 	}
 	// std::ofstream outfile(_filePath.c_str());
 	// outfile << _bodyContent;

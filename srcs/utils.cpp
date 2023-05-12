@@ -12,7 +12,7 @@ std::string itostr(int i)
 
 char** vector_to_c_array(const std::vector<std::string>& queryArg)
 {
-	char **env = new char*[queryArg.size()];
+	char **env = new char*[queryArg.size() + 1];
 	size_t queryArgSize = queryArg.size();
 	size_t i;
 

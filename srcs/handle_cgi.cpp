@@ -1,6 +1,7 @@
 #include "../inc/Request.hpp"
 #include "../inc/webserv.hpp"
 #include <cstdlib>
+#include <cstring>
 #include <unistd.h>
 
 /**
@@ -15,12 +16,13 @@
  *
 **/ 
 
-bool	is_cgi(block_serv server, std::string filePath)
+string	is_cgi(block_serv server, std::string filePath)
 {
 	string path;
 	string copyFilePath = filePath;
 	string	extend;	
-	std::size_t		check;
+	string	interpreter("");	
+	size_t		check;
 	MULTIMAP copy;
 
 	if (filePath.find('/') != string::npos)
@@ -29,15 +31,19 @@ bool	is_cgi(block_serv server, std::string filePath)
 		path = "/";
 	copy = find_location_path(path, server);
 	if (copy.find("cgi") == copy.end())
-		return (false);
-	copy.erase(copy.find("cgi")); 
-	extend = copy.find("cgi")->second; 
-	check = filePath.rfind(extend);
-	if (check != std::string::npos && check + extend.length() == filePath.size() && extend.length() != filePath.length())
-	{
-		return (true);
-	}
-	return (false);
+		return (string(""));
+	do{
+		interpreter = copy.find("cgi")->second;
+		copy.erase(copy.find("cgi")); 
+		extend = copy.find("cgi")->second; 
+		check = filePath.rfind(extend);
+		if (check != std::string::npos && check + extend.length() == filePath.size() && extend.length() != filePath.length())
+		{
+			return (string(interpreter));
+		}
+		copy.erase(copy.find("cgi")); 
+	} while (copy.find("cgi") != copy.end());
+	return (string(""));
 }
 
 int	check_cgi_args(std::string& binCGI, std::string& appPath, int *flag)
@@ -93,10 +99,14 @@ string get_output_cgi(int fd, int *flag)
 {
 	int ret;
 	char	buff[BUFFER_SIZE];
-	string	out;
+	string	out("");
 
+	memset(buff, 0, BUFFER_SIZE);
 	while ((ret = read(fd, buff, BUFFER_SIZE) > 0))
+	{
 		out += buff;
+		memset(buff, 0, BUFFER_SIZE);
+	}
 	if (ret == -1)
 	{
 		(*flag) = RUNTIME_ERROR;
@@ -123,13 +133,10 @@ string get_output_cgi(int fd, int *flag)
  *
 **/ 
 
-std::string handle_cgi(block_serv& server, std::string appPath, int *flag, Request& request)
+std::string handle_cgi(std::string binCGI, std::string appPath, int *flag, Request& request)
 {
 	int	pip[2];
 	int	pid;
-	MULTIMAP map;
-	map = find_location_path(appPath, server);
-	std::string binCGI = map.find("cgi")->second;
 	// string str = map.find("root")->second + "/" + appPath;
 	char	*param[3] = {(char *)binCGI.c_str(), (char *)appPath.c_str(), NULL};
 
@@ -149,16 +156,12 @@ std::string handle_cgi(block_serv& server, std::string appPath, int *flag, Reque
 		close(pip[1]);
 		if (request._methodInt == GET_REQUEST) {
 			char** env = vector_to_c_array(request._queryArg);
-			for (int i = 0; env[i];i++)
-				std::cerr << "env:" << env[i] << std::endl;
 			execve(binCGI.c_str(), param, env);
 			delete [] env;
 		}
 		else if (request._methodInt == POST_REQUEST && request._bodyContent.size() > 0) {
 			std::vector<std::string> envVector = string_to_vector(request._bodyContent);
 			char **env = vector_to_c_array(envVector);
-			for (int i = 0; env[i];i++)
-				std::cerr << "env:" << env[i] << std::endl;
 			execve(binCGI.c_str(), param, env);
 			delete [] env;
 		}
