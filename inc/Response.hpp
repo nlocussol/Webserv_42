@@ -18,6 +18,7 @@ class Response {
 
 	private:
 	 void handleRedirection(Request&);
+	 void handleGetCGI(const Request&);
 	 void buildCompleteResponse(int);
 	 void buildGetHeader(const std::string&);
 	 void buildGetBody(std::string&);

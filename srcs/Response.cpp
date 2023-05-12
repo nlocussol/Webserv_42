@@ -29,6 +29,9 @@ void Response::buildResponse(Request& request)
 	else if (request._statusCode == 200 || request._statusCode == 201) {
 		switch (request._methodInt) {
 			case GET_REQUEST:
+				// if (request._cgi) {
+				// 	handleGetCGI(request);
+				// } 
 				if (request._dirList)
 					handleDirectoryListing(request._filePath);
 				else {
@@ -70,18 +73,6 @@ void Response::buildGetHeader(const std::string& extension)
 	else {
 			_contentType.second = "text/html";
 	}
-	// switch (requestSubType) {
-	// 	case TEXT:
-	// 		_contentType.second = "text/html";
-	// 		break;
-	// 	case IMAGE:
-	// 		_contentType.second = "image/*";
-	// 		break;
-	// 	case VIDEO:
-	// 		break;
-	// 	default:
-	// 		break;
-	// }
 }
 
 bool Response::check_dir(string & filePath, block_serv & server) {
@@ -127,6 +118,11 @@ void Response::buildGetBody(std::string& filePath)
 	}
 	else
 		std::cerr << "Error: Failed opening file to get binary data\n ";
+}
+
+void Response::handleGetCGI(const Request& request)
+{
+	(void)request;
 }
 
 void Response::handleDirectoryListing(const std::string& filePath)
