@@ -49,7 +49,7 @@ void Request::parseRequest()
 		return ;
 	findRequestSubType();
 	// if (!checkBasicRedirection())
-		// return ;
+	// 	return ;
 	if (!checkRewrite())
 		return ;
 	switch (_methodInt) {
@@ -70,7 +70,6 @@ bool Request::checkRewrite() {
 	MULTIMAP::iterator it = copy.find("rewrite");
 	MULTIMAP::iterator autoindex = copy.find("autoindex");
 	if (it != copy.end() && autoindex != copy.end() && autoindex->second == "on") {
-		cout << "HERRREEEEEE" << endl;
 		_filePath = it->second;
 		_statusCode = 301;
 		return false;
@@ -318,6 +317,9 @@ void Request::handlePostRequest()
 		_statusCode = 507;
 		return ;
 	}
+	size_t bodyBegin = _buffer.find("\r\n\r\n");
+	_bodyContent = _buffer.substr(bodyBegin + 4);
+
 	map_it it;
 	it = _headerMap.find("Transfer-Encoding");
 	if (it != _headerMap.end() && it->second == "chunked") {
@@ -325,36 +327,34 @@ void Request::handlePostRequest()
 		return ;
 	}
 
-	if (handleUpload())
+	if (!handleUpload())
 		return ;
 	// Check if the file already exists, if it does try to delete it
-	std::ifstream infile;
+	// std::ifstream infile;
 	// Also need to test if directory is writable, but j'ai la flemme là
-	infile.open(_filePath.c_str());
-	if (infile) {
-		if (access(_filePath.c_str(), F_OK | R_OK)) {
-			_statusCode = 403;
-			return ;
-		}
-		else {
-	// Need to add proper error code return, but file should be deletable since we access it upward|
-			if (std::remove(_filePath.c_str())) {
-				_statusCode = 0;
-				return ;
-			}
-		}
-	}
+	// infile.open(_filePath.c_str());
+	// if (infile) {
+	// 	if (access(_filePath.c_str(), F_OK | R_OK)) {
+	// 		_statusCode = 403;
+	// 		return ;
+	// 	}
+	// 	else {
+	// // Need to add proper error code return, but file should be deletable since we access it upward|
+	// 		if (std::remove(_filePath.c_str())) {
+	// 			_statusCode = 0;
+	// 			return ;
+	// 		}
+	// 	}
+	// }
 	// Create file with the same name and fill it with body of POST request
-	size_t bodyBegin = _buffer.find("\r\n\r\n");
 	// need to check if find worked
-	_bodyContent = _buffer.substr(bodyBegin + 4);
 	if (_cgi) {
 		int flag;
 		handle_cgi(_servers.v_serv[_serverId], _filePath, &flag, *this);
 	}
-	std::ofstream outfile(_filePath.c_str());
-	outfile << _bodyContent;
-	outfile.close();
+	// std::ofstream outfile(_filePath.c_str());
+	// outfile << _bodyContent;
+	// outfile.close();
 	_statusCode = 200;
 }
 
@@ -434,20 +434,59 @@ bool Request::dlImage(std::string & id, std::vector<std::string> & lines, int i)
 
 bool Request::handleUpload()
 {
-	// map_it it = _headerMap.find("Content-Type");
-	// if (it == _headerMap.end())
-	// 	return false;
-	// std::string
-	for (size_t i = 0; i < _lines.size(); i++) {
-		if (_lines[i].find("boundary=") != string::npos) {
-			string str = _lines[i].substr(_lines[i].find("boundary=") + 9);
-			string id = str.substr(str.find_last_of('-') + 1);
-			if (!dlImage(id, _lines, i + 1))
-				return false;
-			return (true);
-		}
+	map_it it = _headerMap.find("Content-Type");
+	if (it == _headerMap.end())
+		return false;
+	std::string boundary = it->second.substr(it->second.find("boundary=") + 9);
+	boundary.erase(0, boundary.find_last_of('-') + 1);
+	size_t boundaryCheck = _bodyContent.find(boundary); 
+	if (boundaryCheck == std::string::npos) {
+		_statusCode = 400;
+		return false;
 	}
-	return (false);
+	size_t fileNamePos = _bodyContent.find("filename=\"");
+	if (fileNamePos == std::string::npos) {
+		_statusCode = 400;
+		return false;
+	}
+	std::string fileName = _bodyContent.substr(fileNamePos + 10);
+	size_t quotePos = fileName.find("\"");
+	if (quotePos == std::string::npos) {
+		_statusCode = 400;
+		return false;
+	}
+	fileName = fileName.substr(0, quotePos);
+	std::ofstream of(fileName.c_str());
+	if (!of) {
+		_statusCode = 500;
+		return false;
+	}
+	size_t doubleCRLFPos = _bodyContent.find("\r\n\r\n");
+	if (doubleCRLFPos == std::string::npos) {
+		_statusCode = 400;
+		return false;
+	}
+	_bodyContent = _bodyContent.substr(doubleCRLFPos + 4);
+	boundaryCheck = _bodyContent.find(boundary); 
+	if (boundaryCheck == std::string::npos) {
+		_statusCode = 400;
+		return false;
+	}
+	std::string content =  _bodyContent;
+	of << content;
+	of.close();
+	return true;
+
+	// for (size_t i = 0; i < _lines.size(); i++) {
+	// 	if (_lines[i].find("boundary=") != string::npos) {
+	// 		string str = _lines[i].substr(_lines[i].find("boundary=") + 9);
+	// 		string id = str.substr(str.find_last_of('-') + 1);
+	// 		if (!dlImage(id, _lines, i + 1))
+	// 			return false;
+	// 		return (true);
+	// 	}
+	// }
+	// return (false);
 }
 
 void Request::handleDeleteRequest()
