@@ -264,7 +264,7 @@ void Request::handleGetRequest()
 	}
 	if (_cgi) {
 		int flag = 0;
-		handle_cgi(_servers.v_serv[_serverId], _filePath, &flag, *this);
+		_cgiBody = handle_cgi(_servers.v_serv[_serverId], _filePath, &flag, *this);
 		if (flag == TIME_OUT)
 			_statusCode = 508;
 		else if (flag == PERM_DENIED)

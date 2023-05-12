@@ -29,10 +29,10 @@ void Response::buildResponse(Request& request)
 	else if (request._statusCode == 200 || request._statusCode == 201) {
 		switch (request._methodInt) {
 			case GET_REQUEST:
-				// if (request._cgi) {
-				// 	handleGetCGI(request);
-				// } 
-				if (request._dirList)
+				if (request._cgi) {
+				 	handleGetCGI(request);
+				} 
+				else if (request._dirList)
 					handleDirectoryListing(request._filePath);
 				else {
 					buildGetHeader(request._extension);
@@ -86,7 +86,6 @@ bool Response::check_dir(string & filePath, block_serv & server) {
 		if (filePath[filePath.size() - 1] != '/')
 			filePath += "/";
 		filePath += index->second;
-		cout << "file: "<<filePath<<endl;
 		return true;
 	}
 	return false;
@@ -122,7 +121,11 @@ void Response::buildGetBody(std::string& filePath)
 
 void Response::handleGetCGI(const Request& request)
 {
-	(void)request;
+	std::string body = request._cgiBody;
+
+	_contentType.second = "text/html";
+	_contentLength.second = body.length();
+	_binaryData = body;	
 }
 
 void Response::handleDirectoryListing(const std::string& filePath)

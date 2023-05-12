@@ -14,10 +14,12 @@ char** vector_to_c_array(const std::vector<std::string>& queryArg)
 {
 	char **env = new char*[queryArg.size()];
 	size_t queryArgSize = queryArg.size();
+	size_t i;
 
-	for (size_t i = 0; i < queryArgSize ; i++) {
+	for (i = 0; i < queryArgSize ; i++) {
 		env[i] = const_cast<char*>(queryArg[i].c_str());
 	}
+	env[i] = NULL;
 	return env;
 }
 

@@ -148,12 +148,16 @@ std::string handle_cgi(block_serv& server, std::string appPath, int *flag, Reque
 		close(pip[1]);
 		if (request._methodInt == GET_REQUEST) {
 			char** env = vector_to_c_array(request._queryArg);
+			for (int i = 0; env[i];i++)
+				std::cerr << "env:" << env[i] << std::endl;
 			execve(binCGI.c_str(), param, env);
 			delete [] env;
 		}
 		else if (request._methodInt == POST_REQUEST && request._bodyContent.size() > 0) {
 			std::vector<std::string> envVector = string_to_vector(request._bodyContent);
 			char **env = vector_to_c_array(envVector);
+			for (int i = 0; env[i];i++)
+				std::cerr << "env:" << env[i] << std::endl;
 			execve(binCGI.c_str(), param, env);
 			delete [] env;
 		}
