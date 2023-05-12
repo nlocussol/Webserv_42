@@ -97,7 +97,6 @@ void Server::manage_epoll_wait(struct epoll_event &event)
 		{
 			std::cerr << "No matching server for " << event.data.fd << " founded" << std::endl;
 		}
-		// Need to fix read so we don't send 400 bad request perma
 		if (readRequest(event.data.fd) == false)
 			return; /*, server*/
 		Request request(_buffer, _servers, serverFd);

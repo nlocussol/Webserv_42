@@ -503,7 +503,16 @@ void Request::handleDeleteRequest()
 	_statusCode = 200;
 }
 
+// Overload for ostream to print request header;
 std::ostream& operator<< (std::ostream& os, const Request& request)
 {
-	os << request._statusCode;
+	os << "Method: " << request._method << "\n";
+	os << "Uri: " << request._uri << "\n";
+	os << "Version: " << request._httpVersion << "\n";
+	Request::map_it it = request._headerMap.begin();
+	Request::map_it ite = request._headerMap.end();
+	while (it != ite) {
+		os << "Header: " << it->second << "\n";
+	}
+	return os;
 }

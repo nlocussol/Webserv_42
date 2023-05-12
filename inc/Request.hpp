@@ -36,7 +36,7 @@ class Request {
 	 std::vector<std::string> _queryArg;
 
 	private:
-	 typedef std::map<std::string, std::string>::iterator map_it;
+	 typedef std::map<std::string, std::string>::const_iterator map_it;
 
 	 Request();
 	 std::string _buffer;
