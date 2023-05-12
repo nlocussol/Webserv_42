@@ -47,6 +47,7 @@ class Request {
 	 std::string _queryString;
 	 std::string _extension;
 	 std::string _cgiBody;
+	 std::string _cgiInterpreter;
 	 bool _query;
 	 bool _cgi;
 	 bool _dirList;
