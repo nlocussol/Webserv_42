@@ -17,13 +17,14 @@
 
 bool	is_cgi(block_serv server, std::string filePath)
 {
-	std::string	extend;	
-	std::size_t		check;
 	string path;
+	string copyFilePath = filePath;
+	string	extend;	
+	std::size_t		check;
 	MULTIMAP copy;
 
 	if (filePath.find('/') != string::npos)
-		path = filePath.erase(filePath.find_last_of('/'), filePath.size());
+		path = copyFilePath.erase(filePath.find_last_of('/'), filePath.size());
 	else
 		path = "/";
 	copy = find_location_path(path, server);
