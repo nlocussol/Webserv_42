@@ -26,7 +26,6 @@ class Request {
  	 void handlePostRequest();
  	 void handleChunkedTransfer();
 	 bool handleUpload();
-	 bool dlImage(string &, vector<string> &, int);
  	 void handleDeleteRequest();
 	 bool checkBodySize();
 	 bool checkRewrite();
