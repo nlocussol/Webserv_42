@@ -230,7 +230,7 @@ void Request::findRequestSubType()
 	else if (it->second.find("text") != std::string::npos) 
 		_requestSubType = TEXT;
 	else
-		_requestSubType = DEFAULT;
+		_requestSubType = TEXT;
 }
 
 // Check if the client ask for a dir with autoindex on without last /

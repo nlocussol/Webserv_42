@@ -72,7 +72,7 @@ void Response::buildGetHeader(const std::string& extension)
 			_contentType.second = "image/jpg";
 	}
 	else {
-			_contentType.second = "text/html";
+			_contentType.second = "text/html; charset=utf-8";
 	}
 }
 
