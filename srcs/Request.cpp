@@ -71,6 +71,7 @@ bool Request::checkRewrite() {
 	MULTIMAP::iterator autoindex = copy.find("autoindex");
 	if (it != copy.end() && autoindex != copy.end() && autoindex->second == "on") {
 		_filePath = it->second;
+		cout << _filePath << endl;
 		_statusCode = 301;
 		return false;
 	}
