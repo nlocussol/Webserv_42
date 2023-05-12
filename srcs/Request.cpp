@@ -456,12 +456,7 @@ bool Request::handleUpload()
 		_statusCode = 400;
 		return false;
 	}
-	fileName = fileName.substr(0, quotePos);
-	std::ofstream of(fileName.c_str());
-	if (!of) {
-		_statusCode = 500;
-		return false;
-	}
+
 	size_t doubleCRLFPos = _bodyContent.find("\r\n\r\n");
 	if (doubleCRLFPos == std::string::npos) {
 		_statusCode = 400;
@@ -471,6 +466,12 @@ bool Request::handleUpload()
 	boundaryCheck = _bodyContent.find(boundary); 
 	if (boundaryCheck == std::string::npos) {
 		_statusCode = 400;
+		return false;
+	}
+	fileName = fileName.substr(0, quotePos);
+	std::ofstream of(fileName.c_str());
+	if (!of) {
+		_statusCode = 500;
 		return false;
 	}
 	std::string content =  _bodyContent;
@@ -500,4 +501,9 @@ void Request::handleDeleteRequest()
 			cout << "Can't remove " << _filePath << endl;
 	}
 	_statusCode = 200;
+}
+
+std::ostream& operator<< (std::ostream& os, const Request& request)
+{
+	os << request._statusCode;
 }

@@ -8,6 +8,7 @@
 class Request { 
 	friend class Server;
 	friend class Response;
+	friend std::ostream& operator<<(std::ostream&, const Request&);
 
 	public:
 	 Request(std::string&, data&, int);
