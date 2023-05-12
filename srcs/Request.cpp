@@ -411,38 +411,19 @@ void Request::handleChunkedTransfer()
 	}
 }
 
-bool Request::dlImage(std::string & id, std::vector<std::string> & lines, int i)
-{
-	std::ofstream file;
-	for (; lines[i].find(id) == std::string::npos; i++) { }
-	i++;
-	size_t j = lines[i].find("filename=\"") + 10;
-	std::string file_name;
-	for (; lines[i][j] && lines[i][j] != '"'; j++)
-		file_name += lines[i][j];
-	file.open(file_name.c_str());
-	if (!file) {
-		std::cout << "Can't upload file because the file can't be created" << std::endl;
-		return false;
-	}
-	i += 3;
-	std::string upload = _buffer.substr(_buffer.find("Content-Disposition:"));
-	std::string str = upload.substr(upload.find("Content-Type:"));
-	upload = str.substr(str.find("\n") + 3);
-	file << upload;
-	file.close();
-	return true;
-}
-
 bool Request::handleUpload()
 {
 	map_it it = _headerMap.find("Content-Type");
 	if (it == _headerMap.end())
 		return false;
+	if (it->second.find("boundary=") == std::string::npos) {
+		_statusCode = 400;
+		return false;
+	}
 	std::string boundary = it->second.substr(it->second.find("boundary=") + 9);
 	boundary.erase(0, boundary.find_last_of('-') + 1);
-	size_t boundaryCheck = _bodyContent.find(boundary); 
-	if (boundaryCheck == std::string::npos) {
+	size_t boundaryPos = _bodyContent.find(boundary); 
+	if (boundaryPos == std::string::npos) {
 		_statusCode = 400;
 		return false;
 	}
@@ -464,8 +445,8 @@ bool Request::handleUpload()
 		return false;
 	}
 	_bodyContent = _bodyContent.substr(doubleCRLFPos + 4);
-	boundaryCheck = _bodyContent.find(boundary); 
-	if (boundaryCheck == std::string::npos) {
+	boundaryPos = _bodyContent.find(boundary); 
+	if (boundaryPos == std::string::npos) {
 		_statusCode = 400;
 		return false;
 	}
@@ -475,21 +456,15 @@ bool Request::handleUpload()
 		_statusCode = 500;
 		return false;
 	}
-	std::string content =  _bodyContent;
+	std::string content = _bodyContent.substr(0, boundaryPos);
+	size_t i = content.length() - 1;
+	for (; content[i] == '-' ; i--) ;
+	content = content.substr(0, i + 1);
+	cout << content;
 	of << content;
 	of.close();
+	_statusCode = 201;
 	return true;
-
-	// for (size_t i = 0; i < _lines.size(); i++) {
-	// 	if (_lines[i].find("boundary=") != string::npos) {
-	// 		string str = _lines[i].substr(_lines[i].find("boundary=") + 9);
-	// 		string id = str.substr(str.find_last_of('-') + 1);
-	// 		if (!dlImage(id, _lines, i + 1))
-	// 			return false;
-	// 		return (true);
-	// 	}
-	// }
-	// return (false);
 }
 
 void Request::handleDeleteRequest()
@@ -504,7 +479,7 @@ void Request::handleDeleteRequest()
 	_statusCode = 200;
 }
 
-// Overload for ostream to print request header;
+// Overload for ostream to print parsed request;
 std::ostream& operator<< (std::ostream& os, const Request& request)
 {
 	os << "Method: " << request._method << "\n";
@@ -513,7 +488,8 @@ std::ostream& operator<< (std::ostream& os, const Request& request)
 	Request::map_it it = request._headerMap.begin();
 	Request::map_it ite = request._headerMap.end();
 	while (it != ite) {
-		os << "Header: " << it->second << "\n";
+		os << "Header: " << it->first << ": " << it->second << "\n";
+		it++;
 	}
 	return os;
 }

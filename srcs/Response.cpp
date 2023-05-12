@@ -41,6 +41,7 @@ void Response::buildResponse(Request& request)
 				break;
 			case POST_REQUEST:
 				buildPostHeader(request._requestSubType);
+				return;
 				break;
 			case DELETE_REQUEST:
 				break;
@@ -138,7 +139,8 @@ void Response::handleDirectoryListing(const std::string& filePath)
 void Response::buildPostHeader(int requestSubType)
 {
 	(void) requestSubType;
-	//Idk ??
+	_completeResponse = "HTTP/1.1 303 See Other\r\nLocation: /index.html\r\nContent-Length: 0\r\n\r\n";
+
 }
 
 void Response::buildCompleteResponse(int statusCode)
