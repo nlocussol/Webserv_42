@@ -35,35 +35,27 @@ std::string ErrorPage::getErrorPage(int statusCode)
 		case 404:
 			std::cerr << "Error 404: Client asked for non existing ressource\n";
 			return _404Header + bodySize(_404Body) + _404Body;
-			break;
 		case 403:
 			std::cerr << "Error 403: Client asked for forbidden ressource\n";
 			return _403Header + bodySize(_403Body) + _403Body;
-			break;
 		case 405:
 			std::cerr << "Error 405: Client sent a method not allowed\n";
 			return _405Header + bodySize(_405Body) + _405Body;
-			break;
 		case 400:
 			std::cerr << "Error 400: Client sent a bad request\n";
 			return _400Header + bodySize(_400Body) + _400Body;
-			break;
 		case 507:
 			std::cerr << "Error 507: Insufficient Storage\n";
-			return _508Header + bodySize(_508Body) + _508Body;
-			break;
+			return _507Header + bodySize(_507Body) + _507Body;
 		case 508:
 			std::cerr << "Error 508: Loop detected\n";
 			return _508Header + bodySize(_508Body) + _508Body;
-			break;
 		case 500:
 			std::cerr << "Error 500: Internal Server Error\n";
 			return _500Header + bodySize(_500Body) + _500Body;
-			break;
 		case 301:
 			std::cerr << "Code 301: Permanent redirection\n";
 			return _301Header;
-			break;
 	}
 	std::string ff = "les problemes\n";
 	return ff;
@@ -186,5 +178,5 @@ std::string ErrorPage::_508Body = "\r\n\r\n"
 "</html>";
 
 std::string ErrorPage::_301Header = "HTTP/1.1 301 Moved permanently\r\n"
-"Content-Length: 0\r\n\r\n"
+"Content-Length: 0\r\n"
 "Location: ";
