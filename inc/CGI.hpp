@@ -6,7 +6,7 @@
 
 class CGI { 
 	public:
-	 CGI(std::string&, std::string&);
+	 CGI(std::string&, std::string&, Request);
 	 ~CGI();
 	 std::string handleCGI(const Request& request);
 	 int check_cgi_args();
@@ -15,15 +15,19 @@ class CGI {
 	 int getFlag() const;
 
 	private:
+	 void setQueryString(std::string);
+	 void setCookies(std::string);
+
+	private:
 	 int _pip[2];
 	 int _pid;
 	 int _flag;
 	 std::string _binCGI;
 	 std::string _filePath;
-	 std::vector<std::string> _cookies;
-	 std::string _queryStr;
+	 std::string _cookies;
+	 std::string _queryString;
 	 std::string _postBody;
-	 std::vector<std::string> _vEnc;
+	 std::vector<std::string> _vectorEnv;
  } ;
 
 std::string	is_cgi(block_serv, const std::string& filePath);
