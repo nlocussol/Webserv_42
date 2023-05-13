@@ -21,8 +21,6 @@ MULTIMAP find_location_path(string &path, block_serv servers) {
 			loc_path += servers.v_location[i].path.substr(1);
 		else
 			loc_path += servers.v_location[i].path;
-		// cout << "STRRRRR: " << str + "/" << endl;
-		// cout << "LOC_PATHHHH: " << loc_path << endl;
 		if (str[str.size() - 1] != '/')
 			str += "/";
 		if (str == loc_path) {

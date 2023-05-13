@@ -50,7 +50,7 @@ void Request::parseRequest()
 		return ;
 	findRequestSubType();
 	// if (!checkBasicRedirection())
-	// 	return ;
+		// return ;
 	if (!checkRewrite())
 		return ;
 	if (_cgi) {
@@ -247,6 +247,7 @@ bool Request::checkBasicRedirection()
 		if (it != copy.end() && it->second == "on") {
 			_filePath.erase(0, _rootPath.size());
 			_filePath += "/";
+			cout << "FILEEEEE: " << _filePath << endl;
 			_statusCode = 301;
 		}
 		return false;
@@ -254,6 +255,7 @@ bool Request::checkBasicRedirection()
 	if (!is_dir(_filePath) && _filePath[_filePath.size() - 1] == '/') {
 		_filePath.erase(0, _rootPath.size());
 		_filePath.erase(_filePath.size() - 1);
+		cout << "FILEEEEE: " << _filePath << endl;
 		_statusCode = 301;
 		return false;
 	}
