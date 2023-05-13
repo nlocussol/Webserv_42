@@ -1,4 +1,5 @@
 #include "../inc/Request.hpp"
+#include "../inc/CGI.hpp"
 #include "../inc/webserv.hpp"
 #include <cstdlib>
 #include <string>
@@ -52,6 +53,12 @@ void Request::parseRequest()
 	// 	return ;
 	if (!checkRewrite())
 		return ;
+	if (_cgi) {
+		_testV = mysplit(_buffer, "\r\n");
+		// _testCookie = _buffer.substr(_buffer.find("Cookie:"));
+		// _testCookie.resize(_testCookie.find("\r"));
+		// cout << _testCookie << "\n";
+	}
 	switch (_methodInt) {
 		case GET_REQUEST:
 			handleGetRequest();
@@ -71,7 +78,6 @@ bool Request::checkRewrite() {
 	MULTIMAP::iterator autoindex = copy.find("autoindex");
 	if (it != copy.end() && autoindex != copy.end() && autoindex->second == "on") {
 		_filePath = it->second;
-		cout << _filePath << endl;
 		_statusCode = 301;
 		return false;
 	}
@@ -189,10 +195,6 @@ bool Request::parseURI()
 		_query = true;
 		_queryString = _uri.substr(_uri.find_first_of("?") + 1);
 	}
-
-	if (_filePath.find(".py") != std::string::npos) {
-		_cgi = true;
-	}
 	_cgiInterpreter = is_cgi(_servers.v_serv[_serverId], _filePath);
 	if (!_cgiInterpreter.empty()) {
 		_cgi = true;
@@ -264,13 +266,17 @@ void Request::handleGetRequest()
 		handleQuery();
 	}
 	if (_cgi) {
-		int flag = 0;
-		_cgiBody = handle_cgi(_cgiInterpreter, _filePath, &flag, *this);
-		if (flag == TIME_OUT)
+		CGI cgi(_cgiInterpreter, _filePath);
+		_cgiBody = cgi.handleCGI(*this);
+		// Change this shit j'avais les flemmes faudrait p-e faire un object CGI c'est le dawa ce fichier
+		// Obligé de le faire en 2 fois jsp pas pk ?
+		_cgiAdditionalHeader = _cgiBody.substr(0, _cgiBody.find("\r\n\r\n"));
+		_cgiBody = _cgiBody.substr(_cgiAdditionalHeader.length());
+		if (cgi.getFlag() == TIME_OUT)
 			_statusCode = 508;
-		else if (flag == PERM_DENIED)
+		else if (cgi.getFlag() == PERM_DENIED)
 			_statusCode = 403;
-		else if (flag == RUNTIME_ERROR)
+		else if (cgi.getFlag() == RUNTIME_ERROR)
 			_statusCode = 500;
 		else
 			_statusCode = 200;
@@ -351,8 +357,8 @@ void Request::handlePostRequest()
 	// Create file with the same name and fill it with body of POST request
 	// need to check if find worked
 	if (_cgi) {
-		int flag;
-		handle_cgi(_cgiInterpreter, _filePath, &flag, *this);
+		// int flag;
+		// handle_cgi(_cgiInterpreter, _filePath, &flag, *this);
 	}
 	// std::ofstream outfile(_filePath.c_str());
 	// outfile << _bodyContent;

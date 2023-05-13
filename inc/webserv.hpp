@@ -21,15 +21,13 @@ enum request_type {UNSUPPORTED_REQUEST = 1, GET_REQUEST, POST_REQUEST, DELETE_RE
 enum request_sub_type {DEFAULT, TEXT, IMAGE, VIDEO, QUERY};
 enum autoindex {NOT_DIR, AUTOINDEX_OK, AUTOINDEX_OFF};
 
-string handle_cgi(std::string, std::string, int *flag, Request&);
-string	is_cgi(block_serv server, std::string file);
 MULTIMAP find_location_path(string &path, block_serv servers);
 int	is_dir_listing(std::string path, block_serv & servers);
 bool is_dir(std::string&);
 std::string directory_listing(std::string path, block_serv &server);
 std::string itostr(int i);
-char** vector_to_c_array(const std::vector<std::string>& queryArg);
-std::vector<std::string> string_to_vector(std::string& bodyContent);
+char** vector_to_c_array(const std::vector<std::string>&);
+std::vector<std::string> string_to_vector(std::string);
 int checkHexa(std::string& line, std::string hexa);
 
 #endif

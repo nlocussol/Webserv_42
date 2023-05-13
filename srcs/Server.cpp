@@ -100,8 +100,9 @@ void Server::manage_epoll_wait(struct epoll_event &event)
 		if (readRequest(event.data.fd) == false)
 			return; /*, server*/
 		Request request(_buffer, _servers, serverFd);
-		std::cout << "Request-----\n" << _buffer;
+		// std::cout << "Request-----\n" << _buffer;
 		request.parseRequest();
+		// cout << request;
 		Response response(_servers.v_serv[serverFd]);
 		response.buildResponse(request);
 		//std::cout << "Response------\n" << response.getCompleteResponse();

@@ -32,6 +32,9 @@ class Request {
 
 	 int _methodInt;
 	 std::string _bodyContent;
+
+	 std::string _testCookie;
+	 std::vector<std::string> _testV;
 	 std::vector<std::string> _queryArg;
 
 	private:
@@ -46,6 +49,7 @@ class Request {
 	 std::string _queryString;
 	 std::string _extension;
 	 std::string _cgiBody;
+	 std::string _cgiAdditionalHeader;
 	 std::string _cgiInterpreter;
 	 bool _query;
 	 bool _cgi;

@@ -4,14 +4,14 @@ SRC 	=	Response.cpp Server.cpp \
 			Socket.cpp Epoll.cpp Client.cpp \
 			parsing/fill_location.cpp  parsing/pars_conf.cpp \
 			parsing/pars_multimap.cpp  parsing/pars_struct.cpp\
-	  	main.cpp handle_cgi.cpp Request.cpp dir_listing.cpp \
-	  	ErrorPage.cpp utils.cpp
-HEADER	=	inc/Server.hpp inc/Response.hpp \
-			inc/Socket.hpp inc/Epoll.hpp \
-			inc/Client.hpp inc/parsing.hpp 
+	  	main.cpp Request.cpp dir_listing.cpp \
+	  	ErrorPage.cpp utils.cpp CGI.cpp
+HEADER	=	inc/Server.hpp inc/Response.hpp inc/Request.hpp\
+			inc/Socket.hpp inc/Epoll.hpp inc/CGI.hpp\
+			inc/Client.hpp inc/parsing.hpp inc/webserv.hpp\
+			inc/ErrorPage.hpp
 OBJS	=	$(addprefix obj/, $(SRC:.cpp=.o))
 CXXFLAGS=	-Wall -Wextra -Werror --std=c++98 -g
-
 
 
 all		:	${NAME}
