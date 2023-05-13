@@ -23,24 +23,21 @@ class Request {
 	 bool isMethodAllowed();
 	 bool checkBasicRedirection();
  	 void handleGetRequest();
- 	 void handleQuery();
  	 void handlePostRequest();
  	 void handleChunkedTransfer();
 	 bool handleUpload();
  	 void handleDeleteRequest();
 	 bool checkBodySize();
 	 bool checkRewrite();
-	 void parseCookies();
+	 void parseHeader();
 
 	 int _methodInt;
 	 std::string _bodyContent;
 
-	 std::string _testCookie;
-	 std::vector<std::string> _testV;
-	 std::vector<std::string> _queryArg;
 
 	private:
 	 typedef std::map<std::string, std::string>::const_iterator map_it;
+	 typedef std::pair<bool, std::string> is_set;
 
 	 Request();
 	 std::string _buffer;
@@ -51,12 +48,12 @@ class Request {
 	 std::string _queryString;
 	 std::string _extension;
 	 std::string _cookies;
+	 is_set _cookie;
+	 is_set _query;
+	 is_set _contentLength;
+	 is_set _cgi;
 	 std::string _cgiBody;
 	 std::string _cgiAdditionalHeader;
-	 std::string _cgiBin;
-	 bool _isCookie;
-	 bool _query;
-	 bool _cgi;
 	 bool _dirList;
 	 int _requestSubType;
 	 MULTIMAP::iterator _root;

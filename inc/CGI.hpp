@@ -15,11 +15,6 @@ class CGI {
 	 int getFlag() const;
 
 	private:
-	 void setRequestMethod(std::string&);
-	 void setQueryString(std::string&);
-	 void setCookies(std::string&);
-
-	private:
 	 int _pip[2];
 	 int _pid;
 	 int _flag;

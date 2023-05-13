@@ -29,7 +29,7 @@ void Response::buildResponse(Request& request)
 	else if (request._statusCode == 200 || request._statusCode == 201) {
 		switch (request._methodInt) {
 			case GET_REQUEST:
-				if (request._cgi) {
+				if (request._cgi.first) {
 				 	handleGetCGI(request);
 				} 
 				else if (request._dirList)
@@ -47,7 +47,7 @@ void Response::buildResponse(Request& request)
 				break;
 		}
 		//do this in another function and probably need to rename functions
-		buildCompleteResponse(request._statusCode, request._cgi);
+		buildCompleteResponse(request._statusCode, request._cgi.first);
 	}
 	else
 		buildErrorResponse(request);

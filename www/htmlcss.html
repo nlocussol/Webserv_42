@@ -189,9 +189,9 @@
         <div class="box-main">
             <div class="firstHalf">
                 <h1 class="text-big">Upload a file</h1>
+                </br>
                 <p class="text-small">
                 Here you can upload a file on the server
-                <br/>
                 <br/>
                 <br/>
                 <form method="POST" enctype="multipart/form-data">                          
@@ -214,8 +214,13 @@
                     CGI
                 </h1>
                 <p class="text-small">
-                Here is a simple CGI
-                </p>
+                Here is a simple Ruby CGI
+                </p>	
+			    <br />
+                <form action="/cgi/louis.rb" method="GET">
+			    Name: <input type="text" name="name"/>
+  			    <input type="submit" value="Submit" />
+		        </form>
  
  
             </div>
@@ -229,6 +234,10 @@
             <p class="sectionSubTag text-small">
             Here is a simple cookie
             </p>
+			<br />
+			<a href="/cgi/session.py">Click here to get a cookie</a>
+
+
  
  
         </div>

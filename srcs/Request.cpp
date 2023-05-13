@@ -19,10 +19,10 @@ Request::~Request()
 Request::Request(std::string& buffer, data& servers, int serverFd)
 {
 	_statusCode = 0;
-	_query = false;
+	_query.first = false;
 	_dirList = false;
-	_isCookie = false;
-	_cgi = false;
+	_cookie.first = false;
+	_cgi.first = false;
 	_buffer = buffer;
 	_servers = servers;
 	_serverId = serverFd;
@@ -54,14 +54,7 @@ void Request::parseRequest()
 		// return ;
 	if (!checkRewrite())
 		return ;
-	parseCookies();
-	//need to check for cookies
-	if (_cgi) {
-		_testV = mysplit(_buffer, "\r\n");
-		// _testCookie = _buffer.substr(_buffer.find("Cookie:"));
-		// _testCookie.resize(_testCookie.find("\r"));
-		// cout << _testCookie << "\n";
-	}
+	parseHeader();
 	switch (_methodInt) {
 		case GET_REQUEST:
 			handleGetRequest();
@@ -104,7 +97,6 @@ bool Request::parseRequestLine()
 		_statusCode = 400;
 		return false;
 	}
-
 	_method = _requestLine[0];
 	if (_method == "GET")
 		_methodInt = GET_REQUEST;
@@ -117,7 +109,6 @@ bool Request::parseRequestLine()
 		_statusCode = 405;
 		return false;
 	}
-
 	_uri = _requestLine[1];
 	// Remove last character of HTTP request version (\r)
 	_requestLine[2].erase(_requestLine[2].length() - 1);
@@ -184,13 +175,12 @@ bool Request::parseURI()
 		_extension = _filePath.substr(lastDotPos + 1);
 	// else _dirList == true ??
 	if (_uri.find("?") != std::string::npos) {
-		_query = true;
-		_queryString = _uri.substr(_uri.find_first_of("?") + 1);
+		_query.first = true;
+		_query.second = _uri.substr(_uri.find_first_of("?") + 1);
 	}
-
-	_cgiBin = is_cgi(_servers.v_serv[_serverId], _filePath);
-	if (!_cgiBin.empty()) {
-		_cgi = true;
+	_cgi.second = is_cgi(_servers.v_serv[_serverId], _filePath);
+	if (!_cgi.second.empty()) {
+		_cgi.first = true;
 	}
 	return true;
 }
@@ -200,7 +190,6 @@ bool Request::isMethodAllowed()
 	//Check if method is allowed on this path
 	MULTIMAP copy = find_location_path(_filePath, _servers.v_serv[_serverId]);
 	MULTIMAP::iterator it;
-
 	it = copy.find("methods");
 	while (it != copy.end()) {
 		if (it->second == _method)
@@ -214,7 +203,7 @@ bool Request::isMethodAllowed()
 
 void Request::findRequestSubType()
 {
-	if (_query == true) {
+	if (_query.first == true) {
 		_requestSubType = QUERY;
 		return ;
 	}
@@ -240,12 +229,17 @@ bool Request::checkRewrite() {
 	return true;
 }
 
-void Request::parseCookies()
+void Request::parseHeader()
 {
 	map_it it = _headerMap.find("Cookie");
 	if (it != _headerMap.end()) {
-		_isCookie = true;
-		_cookies = it->second;
+		_cookie.first = true;
+		_cookie.second = it->second;
+	}
+	it = _headerMap.find("Content-Length");
+	if (it != _headerMap.end()) {
+		_contentLength.first = true;
+		_contentLength.second = it->second;
 	}
 }
 
@@ -278,11 +272,8 @@ bool Request::checkBasicRedirection()
 
 void Request::handleGetRequest()
 {
-	if (_query) {
-		handleQuery();
-	}
-	if (_cgi) {
-		CGI cgi(_cgiBin, _filePath, *this);
+	if (_cgi.first) {
+		CGI cgi(_cgi.second, _filePath, *this);
 		_cgiBody = cgi.handleCGI(*this);
 		// Change this shit j'avais les flemmes faudrait p-e faire un object CGI c'est le dawa ce fichier
 		// Obligé de le faire en 2 fois jsp pas pk ?
@@ -317,24 +308,6 @@ void Request::handleGetRequest()
 		_statusCode = 200;
 }
 
-void Request::handleQuery()
-{
-	//need to test if it works + what to do with it + need to translate + to space " " and special characters zzz
-	//It is needed in some CGI where the _queryArg needs to be translated into env for execv
-	_queryArg = string_to_vector(_queryString);
-	// Probably can delete this below
-	// while (_queryString.length() != 0) {
-	// 	if (_queryString.find("&") != std::string::npos)
-	// 		ampersandPos = _queryString.find_first_of("&");
-	// 	else
-	// 		ampersandPos = _queryString.length();
-	// 	arg = _queryString.substr(0, ampersandPos);
-	// 	_queryArg.push_back(arg);
-	// 	_queryString.erase(0, ampersandPos + 1);
-		// std::cout << _queryString.length() << "\n\n";
-	// }
-}
-
 void Request::handlePostRequest()
 {
 	if (!checkBodySize()) {
@@ -350,35 +323,10 @@ void Request::handlePostRequest()
 		handleChunkedTransfer();
 		return ;
 	}
-
 	if (!handleUpload())
 		return ;
-	// Check if the file already exists, if it does try to delete it
-	// std::ifstream infile;
-	// Also need to test if directory is writable, but j'ai la flemme là
-	// infile.open(_filePath.c_str());
-	// if (infile) {
-	// 	if (access(_filePath.c_str(), F_OK | R_OK)) {
-	// 		_statusCode = 403;
-	// 		return ;
-	// 	}
-	// 	else {
-	// // Need to add proper error code return, but file should be deletable since we access it upward|
-	// 		if (std::remove(_filePath.c_str())) {
-	// 			_statusCode = 0;
-	// 			return ;
-	// 		}
-	// 	}
-	// }
-	// Create file with the same name and fill it with body of POST request
-	// need to check if find worked
-	if (_cgi) {
-		// int flag;
-		// handle_cgi(_cgiInterpreter, _filePath, &flag, *this);
+	if (_cgi.first) {
 	}
-	// std::ofstream outfile(_filePath.c_str());
-	// outfile << _bodyContent;
-	// outfile.close();
 	_statusCode = 200;
 }
 
@@ -435,6 +383,8 @@ void Request::handleChunkedTransfer()
 
 bool Request::handleUpload()
 {
+//Maybe need to test perm if  already exist first ?
+//Maybe need to test perm if  already exist first ?
 	map_it it = _headerMap.find("Content-Type");
 	if (it == _headerMap.end())
 		return false;
@@ -491,6 +441,8 @@ bool Request::handleUpload()
 
 void Request::handleDeleteRequest()
 {
+
+	// add statusCode 204 + 500(?)
 	if (remove(_filePath.c_str()) < 0) {	
 		string root = _filePath.substr(0, _filePath.find('/') + 1);
 		if (root == "srcs/" || root == "inc/" || root == "conf/")
