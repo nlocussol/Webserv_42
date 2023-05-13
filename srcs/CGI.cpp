@@ -7,6 +7,7 @@ CGI::CGI(std::string& binCGI, std::string& filePath, Request request)
 	_binCGI = binCGI;
 	_filePath = filePath;
 	_flag = 0;
+	_vectorEnv.push_back("REQUEST_METHOD=POST");
 	if (request._query)
 		setQueryString(request._queryString);
 	if (request._isCookie)
