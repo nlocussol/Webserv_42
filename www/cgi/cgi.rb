@@ -31,6 +31,7 @@ if cgi.request_method == 'POST'
 else
   # Display the current value of the cookie and a form to update it
   cgi.out do
+    puts "Content-Type: text/html\r\n\r\n"
     <<~HTML
       <html>
         <head><title>Cookie Handling</title></head>
