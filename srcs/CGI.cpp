@@ -7,7 +7,7 @@ CGI::CGI(std::string& binCGI, std::string& filePath, Request request)
 	_binCGI = binCGI;
 	_filePath = filePath;
 	_flag = 0;
-	_vectorEnv.push_back("REQUEST_METHOD=POST");
+	setRequestMethod(request._method);
 	if (request._query)
 		setQueryString(request._queryString);
 	if (request._isCookie)
@@ -122,15 +122,19 @@ std::string CGI::get_output_cgi()
 	return (out);
 }
 
-void CGI::setQueryString(std::string queryString)
+void CGI::setRequestMethod(std::string& method)
 {
-	(void) queryString;
+	_vectorEnv.push_back("REQUEST_METHOD=" + method);
 }
 
-void CGI::setCookies(std::string cookies)
+void CGI::setQueryString(std::string& queryString)
 {
-	std::string httpCookie = "HTTP_COOKIE=" + cookies;
-	_vectorEnv.push_back(httpCookie);
+	_vectorEnv.push_back("QUERY_STRING=" + queryString);
+}
+
+void CGI::setCookies(std::string& cookies)
+{
+	_vectorEnv.push_back("HTTP_COOKIE=" + cookies);
 }
 
 string is_cgi(block_serv server, const string& filePath)
