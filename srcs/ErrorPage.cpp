@@ -17,15 +17,19 @@ std::string ErrorPage::getConfPage(std::string file, int &code) {
 		cout << "ff" << endl;
 		return NULL;
 	}
+	std::string body;
 	std::string line;
+	while (getline (errpage, line)) {
+		body += line + "\r\n";
+		line.clear();
+	}
 	std::string buff = "HTTP/1.1 " + itostr(code) + " Bad Request\r\n"
 	"Content-type: text/html\r\n"
 	"Connection: closed\r\n"
-	"\r\n";
-	while (getline (errpage, line)) {
-		buff += line + "\r\n";
-		line.clear();
-	}
+	"Content-Length: ";
+	buff += bodySize(body);
+	buff += "\r\n\r\n";
+	buff += body;
 	return buff;
 }
 
