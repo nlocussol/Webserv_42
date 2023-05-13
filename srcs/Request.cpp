@@ -21,6 +21,7 @@ Request::Request(std::string& buffer, data& servers, int serverFd)
 	_statusCode = 0;
 	_query = false;
 	_dirList = false;
+	_isCookie = false;
 	_cgi = false;
 	_buffer = buffer;
 	_servers = servers;
@@ -53,6 +54,8 @@ void Request::parseRequest()
 	// 	return ;
 	if (!checkRewrite())
 		return ;
+	parseCookies();
+	//need to check for cookies
 	if (_cgi) {
 		_testV = mysplit(_buffer, "\r\n");
 		// _testCookie = _buffer.substr(_buffer.find("Cookie:"));
@@ -72,17 +75,6 @@ void Request::parseRequest()
 	}
 }
 
-bool Request::checkRewrite() {
-	MULTIMAP copy = find_location_path(_filePath, _servers.v_serv[_serverId]);
-	MULTIMAP::iterator it = copy.find("rewrite");
-	MULTIMAP::iterator autoindex = copy.find("autoindex");
-	if (it != copy.end() && autoindex != copy.end() && autoindex->second == "on") {
-		_filePath = it->second;
-		_statusCode = 301;
-		return false;
-	}
-	return true;
-}
 
 bool Request::basicRequestParsing()
 {
@@ -195,8 +187,9 @@ bool Request::parseURI()
 		_query = true;
 		_queryString = _uri.substr(_uri.find_first_of("?") + 1);
 	}
-	_cgiInterpreter = is_cgi(_servers.v_serv[_serverId], _filePath);
-	if (!_cgiInterpreter.empty()) {
+
+	_cgiBin = is_cgi(_servers.v_serv[_serverId], _filePath);
+	if (!_cgiBin.empty()) {
 		_cgi = true;
 	}
 	return true;
@@ -235,6 +228,27 @@ void Request::findRequestSubType()
 		_requestSubType = TEXT;
 }
 
+bool Request::checkRewrite() {
+	MULTIMAP copy = find_location_path(_filePath, _servers.v_serv[_serverId]);
+	MULTIMAP::iterator it = copy.find("rewrite");
+	MULTIMAP::iterator autoindex = copy.find("autoindex");
+	if (it != copy.end() && autoindex != copy.end() && autoindex->second == "on") {
+		_filePath = it->second;
+		_statusCode = 301;
+		return false;
+	}
+	return true;
+}
+
+void Request::parseCookies()
+{
+	map_it it = _headerMap.find("Cookie");
+	if (it != _headerMap.end()) {
+		_isCookie = true;
+		_cookies = it->second;
+	}
+}
+
 // Check if the client ask for a dir with autoindex on without last /
 // if so redirect to same path with /
 // also check the opposite, if client ask for a file with / at the end
@@ -266,7 +280,7 @@ void Request::handleGetRequest()
 		handleQuery();
 	}
 	if (_cgi) {
-		CGI cgi(_cgiInterpreter, _filePath);
+		CGI cgi(_cgiBin, _filePath, *this);
 		_cgiBody = cgi.handleCGI(*this);
 		// Change this shit j'avais les flemmes faudrait p-e faire un object CGI c'est le dawa ce fichier
 		// Obligé de le faire en 2 fois jsp pas pk ?

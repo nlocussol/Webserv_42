@@ -8,6 +8,7 @@
 class Request { 
 	friend class Server;
 	friend class Response;
+	friend class CGI;
 	friend std::ostream& operator<<(std::ostream&, const Request&);
 
 	public:
@@ -29,6 +30,7 @@ class Request {
  	 void handleDeleteRequest();
 	 bool checkBodySize();
 	 bool checkRewrite();
+	 void parseCookies();
 
 	 int _methodInt;
 	 std::string _bodyContent;
@@ -48,9 +50,11 @@ class Request {
 	 std::string _filePath;
 	 std::string _queryString;
 	 std::string _extension;
+	 std::string _cookies;
 	 std::string _cgiBody;
 	 std::string _cgiAdditionalHeader;
-	 std::string _cgiInterpreter;
+	 std::string _cgiBin;
+	 bool _isCookie;
 	 bool _query;
 	 bool _cgi;
 	 bool _dirList;

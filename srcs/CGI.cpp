@@ -2,11 +2,15 @@
 #include "../inc/Request.hpp"
 #include "../inc/webserv.hpp"
 
-CGI::CGI(std::string& binCGI, std::string& filePath)
+CGI::CGI(std::string& binCGI, std::string& filePath, Request request)
 {
 	_binCGI = binCGI;
 	_filePath = filePath;
 	_flag = 0;
+	if (request._query)
+		setQueryString(request._queryString);
+	if (request._isCookie)
+		setCookies(request._cookies);
 }
 
 std::string CGI::handleCGI(const Request& request)
@@ -28,9 +32,8 @@ std::string CGI::handleCGI(const Request& request)
 		close(_pip[0]);
 		close(_pip[1]);
 		if (request._methodInt == GET_REQUEST) {
-			// const char *envp[2] = {"HTTP_COOKIE=pref_lang=fr", NULL};
-			char** env = vector_to_c_array(request._queryArg);
-			execve(_binCGI.c_str(), execveArgv, const_cast<char **>(env));
+			char** env = vector_to_c_array(_vectorEnv);
+			execve(_binCGI.c_str(), execveArgv, env);
 			delete [] env;
 		}
 		else if (request._methodInt == POST_REQUEST && request._bodyContent.size() > 0) {
@@ -118,9 +121,16 @@ std::string CGI::get_output_cgi()
 	return (out);
 }
 
-int CGI::getFlag() const {return _flag;}
+void CGI::setQueryString(std::string queryString)
+{
+	(void) queryString;
+}
 
-CGI::~CGI() {}
+void CGI::setCookies(std::string cookies)
+{
+	std::string httpCookie = "HTTP_COOKIE=" + cookies;
+	_vectorEnv.push_back(httpCookie);
+}
 
 string is_cgi(block_serv server, const string& filePath)
 {
@@ -151,3 +161,7 @@ string is_cgi(block_serv server, const string& filePath)
 	} while (copy.find("cgi") != copy.end());
 	return (string(""));
 }
+
+int CGI::getFlag() const {return _flag;}
+
+CGI::~CGI() {}
