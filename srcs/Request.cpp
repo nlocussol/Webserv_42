@@ -23,6 +23,8 @@ Request::Request(std::string& buffer, data& servers, int serverFd)
 	_dirList = false;
 	_cookie.first = false;
 	_cgi.first = false;
+	_contentType.first = false;
+	_contentLength.first = false;
 	_buffer = buffer;
 	_servers = servers;
 	_serverId = serverFd;
@@ -49,7 +51,6 @@ void Request::parseRequest()
 		return ;
 	if (!fillMapHeader())
 		return ;
-	findRequestSubType();
 	// if (!checkBasicRedirection())
 		// return ;
 	if (!checkRewrite())
@@ -156,9 +157,8 @@ bool Request::parseURI()
 			return true;
 		}
 	}
-	// We do not support uri > 2000 characters
-	if (_uri.length() > 2000) {
-		_statusCode = 400;
+	if (_uri.length() > MAX_URI_SIZE) {
+		_statusCode = 414;
 		return false;
 	}
 	// Remove first /
@@ -179,9 +179,8 @@ bool Request::parseURI()
 		_query.second = _uri.substr(_uri.find_first_of("?") + 1);
 	}
 	_cgi.second = is_cgi(_servers.v_serv[_serverId], _filePath);
-	if (!_cgi.second.empty()) {
+	if (!_cgi.second.empty())
 		_cgi.first = true;
-	}
 	return true;
 }
 
@@ -199,22 +198,6 @@ bool Request::isMethodAllowed()
 	}
 	_statusCode = 405;
 	return false;
-}
-
-void Request::findRequestSubType()
-{
-	if (_query.first == true) {
-		_requestSubType = QUERY;
-		return ;
-	}
-	map_it it;
-	it = _headerMap.find("Accept");
-	if (it->second.find("image") != std::string::npos) 
-		_requestSubType = IMAGE;
-	else if (it->second.find("text") != std::string::npos) 
-		_requestSubType = TEXT;
-	else
-		_requestSubType = TEXT;
 }
 
 bool Request::checkRewrite() {
@@ -240,6 +223,18 @@ void Request::parseHeader()
 	if (it != _headerMap.end()) {
 		_contentLength.first = true;
 		_contentLength.second = it->second;
+	}
+	it = _headerMap.find("Host");
+	if (it != _headerMap.end()) {
+		if (it->second.find(":") != std::string::npos) {
+			_serverName = it->second.substr(0, it->second.find(":"));
+			_portNb = it->second.substr(it->second.find(":") + 1);
+		}
+	}
+	it = _headerMap.find("Content-Type");
+	if (it != _headerMap.end()) {
+		_contentType.first = true;
+		_contentType.second = it->second;
 	}
 }
 

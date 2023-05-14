@@ -18,7 +18,6 @@ class Request {
 	 bool basicRequestParsing();
 	 bool fillMapHeader();
 	 bool parseURI();
- 	 void findRequestSubType();
  	 bool parseRequestLine();
 	 bool isMethodAllowed();
 	 bool checkBasicRedirection();
@@ -32,8 +31,6 @@ class Request {
 	 void parseHeader();
 
 	 int _methodInt;
-	 std::string _bodyContent;
-
 
 	private:
 	 typedef std::map<std::string, std::string>::const_iterator map_it;
@@ -48,9 +45,13 @@ class Request {
 	 std::string _queryString;
 	 std::string _extension;
 	 std::string _cookies;
+	 std::string _serverName;
+	 std::string _portNb;
+	 std::string _bodyContent;
 	 is_set _cookie;
 	 is_set _query;
 	 is_set _contentLength;
+	 is_set _contentType;
 	 is_set _cgi;
 	 std::string _cgiBody;
 	 std::string _cgiAdditionalHeader;
