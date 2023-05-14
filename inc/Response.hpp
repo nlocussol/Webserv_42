@@ -19,7 +19,7 @@ class Response {
 	private:
 	 void handleRedirection(Request&);
 	 void handleGetCGI(const Request&);
-	 void buildCompleteResponse(int);
+	 void buildCompleteResponse(int, bool);
 	 void buildGetHeader(const std::string&);
 	 void buildGetBody(std::string&);
 	 bool check_dir(string &, block_serv &);
@@ -31,6 +31,7 @@ class Response {
 	 std::pair<std::string, std::string> _contentType;
 	 std::pair<std::string, int> _contentLength;
 	 std::pair<std::string, std::string> _connection;
+	 std::string _cgiAdditionalHeader;
 	 std::string _binaryData;
 	 std::string _completeResponse;
 	 block_serv _server;

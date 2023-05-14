@@ -8,6 +8,7 @@
 class Request { 
 	friend class Server;
 	friend class Response;
+	friend class CGI;
 	friend std::ostream& operator<<(std::ostream&, const Request&);
 
 	public:
@@ -22,20 +23,21 @@ class Request {
 	 bool isMethodAllowed();
 	 bool checkBasicRedirection();
  	 void handleGetRequest();
- 	 void handleQuery();
  	 void handlePostRequest();
  	 void handleChunkedTransfer();
 	 bool handleUpload();
  	 void handleDeleteRequest();
 	 bool checkBodySize();
 	 bool checkRewrite();
+	 void parseHeader();
 
 	 int _methodInt;
 	 std::string _bodyContent;
-	 std::vector<std::string> _queryArg;
+
 
 	private:
 	 typedef std::map<std::string, std::string>::const_iterator map_it;
+	 typedef std::pair<bool, std::string> is_set;
 
 	 Request();
 	 std::string _buffer;
@@ -45,10 +47,13 @@ class Request {
 	 std::string _filePath;
 	 std::string _queryString;
 	 std::string _extension;
+	 std::string _cookies;
+	 is_set _cookie;
+	 is_set _query;
+	 is_set _contentLength;
+	 is_set _cgi;
 	 std::string _cgiBody;
-	 std::string _cgiInterpreter;
-	 bool _query;
-	 bool _cgi;
+	 std::string _cgiAdditionalHeader;
 	 bool _dirList;
 	 int _requestSubType;
 	 MULTIMAP::iterator _root;

@@ -20,7 +20,7 @@ void pars_cgi(MULTIMAP & copy) {
 			if (path == exec[i])
 				break ;
 			if (i == 2)
-				throw (logic_error("Error: cgi executable must be python, ruby or php"));
+				throw (logic_error("Error: cgi executable must be python3, ruby or php"));
 		}
 		copy.erase(it);
 		it = copy.find("cgi");

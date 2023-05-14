@@ -23,7 +23,7 @@ char** vector_to_c_array(const std::vector<std::string>& queryArg)
 	return env;
 }
 
-std::vector<std::string> string_to_vector(std::string& bodyContent)
+std::vector<std::string> string_to_vector(std::string bodyContent)
 {
 	std::vector<std::string> vector;
 	std::string arg;

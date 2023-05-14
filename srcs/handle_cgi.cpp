@@ -16,35 +16,7 @@
  *
 **/ 
 
-string	is_cgi(block_serv server, std::string filePath)
-{
-	string path;
-	string copyFilePath = filePath;
-	string	extend;	
-	string	interpreter("");	
-	size_t		check;
-	MULTIMAP copy;
 
-	if (filePath.find('/') != string::npos)
-		path = copyFilePath.erase(filePath.find_last_of('/'), filePath.size());
-	else
-		path = "/";
-	copy = find_location_path(path, server);
-	if (copy.find("cgi") == copy.end())
-		return (string(""));
-	do{
-		interpreter = copy.find("cgi")->second;
-		copy.erase(copy.find("cgi")); 
-		extend = copy.find("cgi")->second; 
-		check = filePath.rfind(extend);
-		if (check != std::string::npos && check + extend.length() == filePath.size() && extend.length() != filePath.length())
-		{
-			return (string(interpreter));
-		}
-		copy.erase(copy.find("cgi")); 
-	} while (copy.find("cgi") != copy.end());
-	return (string(""));
-}
 
 int	check_cgi_args(std::string& binCGI, std::string& appPath, int *flag)
 {
@@ -137,7 +109,6 @@ std::string handle_cgi(std::string binCGI, std::string appPath, int *flag, Reque
 {
 	int	pip[2];
 	int	pid;
-	// string str = map.find("root")->second + "/" + appPath;
 	char	*param[3] = {(char *)binCGI.c_str(), (char *)appPath.c_str(), NULL};
 
 	if (check_cgi_args(binCGI, appPath, flag) == -1)
@@ -155,8 +126,9 @@ std::string handle_cgi(std::string binCGI, std::string appPath, int *flag, Reque
 		close(pip[0]);
 		close(pip[1]);
 		if (request._methodInt == GET_REQUEST) {
+			// const char *envp[2] = {"HTTP_COOKIE=pref_lang=fr", NULL};
 			char** env = vector_to_c_array(request._queryArg);
-			execve(binCGI.c_str(), param, env);
+			execve(binCGI.c_str(), param, const_cast<char **>(env));
 			delete [] env;
 		}
 		else if (request._methodInt == POST_REQUEST && request._bodyContent.size() > 0) {
@@ -164,9 +136,6 @@ std::string handle_cgi(std::string binCGI, std::string appPath, int *flag, Reque
 			char **env = vector_to_c_array(envVector);
 			execve(binCGI.c_str(), param, env);
 			delete [] env;
-		}
-		else {
-			execve(binCGI.c_str(), param, NULL);
 		}
 		std::cerr << "execve error" << std::endl;
 		close(pip[0]);

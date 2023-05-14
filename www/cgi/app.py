@@ -1,7 +1,7 @@
 #!/usr/bin/python3
 
 import cgi
-import cgi,os
+import os
 
 form = cgi.FieldStorage()
 name = form.getvalue("name")

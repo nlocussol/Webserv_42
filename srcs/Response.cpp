@@ -29,7 +29,7 @@ void Response::buildResponse(Request& request)
 	else if (request._statusCode == 200 || request._statusCode == 201) {
 		switch (request._methodInt) {
 			case GET_REQUEST:
-				if (request._cgi) {
+				if (request._cgi.first) {
 				 	handleGetCGI(request);
 				} 
 				else if (request._dirList)
@@ -47,7 +47,7 @@ void Response::buildResponse(Request& request)
 				break;
 		}
 		//do this in another function and probably need to rename functions
-		buildCompleteResponse(request._statusCode);
+		buildCompleteResponse(request._statusCode, request._cgi.first);
 	}
 	else
 		buildErrorResponse(request);
@@ -122,11 +122,10 @@ void Response::buildGetBody(std::string& filePath)
 
 void Response::handleGetCGI(const Request& request)
 {
-	std::string body = request._cgiBody;
-
-	_contentType.second = "text/html";
-	_contentLength.second = body.length();
-	_binaryData = body;	
+	_contentLength.second = request._cgiBody.length();
+	_cgiAdditionalHeader = request._cgiAdditionalHeader;
+	// cout << _cgiAdditionalHeader;
+	_binaryData = request._cgiBody;	
 }
 
 void Response::handleDirectoryListing(const std::string& filePath)
@@ -143,15 +142,27 @@ void Response::buildPostHeader(int requestSubType)
 
 }
 
-void Response::buildCompleteResponse(int statusCode)
+void Response::buildCompleteResponse(int statusCode, bool cgi)
 {
-	_completeResponse =
-		_HTTPVersion + itostr(statusCode) + _CRLF 
-		+ _contentType.first + _contentType.second + _CRLF 
-		+ _contentLength.first + itostr(_contentLength.second) + _CRLF
-		+ _connection.first + _connection.second + _CRLF
-		+ _CRLF
-		+ _binaryData;
+	if (cgi) {
+		_completeResponse = 
+			_HTTPVersion + itostr(statusCode) + _CRLF
+			+ _contentLength.first + itostr(_contentLength.second) + _CRLF
+			+ _connection.first + _connection.second + _CRLF
+			+ _cgiAdditionalHeader + _CRLF
+			+ _CRLF
+			+ _binaryData;
+
+	}
+	else {
+		_completeResponse =
+			_HTTPVersion + itostr(statusCode) + _CRLF 
+			+ _contentType.first + _contentType.second + _CRLF 
+			+ _contentLength.first + itostr(_contentLength.second) + _CRLF
+			+ _connection.first + _connection.second + _CRLF
+			+ _CRLF
+			+ _binaryData;
+	}
 }
 
 // Check if there is a defined file for error page, else use default one
