@@ -23,8 +23,10 @@ echo "Classic get request"
 curl -d @index.html -v $SERVER_URL:$1
 echo "Classic post request"
 curl -X POST -d @index.html -v $SERVER_URL:$1
+echo -n "post request which upload a file"
+curl -X POST -F "file=@index.html" $SERVER_URL:$1
 echo "Classic del request"
-curl -X DELETE -v $SERVER_URL:$1
+curl -X DELETE $SERVER_URL/index.html
 echo "post request with content"
 curl -X POST -v $SERVER_URL:$1 -d "$POST_DATA"
 echo "post request with chunked parameter"

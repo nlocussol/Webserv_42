@@ -170,7 +170,7 @@ void	Server::acceptNewClient(int fdFromEpoll)
 	_epoll.add_fd_to_pool(new_client);
 	idServer = _serversId.find(fdFromEpoll)->second;
 
-	Client newClient(new_client, fdFromEpoll, idServer);
+	Client newClient(new_client, idServer);
 	_clients.push_back(newClient);
 	std::cout << "New client: " << new_client << std::endl;
 }
