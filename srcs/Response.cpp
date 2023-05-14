@@ -28,9 +28,8 @@ Response::Response(block_serv serv, std::string& filePath)
 
 void Response::buildResponse(Request& request)
 {
-	if (request._statusCode == 301) {
+	if (request._statusCode == 301)
 		handleRedirection(request);
-	}
 	else if (request._statusCode == 200 || request._statusCode == 201 || request._statusCode == 204) {
 		switch (request._methodInt) {
 			case GET_REQUEST:
@@ -49,7 +48,6 @@ void Response::buildResponse(Request& request)
 			case DELETE_REQUEST:
 				break;
 		}
-		//do this in another function and probably need to rename functions
 		buildCompleteResponse(request._statusCode, request._cgi.first);
 	}
 	else
@@ -79,29 +77,8 @@ void Response::buildGetHeader(const std::string& extension)
 	}
 }
 
-bool Response::check_dir(string & filePath, block_serv & server) {
-	DIR *dir = opendir(filePath.c_str());
-	if (dir == NULL)
-		return true;
-	closedir(dir);
-	MULTIMAP copy = find_location_path(filePath, server);
-	MULTIMAP::iterator index = copy.find("index");
-	if (index != copy.end()) {
-		if (filePath[filePath.size() - 1] != '/')
-			filePath += "/";
-		filePath += index->second;
-		return true;
-	}
-	return false;
-}
-
 void Response::buildGetBody(std::string& filePath)
 {
-	// probably need to test if every syscall worked
-	// if (!check_dir(filePath, server)) {
-	// 	cout << "on a un pb" << endl;
-	// 	return ;
-	// }
 	std::ifstream file(filePath.c_str(), std::ios::in | std::ios::binary);
 	if (file) {
 		//Find file size and append it to buffer
