@@ -23,7 +23,7 @@ class Response {
 	 void buildGetHeader(const std::string&);
 	 void buildGetBody(std::string&);
 	 void handleDirectoryListing(const std::string&);
-	 void buildPostHeader(int);
+	 void buildPostHeader(const Request&);
 	 void buildErrorResponse(Request &);
 
 	private:

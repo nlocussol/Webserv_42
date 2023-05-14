@@ -43,7 +43,7 @@ void Response::buildResponse(Request& request)
 				}
 				break;
 			case POST_REQUEST:
-				buildPostHeader(request._requestSubType);
+				buildPostHeader(request);
 				break;
 			case DELETE_REQUEST:
 				break;
@@ -63,18 +63,14 @@ void Response::handleRedirection(Request& request)
 
 void Response::buildGetHeader(const std::string& extension)
 {
-	if (extension == "jpg") {
-			_contentType.second = "image/jpg";
-	}
-	else if (extension == "jpeg") {
-			_contentType.second = "image/jpeg";
-	}
-	else if (extension == "ico") {
-			_contentType.second = "image/jpg";
-	}
-	else {
-			_contentType.second = "text/html; charset=utf-8";
-	}
+	if (extension == "jpg")
+		_contentType.second = "image/jpg";
+	else if (extension == "jpeg")
+		_contentType.second = "image/jpeg";
+	else if (extension == "ico")
+		_contentType.second = "image/jpg";
+	else
+		_contentType.second = "text/html; charset=utf-8";
 }
 
 void Response::buildGetBody(std::string& filePath)
@@ -104,7 +100,6 @@ void Response::handleGetCGI(const Request& request)
 {
 	_contentLength.second = request._cgiBody.length();
 	_cgiAdditionalHeader = request._cgiAdditionalHeader;
-	// cout << _cgiAdditionalHeader;
 	_binaryData = request._cgiBody;	
 }
 
@@ -115,13 +110,13 @@ void Response::handleDirectoryListing(const std::string& filePath)
 	_binaryData = directory_listing(filePath, _server);	
 }
 
-void Response::buildPostHeader(int requestSubType)
+void Response::buildPostHeader(const Request& request)
 {
-	switch (requestSubType) {
-		case UPLOAD_FILE:
+	if (request._requestSubType == UPLOAD_FILE)
 			_location += _filePath;
-			cout << _location << "ici\n";
-			break;
+	if (request._cgi.first) {
+		_contentLength.second = request._cgiBody.length();
+		_binaryData = request._cgiBody;
 	}
 }
 

@@ -254,8 +254,6 @@ void Request::handleGetRequest()
 	if (_cgi.first) {
 		CGI cgi(_cgi.second, _filePath, *this);
 		_cgiBody = cgi.handleCGI(*this);
-		// Change this shit j'avais les flemmes faudrait p-e faire un object CGI c'est le dawa ce fichier
-		// Obligé de le faire en 2 fois jsp pas pk ?
 		_cgiAdditionalHeader = _cgiBody.substr(0, _cgiBody.find("\r\n\r\n"));
 		_cgiBody = _cgiBody.substr(_cgiAdditionalHeader.length());
 		if (cgi.getFlag() == TIME_OUT)

@@ -3,6 +3,7 @@
 #include "../inc/webserv.hpp"
 #include <fstream>
 #include <unistd.h>
+#include <sys/socket.h>
 
 CGI::CGI(std::string& binCGI, std::string& filePath, Request request)
 {
@@ -42,39 +43,22 @@ std::string CGI::handleCGI(const Request& request)
 	}
 	else if (_pid == 0)
 	{
-		// dup2(_pip[1], 1);
 		dup2(_pipeOut[1], 1);
 		if (request._methodInt == GET_REQUEST) {
-			// close(_pip[0]);
-			// close(_pip[1]);
 			char **env = vector_to_c_array(_vectorEnv);
 			char *execveArgv[3] = {(char *)_binCGI.c_str(), (char *)_filePath.c_str(), NULL};
+			close(_pipeIn[1]);
+			close(_pipeIn[0]);
+			close(_pipeOut[0]);
+			close(_pipeOut[1]);
 			execve(_binCGI.c_str(), execveArgv, env);
 			delete [] env;
 		}
-		// else if (request._methodInt == POST_REQUEST) {
-		// 	std::vector<std::string> envVector = string_to_vector(request._bodyContent);
-		// 	char **env = vector_to_c_array(_vectorEnv);
-		// 	char *execveArgv[3] = {(char *)_binCGI.c_str(), (char *)_filePath.c_str(), NULL};
-		// 	dup2(_pip[0], 0);
-		// 	write(0, request._buffer.c_str(), request._buffer.length());
-		// 	char tmp = EOF;
-		// 	write(_pip[0], &tmp, 1);
-		// 	close(_pip[0]);
-		// 	close(_pip[1]);
-		// 	execve(_binCGI.c_str(), execveArgv, env);
-		// 	delete [] env;
-		// }
 		else if (request._methodInt == POST_REQUEST) {
-			std::vector<std::string> envVector = string_to_vector(request._bodyContent);
 			char **env = vector_to_c_array(_vectorEnv);
 			char *execveArgv[3] = {(char *)_binCGI.c_str(), (char *)_filePath.c_str(), NULL};
-
-			write(_pipeIn[1], request._buffer.c_str(), request._buffer.length());
-
+			write(_pipeIn[1], request._bodyContent.c_str(), request._bodyContent.length());
 			dup2(_pipeIn[0], 0);
-			dup2(_pipeOut[1], 1);
-
 			close(_pipeIn[1]);
 			close(_pipeIn[0]);
 			close(_pipeOut[0]);
@@ -160,7 +144,6 @@ std::string CGI::get_output_cgi()
 		out += buff;
 		memset(buff, 0, BUFFER_SIZE);
 	}
-	cout << "ici\n" << out << "\n";
 	if (ret == -1)
 	{
 		_flag = RUNTIME_ERROR;
