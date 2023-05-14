@@ -40,7 +40,6 @@ class Response {
 
 	 static std::string _CRLF;
 	 static std::string _HTTPVersion;
-	 
  } ;
 
 #endif // RESPONSE_HPP_

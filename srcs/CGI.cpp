@@ -64,6 +64,7 @@ std::string CGI::handleCGI(const Request& request)
 			close(_pipeOut[0]);
 			close(_pipeOut[1]);
 			execve(_binCGI.c_str(), execveArgv, env);
+			delete [] env;
 		}
 		std::cerr << "execve error" << std::endl;
 		close(_pipeOut[0]);

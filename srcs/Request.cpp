@@ -46,9 +46,9 @@ void Request::parseRequest()
 		return ;
 	if (!parseRequestLine())
 		return ;
-	if (!isMethodAllowed())
-		return ;
 	if (!parseURI())
+		return ;
+	if (!isMethodAllowed())
 		return ;
 	if (!fillMapHeader())
 		return ;
