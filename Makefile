@@ -4,8 +4,8 @@ SRC 	=	Response.cpp Server.cpp \
 			Socket.cpp Epoll.cpp Client.cpp \
 			parsing/fill_location.cpp  parsing/pars_conf.cpp \
 			parsing/pars_multimap.cpp  parsing/pars_struct.cpp\
-	  	main.cpp Request.cpp dir_listing.cpp \
-	  	ErrorPage.cpp utils.cpp CGI.cpp
+	  		main.cpp Request.cpp dir_listing.cpp \
+	  		ErrorPage.cpp utils.cpp CGI.cpp
 HEADER	=	inc/Server.hpp inc/Response.hpp inc/Request.hpp\
 			inc/Socket.hpp inc/Epoll.hpp inc/CGI.hpp\
 			inc/Client.hpp inc/parsing.hpp inc/webserv.hpp\

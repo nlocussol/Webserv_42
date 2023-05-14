@@ -13,6 +13,8 @@ class Epoll
 		Epoll &operator=(const Epoll&);
 
 		void	add_fd_to_pool(int fd);
+		void	mod_fd_to_pool(int fd);
+		void	del_fd_from_pool(int fd);
 		void	create_epoll();
 		int		get_fd_epoll();
 

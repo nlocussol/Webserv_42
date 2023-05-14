@@ -38,7 +38,7 @@ void	Epoll::create_epoll()
 
 void	Epoll::add_fd_to_pool(int fd)
 {
-	_event.events = EPOLLIN | EPOLLET;
+	_event.events = EPOLLIN;
 	_event.data.fd = fd;
 	if (epoll_ctl(_fd_epoll, EPOLL_CTL_ADD, fd, &_event) == -1)
 	{
@@ -46,7 +46,27 @@ void	Epoll::add_fd_to_pool(int fd)
 	}
 }
 
+void	Epoll::del_fd_from_pool(int fd)
+{
+	if (epoll_ctl(_fd_epoll, EPOLL_CTL_DEL, fd, &_event) == -1)
+	{
+		std::cerr << "Remove fd of epoll error" << std::endl;
+	}
+}
+
 int		Epoll::get_fd_epoll()
 {
 	return (_fd_epoll);
 }
+
+void	Epoll::mod_fd_to_pool(int fd)
+{
+	_event.events = EPOLLIN;
+	_event.data.fd = fd;
+	if (epoll_ctl(_fd_epoll, EPOLL_CTL_MOD, fd, &_event) == -1)
+	{
+		std::cerr << "Change fd parameter error" << std::endl;
+	}
+}
+
+

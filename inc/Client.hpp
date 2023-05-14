@@ -2,6 +2,14 @@
 # define CLIENT_HPP
 
 # include <iostream>
+# include <vector>
+# include "webserv.hpp"
+
+typedef enum readStatus{
+	DEL,
+	FINISH,
+	IN_PROGRESS
+} readStatus;
 
 class Client
 {
@@ -13,19 +21,19 @@ class Client
 		Client (const Client &copy);
 		Client &operator=(const Client&);
 	
-		void readFromFd();
+		int readFromFd();
+		void resetBuffer();
 		int		getFdClient() const;
 		int		getFdServer() const;
 		int		getIdServer() const;
-		std::string	getBuffer() const;
-		void	setBuffer(std::string);
+		std::string getBuffer() const;
 	 private:
-		std::string	_buffer;
+		std::string _buffer;
 		size_t _pos;
 		int _readReturn;
-		int			_fdClient;
-		int			_fdServer;
-		int			_idServer;
+		int _fdClient;
+		int _fdServer;
+		int _idServer;
 		
 };
 #endif
