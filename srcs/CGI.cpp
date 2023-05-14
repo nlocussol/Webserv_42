@@ -1,6 +1,7 @@
 #include "../inc/CGI.hpp"
 #include "../inc/Request.hpp"
 #include "../inc/webserv.hpp"
+#include <fstream>
 #include <unistd.h>
 
 CGI::CGI(std::string& binCGI, std::string& filePath, Request request)
@@ -32,11 +33,10 @@ std::string CGI::handleCGI(const Request& request)
 		return (std::string());
 
 	// pipe(_pip);
-	_pid = fork();
 	pipe(_pipeIn);
 	pipe(_pipeOut);
-	if (_pid == -1)
-	{
+	_pid = fork();
+	if (_pid == -1) {
 		std::cerr << "fork creation error" << std::endl;
 		exit (EXIT_FAILURE);
 	}
@@ -69,12 +69,15 @@ std::string CGI::handleCGI(const Request& request)
 			std::vector<std::string> envVector = string_to_vector(request._bodyContent);
 			char **env = vector_to_c_array(_vectorEnv);
 			char *execveArgv[3] = {(char *)_binCGI.c_str(), (char *)_filePath.c_str(), NULL};
+
+			write(_pipeIn[1], request._buffer.c_str(), request._buffer.length());
+
+			dup2(_pipeIn[0], 0);
+			dup2(_pipeOut[1], 1);
+
 			close(_pipeIn[1]);
-			dup2(_pipeIn[0], STDIN_FILENO);
-			write(_pipeIn[0], request._buffer.c_str(), request._buffer.length());
 			close(_pipeIn[0]);
 			close(_pipeOut[0]);
-			dup2(_pipeOut[1], STDOUT_FILENO);
 			close(_pipeOut[1]);
 			execve(_binCGI.c_str(), execveArgv, env);
 		}
