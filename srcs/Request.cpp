@@ -145,7 +145,7 @@ bool Request::fillMapHeader()
 bool Request::checkExpectHeader()
 {
 	map_it it = _headerMap.find("Expect");
-	if (it != _headerMap.end() && it->second.find("100")) {
+	if (it != _headerMap.end() && it->second.find("100") != std::string::npos) {
 		_statusCode = 100;
 		return false;
 	}
