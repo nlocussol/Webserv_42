@@ -24,12 +24,10 @@ vector<string> mysplit(string & line, string delimiter) {
 		tab.push_back(str);
 		str.clear();
 	}
-	// for (unsigned long i = 0; i < tab.size(); i++)
-		// cout << "'" << tab[i] << "'" << " ";
-	// cout << endl;
 	return (tab);
 }
 
+/* That recursive function will pars the location block */
 void recursive_location(fstream & file, block_serv & servers, vector<string> options, int stage, string & path) {
 	string line;
 	if (!getline(file, line))
@@ -81,6 +79,7 @@ void recursive_location(fstream & file, block_serv & servers, vector<string> opt
 	throw (logic_error("Error: need a close bracket at the end of the server!"));
 }
 
+/* That function will pars the server block */
 void pars_line(fstream & file, data & servers, vector<string> options) {
 	string line;
 	if (!getline(file, line))
@@ -135,24 +134,23 @@ void pars_conf(string & file, data & servers) {
 	vector<string> options;
 	DIR	*dir;
 
-	for (int i = 0; i < NB_OPT; i++)
-		options.push_back(opt[i]);
-	fstream input;
-	input.open(file.c_str(), ios::in);
-	if (!input)
-		throw (logic_error("Error: config file can't be open!"));
 	dir = opendir(file.c_str());
-	if (dir != NULL)
-	{
+	if (dir != NULL) {
 		closedir(dir);
 		throw (logic_error("Error: config file can't use a directory!"));
 	}
+	for (int i = 0; i < NB_OPT; i++)
+		options.push_back(opt[i]);
+	fstream input;
+	input.open(file.c_str(), ios::in); // open conf
+	if (!input)
+		throw (logic_error("Error: config file can't be open!"));
 	string line;
 	while (getline(input, line)) {
 		vector<string> tab = mysplit(line, DELIMITER);
-		if (line.empty())
+		if (line.empty()) // skip \n
 			continue ;
-		else if (tab.size() == 1 && tab[0] == "server") 
+		else if (tab.size() == 1 && tab[0] == "server") // find server block
 			pars_line(input, servers, options);
 		else
 			throw (logic_error("Error: need a server block!"));
