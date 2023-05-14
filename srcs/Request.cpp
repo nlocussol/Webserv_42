@@ -145,7 +145,7 @@ bool Request::fillMapHeader()
 bool Request::checkExpectHeader()
 {
 	map_it it = _headerMap.find("Expect");
-	if (it != _headerMap.end() && it->second.find("100")) {
+	if (it != _headerMap.end() && it->second.find("100") != std::string::npos) {
 		_statusCode = 100;
 		return false;
 	}
@@ -344,7 +344,12 @@ void Request::handleChunkedTransfer()
 {
 	int hexa_value = 0;
 	int cnt;
-	string body = _buffer.substr(_buffer.find("\r\n\r\n") + 4);
+	size_t CRLF = _buffer.find("\r\n\r\n");
+	if (CRLF == std::string::npos) {
+		_statusCode = 400;
+		return ;
+	}
+	string body = _buffer.substr(CRLF + 4);
 	vector<string> tab = mysplit(body, "\n");
 	_bodyContent.clear();
 	for (unsigned long i = 0; i < tab.size(); i++) {
