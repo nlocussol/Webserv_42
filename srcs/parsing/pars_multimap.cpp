@@ -8,8 +8,8 @@
 
 /* Pars CGI option: */
 void pars_cgi(MULTIMAP & copy) {
-	string exec[3] = {"python3", "ruby", "php"};
-	string extension[3]	= {".py", ".rb", ".php"};
+	string exec[3] = {"python3", "ruby"};
+	string extension[3]	= {".py", ".rb"};
 	MULTIMAP::iterator it = copy.find("cgi");
 	int i = 0;
 	while (it != copy.end()) {
@@ -23,7 +23,7 @@ void pars_cgi(MULTIMAP & copy) {
 			if (path == exec[i])
 				break ;
 			if (i == 2)
-				throw (logic_error("Error: cgi executable must be python3, ruby or php"));
+				throw (logic_error("Error: cgi executable must be python3 or ruby!"));
 		}
 		copy.erase(it);
 		it = copy.find("cgi");
@@ -42,7 +42,7 @@ void pars_rewrite(MULTIMAP & copy, string & root) {
 		if (dir[0] == '/')
 			dir = it->second.substr(1);
 		dir = root + dir;
-		if (!is_dir(dir))
+		if (!is_dir(dir) || dir.find("//") != string::npos)
 			throw (logic_error("Error: rewrite argument can be only a directory: " + dir));
 		if (dir.find("/../") != string::npos || dir.find("/..") != string::npos ||
 			dir.find("../") != string::npos)
@@ -75,14 +75,14 @@ void pars_dir(string path, MULTIMAP & copy) {
 		throw (logic_error("Error: need a root in servers block!"));
 	while (it != copy.end()) {
 		DIR *file = opendir(it->second.c_str());
-		if (!file)
+		if (!file ||  it->second.find("//") != string::npos)
 			throw (logic_error("Error: " + it->first + " have a bad path: " + it->second));
 		if (path == "root") {
 			string root = it->second.substr(0, it->second.find('/') + 1);
 			if (root == "srcs/" || root == "inc/" || root == "conf/" ||
 				root.find("/../") != string::npos || root.find("/..") != string::npos ||
-				root.find("../") != string::npos)
-				throw (logic_error("Error: " + it->first + " can't start with: " + root));
+				root.find("../") != string::npos || root[0] == '/')
+				throw (logic_error("Error: bad root: " + root));
 		}
 		closedir(file);
 		copy.erase(it);
@@ -163,4 +163,12 @@ void pars_errpage(MULTIMAP & copy, MULTIMAP & current, string & root) {
 		current.insert(make_pair("errpage_" + str.str(), file));
 		it = copy.find("errpage");
 	}
+}
+
+void pars_autoindex(MULTIMAP & copy) {
+	MULTIMAP::iterator it = copy.find("autoindex");
+	copy.erase(it);
+	it = copy.find("autoindex");
+	if (it != copy.end())
+		throw (logic_error("Error: autoindex can't be defined twice in same block"));
 }

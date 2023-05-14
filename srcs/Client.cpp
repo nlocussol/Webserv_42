@@ -1,16 +1,10 @@
 #include "../inc/Client.hpp"
-#include "../inc/webserv.hpp"
-#include <sys/socket.h>
-#include <unistd.h>
-#include <utility>
-#include <iostream>
 
-Client::Client(int fdClient, int fdServer, int idServer){
+Client::Client(int fdClient, int idServer){
 	_pos = 0;
-	_fdClient = fdClient;
-	_fdServer = fdServer;
-	_idServer = idServer;
 	_readReturn = 0;
+	_fdClient = fdClient;
+	_idServer = idServer;
 }
 
 Client::~Client(){
@@ -23,15 +17,28 @@ Client::Client(const Client &copy){
 Client & Client::operator=(const Client &copy){
 	if (&copy != this)
 	{
-		_fdClient = copy.getFdClient();
-		_fdServer = copy.getFdServer();
-		_idServer = copy.getIdServer();
+		_fdClient = copy._fdClient;
+		_idServer = copy._idServer;
 		_buffer.assign(copy._buffer, 0, copy._buffer.length());
 		_pos = copy._pos;
 	}
 	return (*this);
 }
 
+/**
+ *
+ * First of all, check if the string max size is not exceeded
+ *
+ * increase the buffer of the buffer size
+ * usleep for the client tot send the entire request
+ * read this request
+ * check if the size read is egal as buffer size
+ * 		need to call recv again
+ * if size read is less than buffer size
+ * 		reading the request is done
+ * the del return is when recv return 0
+ *
+ **/
 int	Client::readFromFd()
 {
 	if (_pos + BUFFER_SIZE >= _buffer.max_size()){		
@@ -42,13 +49,11 @@ int	Client::readFromFd()
 	_buffer.resize(_pos + BUFFER_SIZE);
 	usleep(500);
 	_readReturn = recv(_fdClient, (char*)_buffer.c_str() + _pos, BUFFER_SIZE - 1, 0);
-	//_readReturn = read(_fdClient, (char*)_buffer.c_str() + _pos, BUFFER_SIZE - 1);
 	if (_readReturn < 0) {
 		std::cerr << "Error while reading from client FD" << _readReturn << endl;
 		return -1;
 	}
 	_pos += _readReturn;
-	//std::cout << "size read: " << _readReturn << " lenbffer: " << _buffer.length() << " pos:" << _pos << std::endl;
 	if (_readReturn >= BUFFER_SIZE - 1 || (_readReturn >= BUFFER_SIZE / 2 - 29 && _readReturn <= BUFFER_SIZE / 2 +  29))
 		return (IN_PROGRESS);
 	else if (_readReturn < BUFFER_SIZE && _readReturn > 0)
@@ -62,19 +67,10 @@ void	Client::resetBuffer()
 	_buffer.clear();
 	_buffer = "";
 }
-
 int	Client::getFdClient() const{
 	return(_fdClient);
 }
 
-int	Client::getFdServer() const{
-	return(_fdServer);
-}
-
 int	Client::getIdServer() const{
 	return(_idServer);
-}
-
-std::string Client::getBuffer() const{
-	return(_buffer);
 }
