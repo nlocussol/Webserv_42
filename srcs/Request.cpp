@@ -144,7 +144,7 @@ bool Request::fillMapHeader()
 
 bool Request::checkExpectHeader()
 {
-	map_it it = _headerMap.find("Expect:");
+	map_it it = _headerMap.find("Expect");
 	if (it != _headerMap.end() && it->second.find("100")) {
 		_statusCode = 100;
 		return false;
