@@ -12,13 +12,18 @@
 #include <streambuf>
 #include <utility>
 
-Response::Response(block_serv serv)
+Response::Response(block_serv serv, std::string& filePath)
 {
 	_contentType.first = "Content-Type: ";
+	_contentType.second = "text/html";
 	_contentLength.first = "Content-Length: ";
+	_contentLength.second = 0;
 	_connection.first = "Connection: ";
 	_connection.second = "keep-alive";
+	_location = "Location: ";
+	_serverName = "Server: MbaboinServ/1.25 (Ubuntu)";
 	_server = serv;
+	_filePath = filePath;
 }
 
 void Response::buildResponse(Request& request)
@@ -26,12 +31,11 @@ void Response::buildResponse(Request& request)
 	if (request._statusCode == 301) {
 		handleRedirection(request);
 	}
-	else if (request._statusCode == 200 || request._statusCode == 201) {
+	else if (request._statusCode == 200 || request._statusCode == 201 || request._statusCode == 204) {
 		switch (request._methodInt) {
 			case GET_REQUEST:
-				if (request._cgi.first) {
+				if (request._cgi.first)
 				 	handleGetCGI(request);
-				} 
 				else if (request._dirList)
 					handleDirectoryListing(request._filePath);
 				else {
@@ -41,7 +45,6 @@ void Response::buildResponse(Request& request)
 				break;
 			case POST_REQUEST:
 				buildPostHeader(request._requestSubType);
-				return;
 				break;
 			case DELETE_REQUEST:
 				break;
@@ -137,32 +140,29 @@ void Response::handleDirectoryListing(const std::string& filePath)
 
 void Response::buildPostHeader(int requestSubType)
 {
-	(void) requestSubType;
-	_completeResponse = "HTTP/1.1 303 See Other\r\nLocation: /index.html\r\nContent-Length: 0\r\n\r\n";
-
+	switch (requestSubType) {
+		case UPLOAD_FILE:
+			_location += _filePath;
+			cout << _location << "ici\n";
+			break;
+	}
 }
 
 void Response::buildCompleteResponse(int statusCode, bool cgi)
 {
-	if (cgi) {
-		_completeResponse = 
-			_HTTPVersion + itostr(statusCode) + _CRLF
-			+ _contentLength.first + itostr(_contentLength.second) + _CRLF
-			+ _connection.first + _connection.second + _CRLF
-			+ _cgiAdditionalHeader + _CRLF
-			+ _CRLF
-			+ _binaryData;
-
-	}
-	else {
-		_completeResponse =
-			_HTTPVersion + itostr(statusCode) + _CRLF 
-			+ _contentType.first + _contentType.second + _CRLF 
-			+ _contentLength.first + itostr(_contentLength.second) + _CRLF
-			+ _connection.first + _connection.second + _CRLF
-			+ _CRLF
-			+ _binaryData;
-	}
+	_completeResponse =
+		_HTTPVersion + itostr(statusCode) + _CRLF 
+		+ _contentType.first + _contentType.second + _CRLF 
+		+ _contentLength.first + itostr(_contentLength.second) + _CRLF
+		+ _connection.first + _connection.second + _CRLF;
+		if (_location != "Location: ") {
+			_completeResponse += _location + _CRLF;
+		}
+		if (cgi)
+			_completeResponse += _cgiAdditionalHeader + _CRLF;
+	 _completeResponse += _CRLF;
+		if (!_binaryData.empty())
+			_completeResponse += _binaryData;
 }
 
 // Check if there is a defined file for error page, else use default one

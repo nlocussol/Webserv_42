@@ -34,9 +34,9 @@ Request::Request(std::string& buffer, data& servers, int serverFd)
 
 	MULTIMAP::iterator autoindex = _servers.v_serv[_serverId].conf_serv.find("autoindex");
 	if (autoindex == _servers.v_serv[_serverId].conf_serv.end() || autoindex->second == "off") 
-		_autoindex = false;
+		_autoIndex = false;
 	else
-		_autoindex = true;
+		_autoIndex = true;
 }
 
 void Request::parseRequest()
@@ -51,8 +51,8 @@ void Request::parseRequest()
 		return ;
 	if (!fillMapHeader())
 		return ;
-	// if (!checkBasicRedirection())
-		// return ;
+	if (!checkExpectHeader())
+		return ;
 	if (!checkRewrite())
 		return ;
 	parseHeader();
@@ -138,6 +138,16 @@ bool Request::fillMapHeader()
 		// Erase \r at end of line
 		value.erase(value.length() - 1);
 		_headerMap.insert(std::make_pair(key, value));
+	}
+	return true;
+}
+
+bool Request::checkExpectHeader()
+{
+	map_it it = _headerMap.find("Expect:");
+	if (it != _headerMap.end() && it->second.find("100")) {
+		_statusCode = 100;
+		return false;
 	}
 	return true;
 }
@@ -238,31 +248,6 @@ void Request::parseHeader()
 	}
 }
 
-// Check if the client ask for a dir with autoindex on without last /
-// if so redirect to same path with /
-// also check the opposite, if client ask for a file with / at the end
-// if so redirect to same path without /
-bool Request::checkBasicRedirection()
-{
-	if (is_dir(_filePath) && _filePath[_filePath.size() - 1] != '/') {
-		MULTIMAP copy = find_location_path(_filePath, _servers.v_serv[_serverId]);
-		MULTIMAP::iterator it = copy.find("autoindex");
-		if (it != copy.end() && it->second == "on") {
-			_filePath.erase(0, _rootPath.size());
-			_filePath += "/";
-			_statusCode = 301;
-		}
-		return false;
-	}
-	if (!is_dir(_filePath) && _filePath[_filePath.size() - 1] == '/') {
-		_filePath.erase(0, _rootPath.size());
-		_filePath.erase(_filePath.size() - 1);
-		_statusCode = 301;
-		return false;
-	}
-	return true;
-}
-
 void Request::handleGetRequest()
 {
 	if (_cgi.first) {
@@ -309,18 +294,29 @@ void Request::handlePostRequest()
 	}
 	size_t bodyBegin = _buffer.find("\r\n\r\n");
 	_bodyContent = _buffer.substr(bodyBegin + 4);
-
 	map_it it;
 	it = _headerMap.find("Transfer-Encoding");
-	if (it != _headerMap.end() && it->second == "chunked") {
+	if (it != _headerMap.end() && it->second == "chunked")
 		handleChunkedTransfer();
+	if (_cgi.first) {
+		CGI cgi(_cgi.second, _filePath, *this);
+		_cgiBody = cgi.handleCGI(*this);
+		// Change this shit j'avais les flemmes faudrait p-e faire un object CGI c'est le dawa ce fichier
+		// Obligé de le faire en 2 fois jsp pas pk ?
+		_cgiAdditionalHeader = _cgiBody.substr(0, _cgiBody.find("\r\n\r\n"));
+		_cgiBody = _cgiBody.substr(_cgiAdditionalHeader.length());
+		if (cgi.getFlag() == TIME_OUT)
+			_statusCode = 508;
+		else if (cgi.getFlag() == PERM_DENIED)
+			_statusCode = 403;
+		else if (cgi.getFlag() == RUNTIME_ERROR)
+			_statusCode = 500;
+		else
+			_statusCode = 200;
 		return ;
 	}
 	if (!handleUpload())
 		return ;
-	if (_cgi.first) {
-	}
-	_statusCode = 200;
 }
 
 bool	Request::checkBodySize()
@@ -376,8 +372,6 @@ void Request::handleChunkedTransfer()
 
 bool Request::handleUpload()
 {
-//Maybe need to test perm if  already exist first ?
-//Maybe need to test perm if  already exist first ?
 	map_it it = _headerMap.find("Content-Type");
 	if (it == _headerMap.end())
 		return false;
@@ -415,8 +409,10 @@ bool Request::handleUpload()
 		_statusCode = 400;
 		return false;
 	}
+	MULTIMAP copy = find_location_path(_filePath, _servers.v_serv[_serverId]);
+	MULTIMAP::iterator it2 = copy.find("root");
 	fileName = fileName.substr(0, quotePos);
-	std::ofstream of(fileName.c_str());
+	std::ofstream of((it2->second + fileName).c_str());
 	if (!of) {
 		_statusCode = 500;
 		return false;
@@ -425,17 +421,15 @@ bool Request::handleUpload()
 	size_t i = content.length() - 1;
 	for (; content[i] == '-' ; i--) ;
 	content = content.substr(0, i + 1);
-	//cout << content;
 	of << content;
 	of.close();
 	_statusCode = 201;
+	_requestSubType = UPLOAD_FILE;
 	return true;
 }
 
 void Request::handleDeleteRequest()
 {
-
-	// add statusCode 204 + 500(?)
 	if (remove(_filePath.c_str()) < 0) {	
 		string root = _filePath.substr(0, _filePath.find('/') + 1);
 		if (root == "srcs/" || root == "inc/" || root == "conf/")

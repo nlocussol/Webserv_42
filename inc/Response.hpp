@@ -13,7 +13,7 @@ class Response {
 	public:
 	 void buildResponse(Request&);
 	 std::string& getCompleteResponse(void);
-	 Response(block_serv);
+	 Response(block_serv, std::string&);
 	 ~Response();
 
 	private:
@@ -31,9 +31,12 @@ class Response {
 	 std::pair<std::string, std::string> _contentType;
 	 std::pair<std::string, int> _contentLength;
 	 std::pair<std::string, std::string> _connection;
+	 std::string _serverName;
 	 std::string _cgiAdditionalHeader;
 	 std::string _binaryData;
 	 std::string _completeResponse;
+	 std::string _location;
+	 std::string _filePath;
 	 block_serv _server;
 
 	 static std::string _CRLF;

@@ -20,7 +20,6 @@ class Request {
 	 bool parseURI();
  	 bool parseRequestLine();
 	 bool isMethodAllowed();
-	 bool checkBasicRedirection();
  	 void handleGetRequest();
  	 void handlePostRequest();
  	 void handleChunkedTransfer();
@@ -29,6 +28,7 @@ class Request {
 	 bool checkBodySize();
 	 bool checkRewrite();
 	 void parseHeader();
+	 bool checkExpectHeader();
 
 	 int _methodInt;
 
@@ -55,13 +55,13 @@ class Request {
 	 is_set _cgi;
 	 std::string _cgiBody;
 	 std::string _cgiAdditionalHeader;
-	 bool _dirList;
 	 int _requestSubType;
 	 MULTIMAP::iterator _root;
 	 MULTIMAP::iterator _index;
 	 int _statusCode;
 	 size_t _headerEnd;
-	 bool _autoindex;
+	 bool _autoIndex;
+	 bool _dirList;
 	 std::vector<std::string> _requestLine;
 	 std::string _rootPath;
 	 std::vector<std::string> _lines;

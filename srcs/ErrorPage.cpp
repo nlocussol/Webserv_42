@@ -63,9 +63,13 @@ std::string ErrorPage::getErrorPage(int statusCode)
 		case 413:
 			std::cerr << "Error 414: Too long request\n";
 			return _414Header + bodySize(_414Body) + _414Body;
+		case 100:
+			std::cerr << "Code 101: Continue\n";
+			return _100Header;
+		default:
+			std::cerr << "Error 666: Error not handled\n";
+			return "Error 666: You discovered an unhandled error gg";
 	}
-	std::string ff = "les problemes\n";
-	return ff;
 }
 
 std::string ErrorPage::bodySize(const std::string& body)
@@ -198,7 +202,8 @@ std::string ErrorPage::_414Body = "\r\n\r\n"
 "</body>\r\n"
 "</html>";
 
-
 std::string ErrorPage::_301Header = "HTTP/1.1 301 Moved permanently\r\n"
 "Content-Length: 0\r\n"
 "Location: ";
+
+std::string ErrorPage::_100Header = "HTTP/1.1 100 Continue\r\n";

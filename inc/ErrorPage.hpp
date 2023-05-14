@@ -16,6 +16,7 @@ class ErrorPage {
 	 ErrorPage& operator=(const ErrorPage& other);
 
 	 static	std::string _301Header;
+	 static	std::string _100Header;
 
 	 static std::string _400Header;
 	 static std::string _400Body;
