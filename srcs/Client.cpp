@@ -40,7 +40,7 @@ int	Client::readFromFd()
 	}
 
 	_buffer.resize(_pos + BUFFER_SIZE);
-	usleep(100);
+	usleep(500);
 	_readReturn = recv(_fdClient, (char*)_buffer.c_str() + _pos, BUFFER_SIZE - 1, 0);
 	//_readReturn = read(_fdClient, (char*)_buffer.c_str() + _pos, BUFFER_SIZE - 1);
 	if (_readReturn < 0) {
