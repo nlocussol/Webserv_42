@@ -82,7 +82,6 @@ void Server::manage_epoll_wait(struct epoll_event &event)
 {
 	if ((event.events & EPOLLERR) || (event.events & EPOLLHUP) || !(event.events & EPOLLIN))
 	{
-		std::cerr << "Client " << event.data.fd << " stop the connection" << std::endl;
 		removeClient(event.data.fd);
 		return ;
 	}
@@ -224,6 +223,7 @@ void	Server::removeClient(int fdClient)
 	}
 	if (client == end)
 		std::cout << "No matching client found in the fd pool" << std::endl;
+	std::cout << "Client " << fdClient << " connection closed\n";
 	_clients.erase(client);
 	_epoll.del_fd_from_pool(fdClient);
 	close(fdClient);
