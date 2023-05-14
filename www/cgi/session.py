@@ -2,15 +2,20 @@
 
 import http.cookies
 import os
+import uuid
 
-my_cookie = http.cookies.SimpleCookie()
-my_cookie["pref_lang"] = "fr"
-my_cookie["pref_lang"]["path"] = "/cgi/"
-my_cookie["pref_lang"]["samesite"] = None
-my_cookie["pref_lang"]["expires"] = 10
-my_cookie["pref_lang"]["httponly"] = True
 
-print(my_cookie.output())
+def get_uuid_id():
+    return str(uuid.uuid4())
+
+
+cookie_string = os.environ.get("HTTP_COOKIE")
+if not cookie_string:
+    c = http.cookies.SimpleCookie()
+    c["test"] = get_uuid_id()
+    c["test"]["expires"] = 5
+    print(c.output())
+
 print("Content-type: text/html; charset=utf-8\r\n\r\n")
 
 html = """<!DOCTYPE html>
@@ -18,20 +23,22 @@ html = """<!DOCTYPE html>
 <head>
 <title>Mon cookie</title>
 <body>
-<h1>Example de page avec cookie</h1>
+<h2>Example de page avec cookie</h2>
 """
 
+
 print(html)
-print("<font size=+1>Environment</font></br>")
-for param in os.environ.keys():
-    print("<b>%20s</b>: %s</br>" % (param, os.environ[param]))
+# print("<font size=+1>Environment</font></br>")
+# for param in os.environ.keys():
+#     print("<b>%20s</b>: %s</br>" % (param, os.environ[param]))
 
 print("</br>")
 try:
-    user_lang = http.cookies.SimpleCookie(os.environ["HTTP_COOKIE"])
-    print(user_lang["pref_lang"].value)
+    ck = http.cookies.SimpleCookie(os.environ["HTTP_COOKIE"])
+    print(ck["test"].value)
 except (http.cookies.CookieError, KeyError):
-    print("Pas de cookie")
+    print("Pas de cookie bozo</br>")
+    print("<a href=\"session.py\">Clique ici pour avoir un cookie</a>")
 
 html = """</body>
 </html>

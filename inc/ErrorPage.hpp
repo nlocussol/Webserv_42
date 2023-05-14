@@ -25,6 +25,8 @@ class ErrorPage {
 	 static std::string _404Body;
 	 static std::string _405Header;
 	 static std::string _405Body;
+	 static std::string _414Header;
+	 static std::string _414Body;
 	 static	std::string _500Header;
 	 static	std::string _500Body;
 	 static	std::string _507Header;

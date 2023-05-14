@@ -60,6 +60,9 @@ std::string ErrorPage::getErrorPage(int statusCode)
 		case 301:
 			std::cerr << "Code 301: Permanent redirection\n";
 			return _301Header;
+		case 413:
+			std::cerr << "Error 414: Too long request\n";
+			return _414Header + bodySize(_414Body) + _414Body;
 	}
 	std::string ff = "les problemes\n";
 	return ff;
@@ -180,6 +183,21 @@ std::string ErrorPage::_508Body = "\r\n\r\n"
 "<p>The server terminated an operation because it encountered an infinite loop while processing a request.</p>\r\n"
 "</body>\r\n"
 "</html>";
+
+std::string ErrorPage::_414Header = "HTTP/1.1 414 URI Too Long\r\n"
+"Content-type: text/html\r\n"
+"Connection: closed\r\n"
+"Content-Length: ";
+
+std::string ErrorPage::_414Body = "\r\n\r\n"
+"<html>\r\n"
+"<body>\r\n"
+"<h1>URI Too Long</h1>\r\n"
+"<hr>\r\n"
+"<p>URI provided by the client is too long.</p>\r\n"
+"</body>\r\n"
+"</html>";
+
 
 std::string ErrorPage::_301Header = "HTTP/1.1 301 Moved permanently\r\n"
 "Content-Length: 0\r\n"
