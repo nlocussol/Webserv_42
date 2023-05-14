@@ -17,6 +17,8 @@ vector<string> mysplit(string & line, string delimiter) {
 	for (unsigned long i = 0; i < line.size(); i++) {
 		while (line[i] && strchr(delimiter.c_str(), line[i]))
 			i++;
+		if (line[i] == '\0')
+			return (tab);
 		while (line[i] && !strchr(delimiter.c_str(), line[i])) {
 			str += line[i];
 			i++;
