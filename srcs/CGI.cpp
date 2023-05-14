@@ -1,6 +1,7 @@
 #include "../inc/CGI.hpp"
 #include "../inc/Request.hpp"
 #include "../inc/webserv.hpp"
+#include <unistd.h>
 
 CGI::CGI(std::string& binCGI, std::string& filePath, Request request)
 {
@@ -30,8 +31,10 @@ std::string CGI::handleCGI(const Request& request)
 	if (check_cgi_args() == -1)
 		return (std::string());
 
-	pipe(_pip);
+	// pipe(_pip);
 	_pid = fork();
+	pipe(_pipeIn);
+	pipe(_pipeOut);
 	if (_pid == -1)
 	{
 		std::cerr << "fork creation error" << std::endl;
@@ -39,26 +42,47 @@ std::string CGI::handleCGI(const Request& request)
 	}
 	else if (_pid == 0)
 	{
-		dup2(_pip[1], 1);
-		close(_pip[0]);
-		close(_pip[1]);
+		// dup2(_pip[1], 1);
+		dup2(_pipeOut[1], 1);
 		if (request._methodInt == GET_REQUEST) {
+			// close(_pip[0]);
+			// close(_pip[1]);
 			char **env = vector_to_c_array(_vectorEnv);
 			char *execveArgv[3] = {(char *)_binCGI.c_str(), (char *)_filePath.c_str(), NULL};
 			execve(_binCGI.c_str(), execveArgv, env);
 			delete [] env;
 		}
+		// else if (request._methodInt == POST_REQUEST) {
+		// 	std::vector<std::string> envVector = string_to_vector(request._bodyContent);
+		// 	char **env = vector_to_c_array(_vectorEnv);
+		// 	char *execveArgv[3] = {(char *)_binCGI.c_str(), (char *)_filePath.c_str(), NULL};
+		// 	dup2(_pip[0], 0);
+		// 	write(0, request._buffer.c_str(), request._buffer.length());
+		// 	char tmp = EOF;
+		// 	write(_pip[0], &tmp, 1);
+		// 	close(_pip[0]);
+		// 	close(_pip[1]);
+		// 	execve(_binCGI.c_str(), execveArgv, env);
+		// 	delete [] env;
+		// }
 		else if (request._methodInt == POST_REQUEST) {
 			std::vector<std::string> envVector = string_to_vector(request._bodyContent);
 			char **env = vector_to_c_array(_vectorEnv);
-			// char *execveArgv[4] = {(char *)_binCGI.c_str(), (char *)_filePath.c_str(), (char*)_postBody.c_str(), NULL};
 			char *execveArgv[3] = {(char *)_binCGI.c_str(), (char *)_filePath.c_str(), NULL};
+			close(_pipeIn[1]);
+			dup2(_pipeIn[0], STDIN_FILENO);
+			write(_pipeIn[0], request._buffer.c_str(), request._buffer.length());
+			close(_pipeIn[0]);
+			close(_pipeOut[0]);
+			dup2(_pipeOut[1], STDOUT_FILENO);
+			close(_pipeOut[1]);
 			execve(_binCGI.c_str(), execveArgv, env);
-			delete [] env;
 		}
 		std::cerr << "execve error" << std::endl;
-		close(_pip[0]);
-		close(_pip[1]);
+		close(_pipeOut[0]);
+		close(_pipeOut[1]);
+		close(_pipeIn[1]);
+		close(_pipeIn[0]);
 		exit(EXIT_FAILURE);
 	}
 	if (check_time() == false)
@@ -95,22 +119,29 @@ bool CGI::check_time()
 		if ((check = waitpid(_pid, &wstatus, WNOHANG)) == -1)
 		{
 			std::cerr << "waitpid error" << std::endl;
-			close(_pip[0]);
-			close(_pip[1]);
+			close(_pipeOut[0]);
+			close(_pipeOut[1]);
+			close(_pipeIn[0]);
+			close(_pipeIn[1]);
+			return false;
 		}
 		end = clock();
 		time = static_cast<double>(end - begin) / CLOCKS_PER_SEC;
 		if (time > MAX_CGI_WAITING)
 		{
 			kill (_pid, SIGKILL);
-			close(_pip[1]);
-			close(_pip[0]);
+			close(_pipeOut[0]);
+			close(_pipeOut[1]);
+			close(_pipeIn[0]);
+			close(_pipeIn[1]);
 			std::cout << "cgi took more than 3sec to be executed" << std::endl;
 			_flag = TIME_OUT;
 			return (false);
 		}
 	}
-	close(_pip[1]);
+	close(_pipeOut[1]);
+	close(_pipeIn[0]);
+	close(_pipeIn[1]);
 	return (true);
 }
 
@@ -121,11 +152,12 @@ std::string CGI::get_output_cgi()
 	std::string	out;
 
 	memset(buff, 0, BUFFER_SIZE);
-	while ((ret = read(_pip[0], buff, BUFFER_SIZE) > 0))
+	while ((ret = read(_pipeOut[0], buff, BUFFER_SIZE - 1) > 0))
 	{
 		out += buff;
 		memset(buff, 0, BUFFER_SIZE);
 	}
+	cout << "ici\n" << out << "\n";
 	if (ret == -1)
 	{
 		_flag = RUNTIME_ERROR;
@@ -166,5 +198,7 @@ string is_cgi(block_serv server, const string& filePath)
 }
 
 int CGI::getFlag() const {return _flag;}
+
+void CGI::setClientFd(int clientFd) {_clientFd = clientFd;}
 
 CGI::~CGI() {}

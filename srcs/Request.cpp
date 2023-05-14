@@ -16,7 +16,7 @@ Request::~Request()
 {
 }
 
-Request::Request(std::string& buffer, data& servers, int serverFd)
+Request::Request(std::string& buffer, data& servers, int serverFd, int clientFd)
 {
 	_statusCode = 0;
 	_query.first = false;
@@ -28,6 +28,7 @@ Request::Request(std::string& buffer, data& servers, int serverFd)
 	_buffer = buffer;
 	_servers = servers;
 	_serverId = serverFd;
+	_clientFd = clientFd;
 	_root = _servers.v_serv[_serverId].conf_serv.find("root");
 	_rootPath = _root->second;
 	_index = _servers.v_serv[_serverId].conf_serv.find("index");
@@ -297,8 +298,14 @@ void Request::handlePostRequest()
 	it = _headerMap.find("Transfer-Encoding");
 	if (it != _headerMap.end() && it->second == "chunked")
 		handleChunkedTransfer();
+	it = _headerMap.find("Content-Type");
+	if (it == _headerMap.end()) {
+		_statusCode = 400;
+		return ;
+	}
 	if (_cgi.first) {
 		CGI cgi(_cgi.second, _filePath, *this);
+		cgi.setClientFd(_clientFd);
 		_cgiBody = cgi.handleCGI(*this);
 		// Change this shit j'avais les flemmes faudrait p-e faire un object CGI c'est le dawa ce fichier
 		// Obligé de le faire en 2 fois jsp pas pk ?

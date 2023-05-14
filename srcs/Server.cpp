@@ -92,8 +92,8 @@ void Server::manage_epoll_wait(struct epoll_event &event)
 	}
 	else
 	{
-		int	serverFd;
-		if ((serverFd = findMatchingServer(event.data.fd)) == -1)
+		int	serverId;
+		if ((serverId = findMatchingServer(event.data.fd)) == -1)
 		{
 			std::cerr << "No matching server for " << event.data.fd << " founded" << std::endl;
 		}
@@ -105,16 +105,16 @@ void Server::manage_epoll_wait(struct epoll_event &event)
 		vector<Client>::iterator end = _clients.end();
 
 		for (client = _clients.begin(); client != end; client++){
-			if ((*client).getFdClient() == event.data.fd){
+			if (client->getFdClient() == event.data.fd){
 				break ;
 			}
 		}
 		_buffer.assign(client->_buffer, 0, client->_buffer.length());
-		Request request(_buffer, _servers, serverFd);
+		Request request(_buffer, _servers, serverId, client->getFdClient());
 		// std::cout << "Request-----\n" << _buffer;
 		request.parseRequest();
 		cout << request;
-		Response response(_servers.v_serv[serverFd], request._filePath);
+		Response response(_servers.v_serv[serverId], request._filePath);
 		response.buildResponse(request);
 		//std::cout << "Response------\n" << response.getCompleteResponse();
 		sendResponse(response, event.data.fd);
