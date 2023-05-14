@@ -28,9 +28,8 @@ Response::Response(block_serv serv, std::string& filePath)
 
 void Response::buildResponse(Request& request)
 {
-	if (request._statusCode == 301) {
+	if (request._statusCode == 301)
 		handleRedirection(request);
-	}
 	else if (request._statusCode == 200 || request._statusCode == 201 || request._statusCode == 204) {
 		switch (request._methodInt) {
 			case GET_REQUEST:
@@ -44,12 +43,11 @@ void Response::buildResponse(Request& request)
 				}
 				break;
 			case POST_REQUEST:
-				buildPostHeader(request._requestSubType);
+				buildPostHeader(request);
 				break;
 			case DELETE_REQUEST:
 				break;
 		}
-		//do this in another function and probably need to rename functions
 		buildCompleteResponse(request._statusCode, request._cgi.first);
 	}
 	else
@@ -65,43 +63,18 @@ void Response::handleRedirection(Request& request)
 
 void Response::buildGetHeader(const std::string& extension)
 {
-	if (extension == "jpg") {
-			_contentType.second = "image/jpg";
-	}
-	else if (extension == "jpeg") {
-			_contentType.second = "image/jpeg";
-	}
-	else if (extension == "ico") {
-			_contentType.second = "image/jpg";
-	}
-	else {
-			_contentType.second = "text/html; charset=utf-8";
-	}
-}
-
-bool Response::check_dir(string & filePath, block_serv & server) {
-	DIR *dir = opendir(filePath.c_str());
-	if (dir == NULL)
-		return true;
-	closedir(dir);
-	MULTIMAP copy = find_location_path(filePath, server);
-	MULTIMAP::iterator index = copy.find("index");
-	if (index != copy.end()) {
-		if (filePath[filePath.size() - 1] != '/')
-			filePath += "/";
-		filePath += index->second;
-		return true;
-	}
-	return false;
+	if (extension == "jpg")
+		_contentType.second = "image/jpg";
+	else if (extension == "jpeg")
+		_contentType.second = "image/jpeg";
+	else if (extension == "ico")
+		_contentType.second = "image/jpg";
+	else
+		_contentType.second = "text/html; charset=utf-8";
 }
 
 void Response::buildGetBody(std::string& filePath)
 {
-	// probably need to test if every syscall worked
-	// if (!check_dir(filePath, server)) {
-	// 	cout << "on a un pb" << endl;
-	// 	return ;
-	// }
 	std::ifstream file(filePath.c_str(), std::ios::in | std::ios::binary);
 	if (file) {
 		//Find file size and append it to buffer
@@ -127,7 +100,6 @@ void Response::handleGetCGI(const Request& request)
 {
 	_contentLength.second = request._cgiBody.length();
 	_cgiAdditionalHeader = request._cgiAdditionalHeader;
-	// cout << _cgiAdditionalHeader;
 	_binaryData = request._cgiBody;	
 }
 
@@ -138,13 +110,13 @@ void Response::handleDirectoryListing(const std::string& filePath)
 	_binaryData = directory_listing(filePath, _server);	
 }
 
-void Response::buildPostHeader(int requestSubType)
+void Response::buildPostHeader(const Request& request)
 {
-	switch (requestSubType) {
-		case UPLOAD_FILE:
+	if (request._requestSubType == UPLOAD_FILE)
 			_location += _filePath;
-			cout << _location << "ici\n";
-			break;
+	if (request._cgi.first) {
+		_contentLength.second = request._cgiBody.length();
+		_binaryData = request._cgiBody;
 	}
 }
 

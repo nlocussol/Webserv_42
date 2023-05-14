@@ -16,7 +16,7 @@ Request::~Request()
 {
 }
 
-Request::Request(std::string& buffer, data& servers, int serverFd)
+Request::Request(std::string& buffer, data& servers, int serverFd, int clientFd)
 {
 	_statusCode = 0;
 	_query.first = false;
@@ -28,6 +28,7 @@ Request::Request(std::string& buffer, data& servers, int serverFd)
 	_buffer = buffer;
 	_servers = servers;
 	_serverId = serverFd;
+	_clientFd = clientFd;
 	_root = _servers.v_serv[_serverId].conf_serv.find("root");
 	_rootPath = _root->second;
 	_index = _servers.v_serv[_serverId].conf_serv.find("index");
@@ -144,8 +145,8 @@ bool Request::fillMapHeader()
 
 bool Request::checkExpectHeader()
 {
-	map_it it = _headerMap.find("Expect:");
-	if (it != _headerMap.end() && it->second.find("100")) {
+	map_it it = _headerMap.find("Expect");
+	if (it != _headerMap.end() && it->second.find("100") != std::string::npos) {
 		_statusCode = 100;
 		return false;
 	}
@@ -253,8 +254,6 @@ void Request::handleGetRequest()
 	if (_cgi.first) {
 		CGI cgi(_cgi.second, _filePath, *this);
 		_cgiBody = cgi.handleCGI(*this);
-		// Change this shit j'avais les flemmes faudrait p-e faire un object CGI c'est le dawa ce fichier
-		// Obligé de le faire en 2 fois jsp pas pk ?
 		_cgiAdditionalHeader = _cgiBody.substr(0, _cgiBody.find("\r\n\r\n"));
 		_cgiBody = _cgiBody.substr(_cgiAdditionalHeader.length());
 		if (cgi.getFlag() == TIME_OUT)
@@ -272,7 +271,6 @@ void Request::handleGetRequest()
 		_dirList = true;
 		return ;
 	}
-
 	// Return 404 Not Found if the file does not exist
 	if (access(_filePath.c_str(), F_OK))
 		_statusCode = 404;
@@ -298,8 +296,14 @@ void Request::handlePostRequest()
 	it = _headerMap.find("Transfer-Encoding");
 	if (it != _headerMap.end() && it->second == "chunked")
 		handleChunkedTransfer();
+	it = _headerMap.find("Content-Type");
+	if (it == _headerMap.end()) {
+		_statusCode = 400;
+		return ;
+	}
 	if (_cgi.first) {
 		CGI cgi(_cgi.second, _filePath, *this);
+		cgi.setClientFd(_clientFd);
 		_cgiBody = cgi.handleCGI(*this);
 		// Change this shit j'avais les flemmes faudrait p-e faire un object CGI c'est le dawa ce fichier
 		// Obligé de le faire en 2 fois jsp pas pk ?
@@ -324,12 +328,10 @@ bool	Request::checkBodySize()
 	if (_servers.v_serv[_serverId].conf_serv.find("limit_client_body_size") == _servers.v_serv[_serverId].conf_serv.end())
 		return true;
 
-	map_it it;
 	size_t	len;
 	size_t	limitLen;
 	char	*check;
-
-	it = _headerMap.find("Content-Length");
+	map_it it = _headerMap.find("Content-Length");
 	limitLen = strtol(_servers.v_serv[_serverId].conf_serv.find("limit_client_body_size")->second.c_str(), &check, 10);
 	if (it != _headerMap.end())
 	{
@@ -347,7 +349,12 @@ void Request::handleChunkedTransfer()
 {
 	int hexa_value = 0;
 	int cnt;
-	string body = _buffer.substr(_buffer.find("\r\n\r\n") + 4);
+	size_t CRLF = _buffer.find("\r\n\r\n");
+	if (CRLF == std::string::npos) {
+		_statusCode = 400;
+		return ;
+	}
+	string body = _buffer.substr(CRLF + 4);
 	vector<string> tab = mysplit(body, "\n");
 	_bodyContent.clear();
 	for (unsigned long i = 0; i < tab.size(); i++) {

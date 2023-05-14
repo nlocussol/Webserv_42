@@ -13,11 +13,14 @@ class CGI {
 	 bool check_time();
 	 std::string get_output_cgi();
 	 int getFlag() const;
+	 void setClientFd(int clientFd);
 
 	private:
-	 int _pip[2];
+	 int _pipeIn[2];
+	 int _pipeOut[2];
 	 int _pid;
 	 int _flag;
+	 int _clientFd;
 	 std::string _binCGI;
 	 std::string _filePath;
 	 std::string _cookies;

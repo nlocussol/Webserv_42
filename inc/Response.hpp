@@ -22,9 +22,8 @@ class Response {
 	 void buildCompleteResponse(int, bool);
 	 void buildGetHeader(const std::string&);
 	 void buildGetBody(std::string&);
-	 bool check_dir(string &, block_serv &);
 	 void handleDirectoryListing(const std::string&);
-	 void buildPostHeader(int);
+	 void buildPostHeader(const Request&);
 	 void buildErrorResponse(Request &);
 
 	private:
