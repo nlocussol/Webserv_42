@@ -272,7 +272,6 @@ void Request::handleGetRequest()
 		_dirList = true;
 		return ;
 	}
-
 	// Return 404 Not Found if the file does not exist
 	if (access(_filePath.c_str(), F_OK))
 		_statusCode = 404;
@@ -324,12 +323,10 @@ bool	Request::checkBodySize()
 	if (_servers.v_serv[_serverId].conf_serv.find("limit_client_body_size") == _servers.v_serv[_serverId].conf_serv.end())
 		return true;
 
-	map_it it;
 	size_t	len;
 	size_t	limitLen;
 	char	*check;
-
-	it = _headerMap.find("Content-Length");
+	map_it it = _headerMap.find("Content-Length");
 	limitLen = strtol(_servers.v_serv[_serverId].conf_serv.find("limit_client_body_size")->second.c_str(), &check, 10);
 	if (it != _headerMap.end())
 	{
