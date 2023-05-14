@@ -8,7 +8,7 @@ SRC 	=	Response.cpp Server.cpp \
 	  	ErrorPage.cpp utils.cpp
 HEADER	=	inc/Server.hpp inc/Response.hpp \
 			inc/Socket.hpp inc/Epoll.hpp \
-			inc/Client.hpp inc/parsing.hpp 
+			inc/Client.hpp inc/parsing.hpp inc/webserv.hpp 
 OBJS	=	$(addprefix obj/, $(SRC:.cpp=.o))
 CXXFLAGS=	-Wall -Wextra -Werror --std=c++98 -g
 

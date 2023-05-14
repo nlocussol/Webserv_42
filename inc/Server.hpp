@@ -14,7 +14,7 @@
 #include "Client.hpp"
 #include "parsing.hpp"
 
-#define MAX_EVENT 100
+#define MAX_EVENT 1000
 
 class Server { 
 	public:
@@ -35,6 +35,7 @@ class Server {
 	private:
 	 bool	isServer(int fdFromEpoll);
 	 void	acceptNewClient(int fdFromEpoll);
+	 void	removeClient(int fdClient);
 	 int	findMatchingServer(int fdClient);
 	 Socket _socket;
 	 Epoll _epoll;

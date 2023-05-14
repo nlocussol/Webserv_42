@@ -422,6 +422,7 @@ bool Request::handleUpload()
 	}
 	std::string boundary = it->second.substr(it->second.find("boundary=") + 9);
 	boundary.erase(0, boundary.find_last_of('-') + 1);
+	cout <<"BOUNDARYYYYYYYYYYYYYY   :"  << boundary << endl;
 	size_t boundaryPos = _bodyContent.find(boundary); 
 	if (boundaryPos == std::string::npos) {
 		_statusCode = 400;
