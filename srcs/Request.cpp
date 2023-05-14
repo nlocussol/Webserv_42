@@ -255,7 +255,6 @@ bool Request::checkBasicRedirection()
 		if (it != copy.end() && it->second == "on") {
 			_filePath.erase(0, _rootPath.size());
 			_filePath += "/";
-			cout << "FILEEEEE: " << _filePath << endl;
 			_statusCode = 301;
 		}
 		return false;
@@ -263,7 +262,6 @@ bool Request::checkBasicRedirection()
 	if (!is_dir(_filePath) && _filePath[_filePath.size() - 1] == '/') {
 		_filePath.erase(0, _rootPath.size());
 		_filePath.erase(_filePath.size() - 1);
-		cout << "FILEEEEE: " << _filePath << endl;
 		_statusCode = 301;
 		return false;
 	}
@@ -394,7 +392,6 @@ bool Request::handleUpload()
 	}
 	std::string boundary = it->second.substr(it->second.find("boundary=") + 9);
 	boundary.erase(0, boundary.find_last_of('-') + 1);
-	cout <<"BOUNDARYYYYYYYYYYYYYY   :"  << boundary << endl;
 	size_t boundaryPos = _bodyContent.find(boundary); 
 	if (boundaryPos == std::string::npos) {
 		_statusCode = 400;
@@ -433,7 +430,7 @@ bool Request::handleUpload()
 	size_t i = content.length() - 1;
 	for (; content[i] == '-' ; i--) ;
 	content = content.substr(0, i + 1);
-	cout << content;
+	//cout << content;
 	of << content;
 	of.close();
 	_statusCode = 201;
