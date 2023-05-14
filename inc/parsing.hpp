@@ -33,6 +33,7 @@ struct data {
 	vector<block_serv> v_serv;
 };
 
+void pars_autoindex(MULTIMAP & copy);
 void pars_cgi(MULTIMAP & copy);
 void pars_rewrite(MULTIMAP & copy, string & root);
 void pars_conf(string & file, data & servers);
