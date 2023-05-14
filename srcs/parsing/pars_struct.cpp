@@ -2,12 +2,14 @@
 #include <sstream>
 #include <string>
 
+/* Put a slash after every root options if they don't have one */
 void fill_root(MULTIMAP & current) {
 	MULTIMAP::iterator it = current.find("root");
 	if (it->second[it->second.size() - 1] != '/')
 		it->second += "/";
 }
 
+/* Pars configuration file location block options one by one */
 void pars_manager(block_location & servers, vector<int> & ports) {
 	MULTIMAP::iterator it = servers.conf_location.find("root");
 	MULTIMAP copy = servers.conf_location;
@@ -23,6 +25,7 @@ void pars_manager(block_location & servers, vector<int> & ports) {
 	pars_cgi(copy);
 }
 
+/* Pars configuration file server block options one by one */
 void pars_manager(block_serv & servers, vector<int> & ports) {
 	MULTIMAP::iterator it = servers.conf_serv.find("root");
 	MULTIMAP copy = servers.conf_serv;
@@ -37,13 +40,14 @@ void pars_manager(block_serv & servers, vector<int> & ports) {
 	pars_body_size(copy);
 }
 
+/* Check if the server listen on the same port thann another*/
 template<typename T>
 void check_double(T & tab) {
 	for (size_t i = 0; i < tab.size(); i++) {
 		if (std::count(tab.begin(), tab.end(), tab[i]) > 1) {
 			stringstream ss;
 			ss << tab[i];
-			throw (logic_error("Error: two serveurs can't listen on the same tab: " + ss.str()));
+			throw (logic_error("Error: two serveurs can't listen on the same port: " + ss.str()));
 		}
 	}
 }
@@ -56,6 +60,9 @@ void pars_struct(data & servers) {
 			vector<int> tmp;
 			int stage = servers.v_serv[i].v_location[j].stage;
 			string path = servers.v_serv[i].v_location[j].path;
+			if (path.find("/../") != string::npos || path.find("/..") != string::npos ||
+				path.find("../") != string::npos)
+				throw (logic_error("Error: errpage can't contain .. : " + path));
 			if (path[path.size() - 1] != '/')
 				servers.v_serv[i].v_location[j].path += "/";
 			if (stage == 0)

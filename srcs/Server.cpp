@@ -111,7 +111,7 @@ void Server::manage_epoll_wait(struct epoll_event &event)
 		}
 		_buffer.assign(client->_buffer, 0, client->_buffer.length());
 		Request request(_buffer, _servers, serverFd);
-		// std::cout << "Request-----\n" << _buffer;
+		std::cout << "Request-----\n" << _buffer;
 		request.parseRequest();
 		// cout << request;
 		Response response(_servers.v_serv[serverFd], request._filePath);

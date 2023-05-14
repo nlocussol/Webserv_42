@@ -349,6 +349,7 @@ void Request::handleChunkedTransfer()
 	int cnt;
 	string body = _buffer.substr(_buffer.find("\r\n\r\n") + 4);
 	vector<string> tab = mysplit(body, "\n");
+	_bodyContent.clear();
 	for (unsigned long i = 0; i < tab.size(); i++) {
 		if (i % 2 == 0) {
 			hexa_value = checkHexa(tab[i], "0123456789abcdef");
@@ -366,6 +367,7 @@ void Request::handleChunkedTransfer()
 				_statusCode = 400;
 				return ;
 			}
+			_bodyContent += tab[i];
 		}	
 	}
 }
@@ -430,14 +432,22 @@ bool Request::handleUpload()
 
 void Request::handleDeleteRequest()
 {
+	if (_filePath.find("/../") != string::npos || _filePath.find("/..") != string::npos ||
+			_filePath.find("../") != string::npos) {
+		_statusCode = 500;
+		cerr << "A file can't contain .. !" << endl;
+		return ;
+	}
 	if (remove(_filePath.c_str()) < 0) {	
 		string root = _filePath.substr(0, _filePath.find('/') + 1);
 		if (root == "srcs/" || root == "inc/" || root == "conf/")
-			cout << "Can't remove file in " << root << endl;
+			cerr << "Can't remove file in " << root << endl;
 		else
-			cout << "Can't remove " << _filePath << endl;
+			cerr << "Can't remove " << _filePath << endl;
+		_statusCode = 500;
+		return ;
 	}
-	_statusCode = 200;
+	_statusCode = 204;
 }
 
 // Overload for ostream to print parsed request;

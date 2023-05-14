@@ -4,6 +4,9 @@
 #include <stdexcept>
 #include <unistd.h>
 
+/* Pars configuration file options. */
+
+/* Pars CGI option: */
 void pars_cgi(MULTIMAP & copy) {
 	string exec[3] = {"python3", "ruby", "php"};
 	string extension[3]	= {".py", ".rb", ".php"};
@@ -31,6 +34,7 @@ void pars_cgi(MULTIMAP & copy) {
 	}
 }
 
+/* Pars rewrite option: */
 void pars_rewrite(MULTIMAP & copy, string & root) {
 	MULTIMAP::iterator it = copy.find("rewrite");
 	while (it != copy.end()) {
@@ -48,6 +52,7 @@ void pars_rewrite(MULTIMAP & copy, string & root) {
 	}
 }
 
+/* Pars body size option: */
 void pars_body_size(MULTIMAP & copy) {
 	MULTIMAP::iterator it = copy.find("limit_client_body_size");
 	while (it != copy.end()) {
@@ -63,6 +68,7 @@ void pars_body_size(MULTIMAP & copy) {
 	}
 }
 
+/* Pars root option: */
 void pars_dir(string path, MULTIMAP & copy) {
 	MULTIMAP::iterator it = copy.find(path);
 	if (it == copy.end() && path == "root")
@@ -84,6 +90,7 @@ void pars_dir(string path, MULTIMAP & copy) {
 	}
 }
 
+/* Pars file in conf file in general option: */
 void pars_file(string path, MULTIMAP & copy, string & root) {
 	MULTIMAP::iterator it = copy.find(path);
 	while (it != copy.end()) {
@@ -99,6 +106,7 @@ void pars_file(string path, MULTIMAP & copy, string & root) {
 	}
 }
 
+/* Pars listen option: */
 void pars_listen(MULTIMAP & copy, vector<int> & ports) {
 	MULTIMAP::iterator it = copy.find("listen");
 	if (it == copy.end())
@@ -117,6 +125,7 @@ void pars_listen(MULTIMAP & copy, vector<int> & ports) {
 	}
 }
 
+/* Pars methods option: */
 void pars_methods(MULTIMAP & copy) {
 	MULTIMAP::iterator it = copy.find("methods");
 	while (it != copy.end()) {
@@ -127,6 +136,7 @@ void pars_methods(MULTIMAP & copy) {
 	}
 }
 
+/* Pars error page option: */
 void pars_errpage(MULTIMAP & copy, MULTIMAP & current, string & root) {
 	MULTIMAP::iterator it = copy.find("errpage");
 	fstream file; 

@@ -40,25 +40,19 @@ int	Client::readFromFd()
 	}
 
 	_buffer.resize(_pos + BUFFER_SIZE);
-	//_readReturn = recv(_fdClient, (char*)_buffer.c_str() + _pos, BUFFER_SIZE - 1, 0);
-	usleep(1000);
-	_readReturn = read(_fdClient, (char*)_buffer.c_str() + _pos, BUFFER_SIZE - 1);
+	usleep(500);
+	_readReturn = recv(_fdClient, (char*)_buffer.c_str() + _pos, BUFFER_SIZE - 1, 0);
+	//_readReturn = read(_fdClient, (char*)_buffer.c_str() + _pos, BUFFER_SIZE - 1);
 	if (_readReturn < 0) {
 		std::cerr << "Error while reading from client FD" << _readReturn << endl;
 		return -1;
 	}
 	_pos += _readReturn;
-	std::cout << "size read: " << _readReturn << " lenbffer: " << _buffer.length() << " pos:" << _pos << std::endl;
+	//std::cout << "size read: " << _readReturn << " lenbffer: " << _buffer.length() << " pos:" << _pos << std::endl;
 	if (_readReturn >= BUFFER_SIZE - 1 || (_readReturn >= BUFFER_SIZE / 2 - 29 && _readReturn <= BUFFER_SIZE / 2 +  29))
 		return (IN_PROGRESS);
 	else if (_readReturn < BUFFER_SIZE && _readReturn > 0)
-	{
-		//_buffer.erase(_pos + 1);
-		//_buffer.resize(_pos);
-		//std::cout << _buffer << std::endl;
 		return (FINISH);
-	}
-	std::cout << "default case" << std::endl;
 	return (DEL);
 }
 
