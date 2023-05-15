@@ -26,6 +26,7 @@ Request::Request(std::string& buffer, data& servers, int serverFd, int clientFd,
 	_cgiOver = cgiOver;
 	_contentType.first = false;
 	_contentLength.first = false;
+	_requestSubType = 0;
 	_buffer = buffer;
 	_servers = servers;
 	_serverId = serverFd;
@@ -183,6 +184,8 @@ bool Request::parseURI()
 		if (_filePath[_rootPath.length()] != '/')
 			_filePath.insert(_rootPath.length(), "/");
 	}
+	while (_filePath.find("%20") != std::string::npos)
+		_filePath.replace(_filePath.find("%20"), 3, " ");
 	size_t lastDotPos = _filePath.find_last_of(".");
 	if (lastDotPos != std::string::npos)
 		_extension = _filePath.substr(lastDotPos + 1);
@@ -449,7 +452,7 @@ bool Request::handleUpload()
 	content = content.substr(0, i + 1);
 	of << content;
 	of.close();
-	_statusCode = 201;
+	_statusCode = 303;
 	_requestSubType = UPLOAD_FILE;
 	return true;
 }

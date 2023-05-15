@@ -30,7 +30,7 @@ void Response::buildResponse(Request& request)
 {
 	if (request._statusCode == 301)
 		handleRedirection(request);
-	else if (request._statusCode == 200 || request._statusCode == 201 || request._statusCode == 204) {
+	else if (request._statusCode == 200 || request._statusCode == 303 || request._statusCode == 204) {
 		switch (request._methodInt) {
 			case GET_REQUEST:
 				if (request._cgi.first)
@@ -69,6 +69,10 @@ void Response::buildGetHeader(const std::string& extension)
 		_contentType.second = "image/jpeg";
 	else if (extension == "ico")
 		_contentType.second = "image/jpg";
+	else if (extension == "png")
+		_contentType.second = "image/png";
+	else if (extension == "gif")
+		_contentType.second = "image/gif";
 	else
 		_contentType.second = "text/html; charset=utf-8";
 }
@@ -112,8 +116,12 @@ void Response::handleDirectoryListing(const std::string& filePath)
 
 void Response::buildPostHeader(const Request& request)
 {
-	if (request._requestSubType == UPLOAD_FILE)
-			_location += _filePath;
+	if (request._requestSubType == UPLOAD_FILE) {
+		std::string tmp = _filePath.substr(0, request._rootPath.length());
+		if (tmp == request._rootPath)
+			_filePath.erase(0, tmp.length());
+		_location += _filePath;
+	}
 	if (request._cgi.first) {
 		_contentLength.second = request._cgiBody.length();
 		_binaryData = request._cgiBody;

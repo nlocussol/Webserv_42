@@ -30,7 +30,6 @@ class Request {
 	 void parseHeader();
 	 bool checkExpectHeader();
 
-	 int _methodInt;
 
 	private:
 	 typedef std::map<std::string, std::string>::const_iterator map_it;
@@ -38,13 +37,11 @@ class Request {
 
 	 Request();
 	 std::string _buffer;
-	 std::string _method;
 	 std::string _uri;
 	 std::string _httpVersion;
 	 std::string _filePath;
 	 std::string _queryString;
 	 std::string _extension;
-	 std::string _cookies;
 	 std::string _serverName;
 	 std::string _portNb;
 	 std::string _bodyContent;
@@ -57,6 +54,8 @@ class Request {
 	 bool _cgiOver;
 	 std::string _cgiAdditionalHeader;
 	 std::string _cgiBody;
+	 std::string _method;
+	 int _methodInt;
 	 int _requestSubType;
 	 MULTIMAP::iterator _root;
 	 MULTIMAP::iterator _index;
