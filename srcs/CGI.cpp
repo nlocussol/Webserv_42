@@ -56,7 +56,7 @@ int CGI::handleCGI(Request& request)
 		else if (request._methodInt == POST_REQUEST) {
 			char **env = vector_to_c_array(_vectorEnv);
 			char *execveArgv[3] = {(char *)_binCGI.c_str(), (char *)_filePath.c_str(), NULL};
-			write(_pipeIn[1], request._bodyContent.c_str(), request._bodyContent.length());
+			std::cout << request._bodyContent;
 			dup2(_pipeIn[0], 0);
 			close(_pipeIn[1]);
 			close(_pipeIn[0]);
