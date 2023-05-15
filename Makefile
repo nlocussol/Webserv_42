@@ -32,9 +32,6 @@ clean:
 run: all
 	./$(NAME) conf/default.conf
 
-run2: all
-	valgrind --track-fds=yes ./$(NAME) conf/default.conf
-
 re: fclean all
 
-.PHONY: all fclean clean run run2 re
+.PHONY: all fclean clean run re
