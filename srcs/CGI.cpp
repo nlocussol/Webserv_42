@@ -28,12 +28,11 @@ CGI::CGI(std::string& binCGI, std::string& filePath, Request request)
 	_postBody = request._bodyContent;
 }
 
-std::string CGI::handleCGI(const Request& request)
+int CGI::handleCGI(const Request& request)
 {
 	if (check_cgi_args() == -1)
-		return (std::string());
+		return (-1);
 
-	// pipe(_pip);
 	pipe(_pipeIn);
 	pipe(_pipeOut);
 	_pid = fork();
@@ -73,9 +72,9 @@ std::string CGI::handleCGI(const Request& request)
 		close(_pipeIn[0]);
 		exit(EXIT_FAILURE);
 	}
-	if (check_time() == false)
-		return (string());
-	return (get_output_cgi());
+	//if (check_time() == false)
+	//	return (-1);
+	return (_pipeOut[0]);
 }
 
 int	CGI::check_cgi_args()

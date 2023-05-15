@@ -7,6 +7,8 @@ Client::Client(int fdClient, int idServer){
 	_readReturn = 0;
 	_fdClient = fdClient;
 	_idServer = idServer;
+	_cgiFd = -1;
+	_cgiOver = false;
 }
 
 Client::~Client(){
@@ -23,6 +25,8 @@ Client & Client::operator=(const Client &copy){
 		_idServer = copy._idServer;
 		_buffer.assign(copy._buffer, 0, copy._buffer.length());
 		_pos = copy._pos;
+		_cgiFd = copy._cgiFd;
+		_cgiOver = copy._cgiOver;
 	}
 	return (*this);
 }
@@ -49,10 +53,14 @@ int	Client::readFromFd()
 	}
 
 	_buffer.resize(_pos + BUFFER_SIZE);
-	clock_t current = clock();
-	for (clock_t begin = clock(); current - begin / CLOCKS_PER_SEC * 1000000 < 500; current = clock())
-	{}
-	_readReturn = recv(_fdClient, (char*)_buffer.c_str() + _pos, BUFFER_SIZE - 1, 0);
+	//clock_t current = clock();
+	//for (clock_t begin = clock(); current - begin / CLOCKS_PER_SEC * 1000000 < 500; current = clock())
+	//{}
+	usleep(500);
+	if (_cgiFd != -1)
+		_readReturn = read(_cgiFd, (char*)_buffer.c_str() + _pos, BUFFER_SIZE - 1);
+	else
+		_readReturn = recv(_fdClient, (char*)_buffer.c_str() + _pos, BUFFER_SIZE - 1, 0);
 	if (_readReturn < 0) {
 		std::cerr << "Error while reading from client FD" << _readReturn << endl;
 		return -1;
@@ -61,7 +69,11 @@ int	Client::readFromFd()
 	if (_readReturn >= BUFFER_SIZE - 1 || (_readReturn >= BUFFER_SIZE / 2 - 29 && _readReturn <= BUFFER_SIZE / 2 +  29))
 		return (IN_PROGRESS);
 	else if (_readReturn < BUFFER_SIZE && _readReturn > 0)
+	{
+		if (_cgiFd != -1)
+			_cgiOver = true;
 		return (FINISH);
+	}
 	return (DEL);
 }
 
@@ -70,6 +82,10 @@ void	Client::resetBuffer()
 	_pos = 0;
 	_buffer.clear();
 	_buffer = "";
+	if (_cgiFd != -1)
+		close (_cgiFd);
+	_cgiFd = -1;
+
 }
 int	Client::getFdClient() const{
 	return(_fdClient);
@@ -78,3 +94,9 @@ int	Client::getFdClient() const{
 int	Client::getIdServer() const{
 	return(_idServer);
 }
+
+int	Client::getCgiFd() const{
+	return(_cgiFd);
+}
+
+void	Client::setCgiFd(int cgiFd){ _cgiFd = cgiFd; }

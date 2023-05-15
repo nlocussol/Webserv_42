@@ -12,7 +12,7 @@ class Request {
 	friend std::ostream& operator<<(std::ostream&, const Request&);
 
 	public:
-	 Request(std::string&, data&, int, int);
+	 Request(std::string&, data&, int, int, bool);
 	 ~Request();
 	 void parseRequest();
 	 bool basicRequestParsing();
@@ -53,8 +53,10 @@ class Request {
 	 is_set _contentLength;
 	 is_set _contentType;
 	 is_set _cgi;
-	 std::string _cgiBody;
+	 int _cgiFd;
+	 bool _cgiOver;
 	 std::string _cgiAdditionalHeader;
+	 std::string _cgiBody;
 	 int _requestSubType;
 	 MULTIMAP::iterator _root;
 	 MULTIMAP::iterator _index;

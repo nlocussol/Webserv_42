@@ -112,14 +112,31 @@ void Server::manage_epoll_wait(struct epoll_event &event)
 		vector<Client>::iterator end = _clients.end();
 
 		for (client = _clients.begin(); client != end; client++){
+			if (client->getCgiFd() == event.data.fd){
+				event.data.fd = client->getFdClient();
+				close (client->getCgiFd());
+				client->setCgiFd(-1);
+				break ;
+			}
 			if (client->getFdClient() == event.data.fd){
 				break ;
 			}
 		}
 		_buffer.assign(client->_buffer, 0, client->_buffer.length());
-		Request request(_buffer, _servers, serverId, client->getFdClient());
+		Request request(_buffer, _servers, serverId, event.data.fd, client->_cgiOver);
 		// std::cout << "Request-----\n" << _buffer;
-		request.parseRequest();
+		try {
+			request.parseRequest();
+		}
+		catch (int fd){
+			if (fd != -1)
+			{
+				_socket.make_socket_non_blocking(fd);
+				client->setCgiFd(fd);
+				_epoll.add_fd_to_pool(fd);
+			}
+			return ;
+		}
 		// cout << request;
 		Response response(_servers.v_serv[serverId], request._filePath);
 		response.buildResponse(request);
@@ -136,7 +153,7 @@ bool	Server::readRequest(int epoll_fd)
 	vector<Client>::iterator end = _clients.end();
 
 	for (client = _clients.begin(); client != end; client++){
-		if ((*client).getFdClient() == epoll_fd){
+		if (client->getFdClient() == epoll_fd || client->getCgiFd() == epoll_fd){
 			break ;
 		}
 	}
@@ -149,8 +166,7 @@ bool	Server::readRequest(int epoll_fd)
 
 	//DEL : recv return 0 : the client close the connection
 	if (readReturn == DEL)
-		removeClient(epoll_fd);
-	//_epoll.mod_fd_to_pool(epoll_fd);
+		removeClient(client->getFdClient());
 	return (false);
 }
 
@@ -191,7 +207,7 @@ void	Server::acceptNewClient(int fdFromEpoll)
 
 bool	Server::isServer(int fdFromEpoll)
 {
-	std::map<int, int>::iterator check;
+  std::map<int, int>::iterator check;
   check  = _serversId.find(fdFromEpoll);
   if (check == _serversId.end())
           return (false);
@@ -213,8 +229,8 @@ int	Server::findMatchingServer(int fdClient)
 {
 	for (vector<Client>::iterator it = _clients.begin(); it != _clients.end(); it++)
 	{
-		if ((*it).getFdClient() == fdClient)
-			return ((*it).getIdServer());
+		if (it->getFdClient() == fdClient || it->getCgiFd() == fdClient)
+			return (it->getIdServer());
 	}
 	return (-1);
 }
@@ -225,13 +241,18 @@ void	Server::removeClient(int fdClient)
 	vector<Client>::iterator end = _clients.end();
 
 	for (client = _clients.begin(); client != end; client++){
-		if ((*client).getFdClient() == fdClient){
+		if (client->getFdClient() == fdClient){
 			break ;
 		}
 	}
 	if (client == end)
 		std::cout << "No matching client found in the fd pool" << std::endl;
 	std::cout << "Client " << fdClient << " connection closed\n";
+	if (client->getCgiFd() != -1)
+	{
+		_epoll.del_fd_from_pool(client->getCgiFd());
+		close(client->getCgiFd());
+	}
 	_clients.erase(client);
 	_epoll.del_fd_from_pool(fdClient);
 	close(fdClient);

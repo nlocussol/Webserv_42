@@ -1,4 +1,4 @@
-CXX		=	c++
+CXX		=	g++
 NAME 	= webserv
 SRC 	=	Response.cpp Server.cpp \
 			Socket.cpp Epoll.cpp Client.cpp \

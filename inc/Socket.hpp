@@ -23,8 +23,6 @@ class Socket
 		int		get_fdServer();
 		int		get_port();
 		int		accept_client(int server_fd);
-
- 	 private:
 		void	make_socket_non_blocking(int socket);
 
 	 private:
