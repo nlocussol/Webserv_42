@@ -64,7 +64,7 @@ void recursive_location(fstream & file, block_serv & servers, vector<string> opt
 				throw (logic_error("Error: " + tab[0] + " need an argument!"));
 			else if (tab[0] == "errpage" && tab.size() != 3)
 				throw (logic_error("Error: errpage need two arguments!"));
-			else if (tab[0] == "autoindex" && tab.size() != 2 && tab[1] != "on" && tab[1] != "off")
+			else if (tab[0] == "autoindex" && (tab.size() != 2 || (tab[1] != "on" && tab[1] != "off")))
 				throw (logic_error("Error: directory_listing need arguments! (only on and off)"));
 			else if (tab[0] == "cgi" && tab.size() != 3)
 				throw (logic_error("Error: cgi need two arguments! (using: cgi [path_to_interpreter] [extension])"));

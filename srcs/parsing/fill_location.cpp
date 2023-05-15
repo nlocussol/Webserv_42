@@ -32,7 +32,6 @@ void fill_location(MULTIMAP & current, MULTIMAP & conf) {
 	MULTIMAP copy = conf;
 	check_bad_opt(current);
 	fill_not_in("root", current, copy);
-	fill_not_in("index" , current, copy);
 	fill_not_in("methods", current, copy);
 	fill_not_in("errpage", current, copy);
 	fill_not_in("listen", current, copy);
