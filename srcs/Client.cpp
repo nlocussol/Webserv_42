@@ -49,8 +49,9 @@ int	Client::readFromFd()
 	}
 
 	_buffer.resize(_pos + BUFFER_SIZE);
-	clock_t current = clock();
-	for (clock_t begin = clock(); current - begin / CLOCKS_PER_SEC * 1000000 < 500; current = clock())
+	clock_t begin = clock();
+	clock_t end = begin +  (500 * CLOCKS_PER_SEC) / 1000000;
+	while (clock() < end)
 	{}
 	_readReturn = recv(_fdClient, (char*)_buffer.c_str() + _pos, BUFFER_SIZE - 1, 0);
 	if (_readReturn < 0) {
