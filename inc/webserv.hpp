@@ -12,7 +12,6 @@
 
 #define TIME_OUT 1
 #define PERM_DENIED 2
-#define MAX_CGI_WAITING 3
 #define RUNTIME_ERROR 4
 
 #define MAX_URI_SIZE 64000

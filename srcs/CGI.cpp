@@ -39,10 +39,15 @@ int CGI::handleCGI(Request& request)
 	{
 		char **env = vector_to_c_array(_vectorEnv);
 		char *execveArgv[3] = {(char *)_binCGI.c_str(), (char *)_filePath.c_str(), NULL};
-		dup2(_pipeIn[0], 0);
-		dup2(_pipeIn[1], 1);
+		if (dup2(_pipeIn[0], 0) < 0 || dup2(_pipeIn[1], 1) < 0) {
+			std::cerr << "Error: dup2";
+			return -1;
+		}
 		cout << request._bodyContent;
-		dup2(_pipeOut[1], 1);
+		if (dup2(_pipeOut[1], 1) < 0) {
+			std::cerr << "Error: dup2";
+			return -1;
+		}
 		close(_pipeIn[1]);
 		close(_pipeIn[0]);
 		close(_pipeOut[0]);

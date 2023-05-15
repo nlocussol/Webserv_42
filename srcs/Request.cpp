@@ -90,7 +90,7 @@ bool Request::basicRequestParsing()
 	return true;
 }
 
-//Check if request line is in METHOD URI HTTP/X.X format
+// Check if request line is in METHOD URI HTTP/X.X format
 bool Request::parseRequestLine()
 {
 	_requestLine = mysplit(_lines[0], " ");
@@ -173,10 +173,10 @@ bool Request::parseURI()
 	}
 	// Remove first /
 	_filePath.erase(0, 1);
-	//Insert root path if not already in URI
+	// Insert root path if not already in URI
 	if (_filePath.compare(0, _rootPath.length(), _rootPath)) {
 		_filePath.insert(0, _rootPath);
-		//Add a / between root and file path cause client are dumb mfs
+		// Add a / between root and file path cause client are dumb mfs
 		if (_filePath[_rootPath.length()] != '/')
 			_filePath.insert(_rootPath.length(), "/");
 	}
@@ -185,7 +185,6 @@ bool Request::parseURI()
 	size_t lastDotPos = _filePath.find_last_of(".");
 	if (lastDotPos != std::string::npos)
 		_extension = _filePath.substr(lastDotPos + 1);
-	// else _dirList == true ??
 	if (_uri.find("?") != std::string::npos) {
 		_query.first = true;
 		_query.second = _uri.substr(_uri.find_first_of("?") + 1);
@@ -328,26 +327,10 @@ void Request::handlePostRequest()
 		_statusCode = 400;
 		return ;
 	}
-	if (_cgi.first)
+	if (_cgi.first) {
 		CGIHandler();
-	else
-	// if (_cgi.first) {
-	// 	CGI cgi(_cgi.second, _filePath, *this);
-	// 	cgi.setClientFd(_clientFd);
-	// 	_cgiFd = cgi.handleCGI(*this);
-	// 	if (_cgiFd == -1)
-	// 	{
-	// 		if (cgi.getFlag() == TIME_OUT)
-	// 			_statusCode = 508;
-	// 		else if (cgi.getFlag() == PERM_DENIED)
-	// 			_statusCode = 403;
-	// 		else if (cgi.getFlag() == RUNTIME_ERROR)
-	// 			_statusCode = 500;
-	// 	}
-	// 	else
-	// 		throw (_cgiFd);
-	// 	return ;
-	// }
+		return ;
+	}
 	if (!handleUpload())
 		return ;
 }

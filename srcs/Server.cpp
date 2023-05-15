@@ -128,7 +128,7 @@ void Server::manage_epoll_wait(struct epoll_event &event)
 		}
 		_buffer.assign(client->_buffer, 0, client->_buffer.length());
 		Request request(_buffer, _servers, serverId, event.data.fd, client->_cgiOver, _pid);
-		// std::cout << "Request-----\n" << _buffer;
+		// std::cerr << "Request-----\n" << _buffer;
 		try {
 			request.parseRequest();
 		}
@@ -141,10 +141,10 @@ void Server::manage_epoll_wait(struct epoll_event &event)
 			}
 			return ;
 		}
-		// cout << request;
+		// cerr << request;
 		Response response(_servers.v_serv[serverId], request._filePath);
 		response.buildResponse(request);
-		//std::cout << "Response------\n" << response.getCompleteResponse();
+		//std::cerr << "Response------\n" << response.getCompleteResponse();
 		sendResponse(response, event.data.fd);
 		client->resetBuffer();
 	}
@@ -200,7 +200,7 @@ void	Server::acceptNewClient(int fdFromEpoll)
 
 	Client newClient(new_client, idServer);
 	_clients.push_back(newClient);
-	std::cerr << "New client: " << new_client << std::endl;
+	// std::cerr << "New client: " << new_client << std::endl;
 }
 
 /**
@@ -261,13 +261,12 @@ void	Server::removeClient(int fdClient)
 			kill(it->second, SIGKILL);
 		}
 	}
-	std::cerr << "Client " << fdClient << " connection closed\n";
+	// std::cerr << "Client " << fdClient << " connection closed\n";
 	if (client->getCgiFd() != -1)
 	{
 		_epoll.del_fd_from_pool(client->getCgiFd());
 		close(client->getCgiFd());
 	}
-	//kill pid si il y a 
 	_clients.erase(client);
 	_epoll.del_fd_from_pool(fdClient);
 	close(fdClient);
