@@ -28,7 +28,7 @@ CGI::CGI(std::string& binCGI, std::string& filePath, Request request)
 	_postBody = request._bodyContent;
 }
 
-int CGI::handleCGI(const Request& request)
+int CGI::handleCGI(Request& request)
 {
 	if (check_cgi_args() == -1)
 		return (-1);
@@ -56,7 +56,7 @@ int CGI::handleCGI(const Request& request)
 		else if (request._methodInt == POST_REQUEST) {
 			char **env = vector_to_c_array(_vectorEnv);
 			char *execveArgv[3] = {(char *)_binCGI.c_str(), (char *)_filePath.c_str(), NULL};
-			write(_pipeIn[1], request._bodyContent.c_str(), request._bodyContent.length());
+			std::cout << request._bodyContent;
 			dup2(_pipeIn[0], 0);
 			close(_pipeIn[1]);
 			close(_pipeIn[0]);
@@ -72,8 +72,10 @@ int CGI::handleCGI(const Request& request)
 		close(_pipeIn[0]);
 		exit(EXIT_FAILURE);
 	}
-	//if (check_time() == false)
-	//	return (-1);
+	close(_pipeOut[1]);
+	close(_pipeIn[1]);
+	close(_pipeIn[0]);
+	request.addPid(_pid);
 	return (_pipeOut[0]);
 }
 
@@ -92,65 +94,6 @@ int	CGI::check_cgi_args()
 		return (-1);
 	}
 	return (0);
-}
-
-bool CGI::check_time()
-{
-	clock_t begin = clock();
-	clock_t end = clock();
-	double time = 0;
-	int	check = 0;
-	int	wstatus;
-	while (check == 0)
-	{
-		if ((check = waitpid(_pid, &wstatus, WNOHANG)) == -1)
-		{
-			std::cerr << "waitpid error" << std::endl;
-			close(_pipeOut[0]);
-			close(_pipeOut[1]);
-			close(_pipeIn[0]);
-			close(_pipeIn[1]);
-			return false;
-		}
-		end = clock();
-		time = static_cast<double>(end - begin) / CLOCKS_PER_SEC;
-		if (time > MAX_CGI_WAITING)
-		{
-			kill (_pid, SIGKILL);
-			close(_pipeOut[0]);
-			close(_pipeOut[1]);
-			close(_pipeIn[0]);
-			close(_pipeIn[1]);
-			std::cout << "cgi took more than 3sec to be executed" << std::endl;
-			_flag = TIME_OUT;
-			return (false);
-		}
-	}
-	close(_pipeOut[1]);
-	close(_pipeIn[0]);
-	close(_pipeIn[1]);
-	return (true);
-}
-
-std::string CGI::get_output_cgi()
-{
-	int ret;
-	char	buff[BUFFER_SIZE];
-	std::string	out;
-
-	memset(buff, 0, BUFFER_SIZE);
-	while ((ret = read(_pipeOut[0], buff, BUFFER_SIZE - 1) > 0))
-	{
-		out += buff;
-		memset(buff, 0, BUFFER_SIZE);
-	}
-	if (ret == -1)
-	{
-		_flag = RUNTIME_ERROR;
-		cout << "Read error" << endl;
-		return (string());
-	}
-	return (out);
 }
 
 string is_cgi(block_serv server, const string& filePath)

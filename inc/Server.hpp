@@ -46,6 +46,7 @@ class Server {
 	 data _servers;
 	 multimap<int, int> _serversId;
 	 vector<Client>	_clients;
+	 std::map<int, int>	_pid;
  } ;
 
 void	handle_sigint(int signum);

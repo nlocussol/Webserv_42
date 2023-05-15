@@ -16,7 +16,7 @@ Request::~Request()
 {
 }
 
-Request::Request(std::string& buffer, data& servers, int serverFd, int clientFd, bool cgiOver)
+Request::Request(std::string& buffer, data& servers, int serverFd, int clientFd, bool cgiOver, map<int, int>& pids)
 {
 	_statusCode = 0;
 	_query.first = false;
@@ -34,6 +34,7 @@ Request::Request(std::string& buffer, data& servers, int serverFd, int clientFd,
 	_root = _servers.v_serv[_serverId].conf_serv.find("root");
 	_rootPath = _root->second;
 	_index = _servers.v_serv[_serverId].conf_serv.find("index");
+	_pid = pids;
 
 	MULTIMAP::iterator autoindex = _servers.v_serv[_serverId].conf_serv.find("autoindex");
 	if (autoindex == _servers.v_serv[_serverId].conf_serv.end() || autoindex->second == "off") 
@@ -488,6 +489,8 @@ void Request::handleDeleteRequest()
 	}
 	_statusCode = 204;
 }
+
+void	Request::addPid(int pid){ _pid.insert(make_pair(_clientFd, pid));  }
 
 // Overload for ostream to print parsed request;
 std::ostream& operator<< (std::ostream& os, const Request& request)

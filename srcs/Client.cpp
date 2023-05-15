@@ -62,7 +62,6 @@ int	Client::readFromFd()
 	else
 		_readReturn = recv(_fdClient, (char*)_buffer.c_str() + _pos, BUFFER_SIZE - 1, 0);
 	if (_readReturn < 0) {
-		std::cerr << "Error while reading from client FD" << _readReturn << endl;
 		return -1;
 	}
 	_pos += _readReturn;
