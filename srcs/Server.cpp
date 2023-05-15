@@ -1,11 +1,6 @@
 #include "../inc/Server.hpp"
 #include "../inc/Response.hpp"
 #include "../inc/webserv.hpp"
-#include <cstdlib>
-#include <cstring>
-#include <exception>
-#include <sys/wait.h>
-#include <unistd.h>
 
 bool Server::_running = true;
 

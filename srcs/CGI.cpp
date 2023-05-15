@@ -1,9 +1,4 @@
 #include "../inc/CGI.hpp"
-#include "../inc/Request.hpp"
-#include "../inc/webserv.hpp"
-#include <fstream>
-#include <unistd.h>
-#include <sys/socket.h>
 
 CGI::CGI(std::string& binCGI, std::string& filePath, Request request)
 {

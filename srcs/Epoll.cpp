@@ -1,8 +1,4 @@
 #include "../inc/Epoll.hpp"
-#include <strings.h>
-#include <cstdlib>
-#include <cstdio>
-#include <unistd.h>
 
 Epoll::Epoll(){
 	_fd_epoll = -1;
