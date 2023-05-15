@@ -167,6 +167,8 @@ void pars_errpage(MULTIMAP & copy, MULTIMAP & current, string & root) {
 
 void pars_autoindex(MULTIMAP & copy) {
 	MULTIMAP::iterator it = copy.find("autoindex");
+	if (it == copy.end())
+		return ;
 	copy.erase(it);
 	it = copy.find("autoindex");
 	if (it != copy.end())

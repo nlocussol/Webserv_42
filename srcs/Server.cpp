@@ -23,6 +23,14 @@ Server::~Server(){
 		if (it->first > 0)
 			close (it->first);
 	}
+	vector<Client>::iterator end = _clients.end();
+
+	for (vector<Client>::iterator client = _clients.begin(); client != end; client++){
+		if (client->getFdClient() > 0){
+			std::cout << "Client " << client->getFdClient() << " connection closed\n";
+			close (client->getFdClient());
+		}
+	}
 }
 
 Server::Server(const Server& other)
