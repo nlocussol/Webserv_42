@@ -30,7 +30,7 @@ void Response::buildResponse(Request& request)
 {
 	if (request._statusCode == 301)
 		handleRedirection(request);
-	else if (request._statusCode == 200 || request._statusCode == 201 || request._statusCode == 204) {
+	else if (request._statusCode == 200 || request._statusCode == 303 || request._statusCode == 204) {
 		switch (request._methodInt) {
 			case GET_REQUEST:
 				if (request._cgi.first)

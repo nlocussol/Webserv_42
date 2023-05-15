@@ -25,6 +25,7 @@ Request::Request(std::string& buffer, data& servers, int serverFd, int clientFd)
 	_cgi.first = false;
 	_contentType.first = false;
 	_contentLength.first = false;
+	_requestSubType = 0;
 	_buffer = buffer;
 	_servers = servers;
 	_serverId = serverFd;
@@ -432,7 +433,7 @@ bool Request::handleUpload()
 	content = content.substr(0, i + 1);
 	of << content;
 	of.close();
-	_statusCode = 201;
+	_statusCode = 303;
 	_requestSubType = UPLOAD_FILE;
 	return true;
 }
