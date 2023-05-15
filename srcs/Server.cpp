@@ -4,6 +4,7 @@
 #include <cstdlib>
 #include <cstring>
 #include <exception>
+#include <sys/wait.h>
 #include <unistd.h>
 
 bool Server::_running = true;
@@ -29,7 +30,15 @@ Server::~Server(){
 		if (client->getFdClient() > 0){
 			std::cout << "Client " << client->getFdClient() << " connection closed\n";
 			close (client->getFdClient());
+			if (client->getCgiFd() != -1)
+				close (client->getCgiFd());
 		}
+	}
+	int wstatus = 0;
+	for (map<int, int>::iterator it = _pid.begin(); it != _pid.end(); it++){
+		if (waitpid(it->second, &wstatus, WNOHANG) != 0)
+			continue;
+		kill(it->second, SIGKILL);
 	}
 }
 
@@ -123,7 +132,7 @@ void Server::manage_epoll_wait(struct epoll_event &event)
 			}
 		}
 		_buffer.assign(client->_buffer, 0, client->_buffer.length());
-		Request request(_buffer, _servers, serverId, event.data.fd, client->_cgiOver);
+		Request request(_buffer, _servers, serverId, event.data.fd, client->_cgiOver, _pid);
 		// std::cout << "Request-----\n" << _buffer;
 		try {
 			request.parseRequest();
@@ -247,12 +256,23 @@ void	Server::removeClient(int fdClient)
 	}
 	if (client == end)
 		std::cout << "No matching client found in the fd pool" << std::endl;
+	// If the client get loop in cgi
+	int wstatus = 0;
+	for (map<int, int>::iterator it = _pid.begin(); it != _pid.end(); it++){
+		if (it->first == client->getFdClient())
+		{
+			if (waitpid(it->second, &wstatus, WNOHANG) != 0)
+				continue;
+			kill(it->second, SIGKILL);
+		}
+	}
 	std::cout << "Client " << fdClient << " connection closed\n";
 	if (client->getCgiFd() != -1)
 	{
 		_epoll.del_fd_from_pool(client->getCgiFd());
 		close(client->getCgiFd());
 	}
+	//kill pid si il y a 
 	_clients.erase(client);
 	_epoll.del_fd_from_pool(fdClient);
 	close(fdClient);

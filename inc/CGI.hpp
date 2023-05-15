@@ -8,7 +8,7 @@ class CGI {
 	public:
 	 CGI(std::string&, std::string&, Request);
 	 ~CGI();
-	 int handleCGI(const Request& request);
+	 int handleCGI(Request& request);
 	 int check_cgi_args();
 	 bool check_time();
 	 std::string get_output_cgi();

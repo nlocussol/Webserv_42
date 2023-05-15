@@ -12,7 +12,7 @@ class Request {
 	friend std::ostream& operator<<(std::ostream&, const Request&);
 
 	public:
-	 Request(std::string&, data&, int, int, bool);
+	 Request(std::string&, data&, int, int, bool, map<int, int>&);
 	 ~Request();
 	 void parseRequest();
 	 bool basicRequestParsing();
@@ -29,6 +29,7 @@ class Request {
 	 bool checkRewrite();
 	 void parseHeader();
 	 bool checkExpectHeader();
+	 void addPid(int pid);
 
 
 	private:
@@ -70,6 +71,7 @@ class Request {
 	 data _servers;
 	 int _serverId;
 	 int _clientFd;
+	 map<int, int> _pid;
  } ;
 
 #endif // REQUEST_HPP_
