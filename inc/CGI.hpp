@@ -1,8 +1,7 @@
 #ifndef CGI_HPP_
-#define CGI_HPP_
+# define CGI_HPP_
 
-#include <string>
-#include "Request.hpp"
+# include "webserv.hpp"
 
 class CGI { 
 	public:

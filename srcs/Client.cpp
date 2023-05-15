@@ -1,6 +1,4 @@
 #include "../inc/Client.hpp"
-#include <bits/types/clock_t.h>
-#include <ctime>
 
 Client::Client(int fdClient, int idServer){
 	_pos = 0;

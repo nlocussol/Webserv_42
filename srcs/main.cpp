@@ -1,8 +1,5 @@
 #include "../inc/Server.hpp"
 #include "../inc/parsing.hpp"
-#include <cstdlib>
-#include <iostream>
-#include <string>
 
 void	handle_sigint(int signum)
 {

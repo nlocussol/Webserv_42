@@ -1,10 +1,6 @@
 #include "../inc/Request.hpp"
 #include "../inc/CGI.hpp"
 #include "../inc/webserv.hpp"
-#include <cstdlib>
-#include <string>
-#include <cstring>
-#include <sstream>
 
 vector<string> mysplit(string & line, string delimiter);
 

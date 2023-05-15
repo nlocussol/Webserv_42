@@ -2,7 +2,10 @@
 # define EPOLL_HPP
 
 # include <sys/epoll.h>
-# include "iostream"
+# include <iostream>
+# include <cstring>
+# include <cstdlib>
+# include <unistd.h>
 
 class Epoll
 {
