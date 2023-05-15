@@ -14,7 +14,7 @@ ErrorPage& ErrorPage::getInstance()
 std::string ErrorPage::getConfPage(std::string file, int &code) {
 	std::fstream errpage(file.c_str());
 	if (!errpage) {
-		cout << "ff" << endl;
+		std::cerr << "ff" << endl;
 		return NULL;
 	}
 	std::string body;

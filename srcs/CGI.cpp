@@ -37,39 +37,24 @@ int CGI::handleCGI(Request& request)
 	pipe(_pipeOut);
 	_pid = fork();
 	if (_pid == -1) {
-		std::cerr << "fork creation error" << std::endl;
+		std::cerr << "Error: fork creation error" << std::endl;
 		exit (EXIT_FAILURE);
 	}
 	else if (_pid == 0)
 	{
+		char **env = vector_to_c_array(_vectorEnv);
+		char *execveArgv[3] = {(char *)_binCGI.c_str(), (char *)_filePath.c_str(), NULL};
+		dup2(_pipeIn[0], 0);
+		dup2(_pipeIn[1], 1);
+		cout << request._bodyContent;
 		dup2(_pipeOut[1], 1);
-		if (request._methodInt == GET_REQUEST) {
-			char **env = vector_to_c_array(_vectorEnv);
-			char *execveArgv[3] = {(char *)_binCGI.c_str(), (char *)_filePath.c_str(), NULL};
-			close(_pipeIn[1]);
-			close(_pipeIn[0]);
-			close(_pipeOut[0]);
-			close(_pipeOut[1]);
-			execve(_binCGI.c_str(), execveArgv, env);
-			delete [] env;
-		}
-		else if (request._methodInt == POST_REQUEST) {
-			char **env = vector_to_c_array(_vectorEnv);
-			char *execveArgv[3] = {(char *)_binCGI.c_str(), (char *)_filePath.c_str(), NULL};
-			std::cout << request._bodyContent;
-			dup2(_pipeIn[0], 0);
-			close(_pipeIn[1]);
-			close(_pipeIn[0]);
-			close(_pipeOut[0]);
-			close(_pipeOut[1]);
-			execve(_binCGI.c_str(), execveArgv, env);
-			delete [] env;
-		}
-		std::cerr << "execve error" << std::endl;
-		close(_pipeOut[0]);
-		close(_pipeOut[1]);
 		close(_pipeIn[1]);
 		close(_pipeIn[0]);
+		close(_pipeOut[0]);
+		close(_pipeOut[1]);
+		execve(_binCGI.c_str(), execveArgv, env);
+		std::cerr << "Error: execve error" << std::endl;
+		delete [] env;
 		exit(EXIT_FAILURE);
 	}
 	close(_pipeOut[1]);
@@ -83,13 +68,13 @@ int	CGI::check_cgi_args()
 {
 	if (access(_filePath.c_str(), X_OK) < 0)
 	{
-		std::cout << "Can't use " << _filePath << " as an exectuable." << std::endl;
+		std::cerr << "Can't use " << _filePath << " as an exectuable." << std::endl;
 		_flag = PERM_DENIED;
 		return (-1);
 	}
 	if (access(_binCGI.c_str(), X_OK) < 0)
 	{
-		std::cout << "Can't use " << _binCGI << " as an interpreter." << std::endl;
+		std::cerr << "Can't use " << _binCGI << " as an interpreter." << std::endl;
 		_flag = PERM_DENIED;
 		return (-1);
 	}

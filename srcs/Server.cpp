@@ -28,7 +28,7 @@ Server::~Server(){
 
 	for (vector<Client>::iterator client = _clients.begin(); client != end; client++){
 		if (client->getFdClient() > 0){
-			std::cout << "Client " << client->getFdClient() << " connection closed\n";
+			std::cerr << "Client " << client->getFdClient() << " connection closed\n";
 			close (client->getFdClient());
 			if (client->getCgiFd() != -1)
 				close (client->getCgiFd());
@@ -68,7 +68,7 @@ void Server::setSocket(void)
 		while (it != _servers.v_serv[i].conf_serv.end())
 		{
 			port = atoi(it->second.c_str());
-			std::cout << "Server " << i << " listen on port " << port << std::endl;
+			std::cerr << "Server " << i << " listen on port " << port << std::endl;
 			_socket.allow_socket_server(port);
 			server = _socket.get_fdServer();
 			_serversId.insert(make_pair(server, i));
@@ -167,7 +167,7 @@ bool	Server::readRequest(int epoll_fd)
 		}
 	}
 	if (client == end)
-		std::cout << "No matching client found in the fd pool" << std::endl;
+		std::cerr << "No matching client found in the fd pool" << std::endl;
 	readReturn = client->readFromFd();
 	//FINISH : recv read less than buffer size : the request can be interpreted
 	if (readReturn == FINISH)
@@ -197,7 +197,7 @@ void	Server::acceptNewClient(int fdFromEpoll)
 	int	new_client = _socket.accept_client(fdFromEpoll);
 	if (new_client == -1)
 	{
-		cerr << "Accept " << fdFromEpoll << " error" << endl;
+		std::cerr << "Accept " << fdFromEpoll << " error" << endl;
 		return ;
 	}
 	_epoll.add_fd_to_pool(new_client);
@@ -205,7 +205,7 @@ void	Server::acceptNewClient(int fdFromEpoll)
 
 	Client newClient(new_client, idServer);
 	_clients.push_back(newClient);
-	std::cout << "New client: " << new_client << std::endl;
+	std::cerr << "New client: " << new_client << std::endl;
 }
 
 /**
@@ -255,7 +255,7 @@ void	Server::removeClient(int fdClient)
 		}
 	}
 	if (client == end)
-		std::cout << "No matching client found in the fd pool" << std::endl;
+		std::cerr << "No matching client found in the fd pool" << std::endl;
 	// If the client get loop in cgi
 	int wstatus = 0;
 	for (map<int, int>::iterator it = _pid.begin(); it != _pid.end(); it++){
@@ -266,7 +266,7 @@ void	Server::removeClient(int fdClient)
 			kill(it->second, SIGKILL);
 		}
 	}
-	std::cout << "Client " << fdClient << " connection closed\n";
+	std::cerr << "Client " << fdClient << " connection closed\n";
 	if (client->getCgiFd() != -1)
 	{
 		_epoll.del_fd_from_pool(client->getCgiFd());

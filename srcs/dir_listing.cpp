@@ -87,6 +87,7 @@ std::string directory_listing(std::string path, block_serv& server)
 	std::string ls;
 	MULTIMAP map = find_location_path(path, server);
 	std::string root = map.find("root")->second;
+	std::string root2 = root.erase(root.length() - 1);
 	path.erase(0, root.size());
     while ((dp = readdir (dir)) != NULL) {
 		ls = dp->d_name;

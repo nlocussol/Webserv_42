@@ -48,7 +48,7 @@ Client & Client::operator=(const Client &copy){
 int	Client::readFromFd()
 {
 	if (_pos + BUFFER_SIZE >= _buffer.max_size()){		
-		std::cout << "Limit exceeded" << std::endl;
+		std::cerr << "Limit exceeded" << std::endl;
 		return (-1);
 	}
 

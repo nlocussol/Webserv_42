@@ -28,7 +28,7 @@ int main (int ac, char *av[])
 		pars_conf(file, servers);	
 		pars_struct(servers);
 	}catch (std::exception & e) {
-		cout << e.what() << endl;
+		std::cerr << e.what() << endl;
 		return (EXIT_FAILURE);
 	}
   	Server server(servers);
@@ -36,7 +36,7 @@ int main (int ac, char *av[])
 		server.setSocket();
 		server.runServer();
 	} catch (std::exception & e) {
-		std::cout << e.what() << std::endl;
+		std::cerr << e.what() << std::endl;
 		return (1);
 	}
   	return 0;

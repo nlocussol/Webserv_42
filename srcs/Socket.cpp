@@ -72,7 +72,7 @@ int	Socket::accept_client(int server_fd)
 	new_client = accept(server_fd, (struct sockaddr *)NULL, NULL);
 	if (new_client == -1)
 	{
-		std::cout << "accept new client error" << std::endl;
+		std::cerr << "accept new client error" << std::endl;
 		return (-1);
 	}
 	make_socket_non_blocking(new_client);
