@@ -1,7 +1,8 @@
 #!/usr/bin/ruby
 
 require 'cgi'
-cgi = CGI.new
+
+cgi = CGI.new('html4')
 
 puts "Content-Type: text/html\r\n\r\n"
 puts "<html><body><h1>Welcome to Ruby CGI</h1>"

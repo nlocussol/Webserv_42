@@ -59,7 +59,6 @@ void Request::parseRequest()
 	if (!checkRewrite())
 		return ;
 	parseHeader();
-	///////////
 	switch (_methodInt) {
 		case GET_REQUEST:
 			handleGetRequest();
@@ -254,9 +253,8 @@ void Request::parseHeader()
 	}
 }
 
-void Request::handleGetRequest()
-{
-	if (_cgi.first && _cgiOver == false) {
+void Request::CGIHandler() {
+	if (_cgiOver == false) {
 		CGI cgi(_cgi.second, _filePath, *this);
 		cgi.setClientFd(_clientFd);
 		_cgiFd = cgi.handleCGI(*this);
@@ -272,19 +270,32 @@ void Request::handleGetRequest()
 		}
 		else
 			throw (_cgiFd);
-		/*
-		_cgiAdditionalHeader = _cgiBody.substr(0, _cgiBody.find("\r\n\r\n"));
-		_cgiBody = _cgiBody.substr(_cgiAdditionalHeader.length());
-			*/
 		return ;
 	}
 	if (_cgiOver == true) {
-		std::string tmp = _buffer.substr(0, _buffer.find("\r\n\r\n"));
-		_cgiAdditionalHeader = _buffer.substr(tmp.length() + 4, tmp.find("\r\n\r\n"));
-		_cgiBody = _buffer.substr(_cgiAdditionalHeader.length());
-		_statusCode = 200;
-
+		if (_method == "GET") {
+			std::string tmp = _buffer.substr(0, _buffer.find("\r\n\r\n"));
+			_cgiAdditionalHeader = _buffer.substr(tmp.length() + 4, tmp.find("\r\n\r\n"));
+			_cgiBody = _buffer.substr(_cgiAdditionalHeader.length());
+			_statusCode = 200;
+		}
+		else if (_method == "POST") {
+			std::string tmp = _buffer.substr(_buffer.find("\r\n\r\n"));
+			_cgiAdditionalHeader = tmp.substr(strtol(_contentLength.second.c_str(), NULL, 10) + 4);
+			_cgiBody = _cgiAdditionalHeader.substr(_cgiAdditionalHeader.find("\r\n\r\n") + 4);
+			_cgiAdditionalHeader = _cgiAdditionalHeader.substr(0, _cgiAdditionalHeader.find("\r\n\r\n"));
+		}
+		else {
+			std::cerr << "Error in CGI Method\n";
+			_statusCode = 400;
+		}
 	}
+}
+
+void Request::handleGetRequest()
+{
+	if (_cgi.first)
+		CGIHandler();
 	if (!_filePath.empty() && is_dir_listing(_filePath, _servers.v_serv[_serverId]) == AUTOINDEX_OK) {
 		_statusCode = 200;
 		_dirList = true;
@@ -320,25 +331,26 @@ void Request::handlePostRequest()
 		_statusCode = 400;
 		return ;
 	}
-	if (_cgi.first) {
-		// Change this shit j'avais les flemmes faudrait p-e faire un object CGI c'est le dawa ce fichier
-		// Obligé de le faire en 2 fois jsp pas pk ?
-		CGI cgi(_cgi.second, _filePath, *this);
-		cgi.setClientFd(_clientFd);
-		_cgiFd = cgi.handleCGI(*this);
-		if (_cgiFd == -1)
-		{
-			if (cgi.getFlag() == TIME_OUT)
-				_statusCode = 508;
-			else if (cgi.getFlag() == PERM_DENIED)
-				_statusCode = 403;
-			else if (cgi.getFlag() == RUNTIME_ERROR)
-				_statusCode = 500;
-		}
-		else
-			throw (_cgiFd);
-		return ;
-	}
+	if (_cgi.first)
+		CGIHandler();
+	else
+	// if (_cgi.first) {
+	// 	CGI cgi(_cgi.second, _filePath, *this);
+	// 	cgi.setClientFd(_clientFd);
+	// 	_cgiFd = cgi.handleCGI(*this);
+	// 	if (_cgiFd == -1)
+	// 	{
+	// 		if (cgi.getFlag() == TIME_OUT)
+	// 			_statusCode = 508;
+	// 		else if (cgi.getFlag() == PERM_DENIED)
+	// 			_statusCode = 403;
+	// 		else if (cgi.getFlag() == RUNTIME_ERROR)
+	// 			_statusCode = 500;
+	// 	}
+	// 	else
+	// 		throw (_cgiFd);
+	// 	return ;
+	// }
 	if (!handleUpload())
 		return ;
 }

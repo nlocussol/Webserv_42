@@ -18,6 +18,7 @@ class Request {
 	 bool basicRequestParsing();
 	 bool fillMapHeader();
 	 bool parseURI();
+	 void CGIHandler();
  	 bool parseRequestLine();
 	 bool isMethodAllowed();
  	 void handleGetRequest();
