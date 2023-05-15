@@ -120,7 +120,7 @@ void Server::manage_epoll_wait(struct epoll_event &event)
 		Request request(_buffer, _servers, serverId, client->getFdClient());
 		// std::cout << "Request-----\n" << _buffer;
 		request.parseRequest();
-		// cout << request;
+		cout << request;
 		Response response(_servers.v_serv[serverId], request._filePath);
 		response.buildResponse(request);
 		//std::cout << "Response------\n" << response.getCompleteResponse();

@@ -49,9 +49,10 @@ int	Client::readFromFd()
 	}
 
 	_buffer.resize(_pos + BUFFER_SIZE);
-	clock_t current = clock();
-	for (clock_t begin = clock(); current - begin / CLOCKS_PER_SEC * 1000000 < 500; current = clock())
-	{}
+	usleep(500);
+	// clock_t current = clock();
+	// for (clock_t begin = clock(); current - begin / CLOCKS_PER_SEC * 1000000 < 500; current = clock())
+	// {}
 	_readReturn = recv(_fdClient, (char*)_buffer.c_str() + _pos, BUFFER_SIZE - 1, 0);
 	if (_readReturn < 0) {
 		std::cerr << "Error while reading from client FD" << _readReturn << endl;

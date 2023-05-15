@@ -182,6 +182,8 @@ bool Request::parseURI()
 		if (_filePath[_rootPath.length()] != '/')
 			_filePath.insert(_rootPath.length(), "/");
 	}
+	while (_filePath.find("%20") != std::string::npos)
+		_filePath.replace(_filePath.find("%20"), 3, " ");
 	size_t lastDotPos = _filePath.find_last_of(".");
 	if (lastDotPos != std::string::npos)
 		_extension = _filePath.substr(lastDotPos + 1);
