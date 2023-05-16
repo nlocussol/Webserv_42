@@ -128,7 +128,7 @@ void Server::manage_epoll_wait(struct epoll_event &event)
 		}
 		_buffer.assign(client->_buffer, 0, client->_buffer.length());
 		Request request(_buffer, _servers, serverId, event.data.fd, client->_cgiOver, _pid);
-		// std::cerr << "Request-----\n" << _buffer;
+		//std::cerr << "Request-----\n" << _buffer;
 		try {
 			request.parseRequest();
 		}
@@ -169,14 +169,18 @@ bool	Server::readRequest(int epoll_fd)
 		return (true);
 
 	//DEL : recv return 0 : the client close the connection
-	if (readReturn == DEL)
+	if (readReturn == DEL || readReturn == -1)
 		removeClient(client->getFdClient());
 	return (false);
 }
 
 void Server::sendResponse(Response& response, int client_fd) 
 {
-	send(client_fd, response.getCompleteResponse().c_str(), response.getCompleteResponse().length(), 0);
+	if (send(client_fd, response.getCompleteResponse().c_str(),	response.getCompleteResponse().length(), 0)
+		== -1)
+	{
+		removeClient(client_fd);
+	}
 }
 
 /**
